@@ -29,7 +29,7 @@ The project follows a monolithic Django structure with apps organized in folders
 
 1. Clone the repository:
    ```
-   git clone https://github.com/yourusername/barberian.git
+   git clone https://github.com/blackswanalpha/barberian.git
    cd barberian
    ```
 
