@@ -1,0 +1,33 @@
+{% extends 'emails/base.html' %}
+
+{% block title %}Appointment Reminder{% endblock %}
+
+{% block header %}Appointment Reminder{% endblock %}
+
+{% block content %}
+<p>Dear {{ client.get_full_name }},</p>
+
+<p>This is a friendly reminder about your upcoming appointment:</p>
+
+<div class="appointment-details">
+    <p><strong>Service:</strong> {{ service.name }}</p>
+    <p><strong>Date:</strong> {{ appointment.start_time|date:"F d, Y" }}</p>
+    <p><strong>Time:</strong> {{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</p>
+    <p><strong>Barber:</strong> {{ staff.get_full_name }}</p>
+    <p><strong>Price:</strong> ${{ service.price }}</p>
+    <p><strong>Duration:</strong> {{ service.duration }} minutes</p>
+    {% if appointment.notes %}
+        <p><strong>Notes:</strong> {{ appointment.notes }}</p>
+    {% endif %}
+</div>
+
+<p>If you need to reschedule or cancel your appointment, please do so at least 24 hours in advance.</p>
+
+<p>We look forward to seeing you!</p>
+
+<a href="http://localhost:8000/client/appointments/{{ appointment.id }}/" class="btn">View Appointment</a>
+
+<p>Thank you for choosing Barberian.</p>
+
+<p>Best regards,<br>The Barberian Team</p>
+{% endblock %}

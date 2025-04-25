@@ -1,0 +1,525 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel | Barberian{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f9f7ed',
+                100: '#f3efd1',
+                200: '#e9dfa3',
+                300: '#dfc976',
+                400: '#d4af37', // Main primary color
+                500: '#c49a29',
+                600: '#a37a22',
+                700: '#7d5a1f',
+                800: '#5e4420',
+                900: '#47341e',
+                950: '#2a1e10',
+              },
+              secondary: {
+                50: '#f6f6f6',
+                100: '#e7e7e7',
+                200: '#d1d1d1',
+                300: '#b0b0b0',
+                400: '#888888',
+                500: '#6d6d6d',
+                600: '#5d5d5d',
+                700: '#4f4f4f',
+                800: '#454545',
+                900: '#3d3d3d',
+                950: '#1e1e1e', // Main secondary color
+              },
+              dark: '#0F0F0F',
+              light: '#F5F5F5',
+              accent: '#8B4513',
+              success: '#10B981',
+              warning: '#F59E0B',
+              danger: '#EF4444',
+              info: '#3B82F6',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            boxShadow: {
+              card: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              nav: '0 4px 10px rgba(0, 0, 0, 0.05)',
+              sidebar: '4px 0 10px rgba(0, 0, 0, 0.05)',
+            },
+          }
+        }
+      }
+    </script>
+
+    <!-- Material UI CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- Custom Admin CSS -->
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c49a29;
+        }
+
+        /* Transitions */
+        .sidebar-transition {
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar Active Link */
+        .sidebar-link.active {
+            background-color: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            color: #d4af37;
+        }
+
+        .sidebar-link.active .sidebar-icon {
+            color: #d4af37;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: relative;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 120px;
+            background-color: #1e1e1e;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            left: 100%;
+            margin-left: 10px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-slideInLeft {
+            animation: slideInLeft 0.3s ease-in-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-slideInRight {
+            animation: slideInRight 0.3s ease-in-out;
+        }
+
+        /* Material Design Shadows */
+        .shadow-md-1 {
+            box-shadow: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12);
+        }
+
+        .shadow-md-2 {
+            box-shadow: 0 3px 5px -1px rgba(0,0,0,0.2), 0 6px 10px 0 rgba(0,0,0,0.14), 0 1px 18px 0 rgba(0,0,0,0.12);
+        }
+
+        .shadow-md-3 {
+            box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2), 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12);
+        }
+
+        /* Material Design Ripple Effect */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .ripple:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+
+        .ripple:active:after {
+            transform: scale(0, 0);
+            opacity: .3;
+            transition: 0s;
+        }
+
+        /* Material Design Form Elements */
+        .form-control-material {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-control-material input,
+        .form-control-material textarea,
+        .form-control-material select {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 0;
+            font-size: 1rem;
+            border: none;
+            border-bottom: 2px solid #e5e7eb;
+            background-color: transparent;
+            transition: border-color 0.3s;
+            outline: none;
+        }
+
+        .form-control-material label {
+            position: absolute;
+            top: 0.75rem;
+            left: 0;
+            transition: all 0.3s;
+            color: #6b7280;
+            pointer-events: none;
+        }
+
+        .form-control-material input:focus,
+        .form-control-material textarea:focus,
+        .form-control-material select:focus {
+            border-color: #d4af37;
+        }
+
+        .form-control-material input:focus + label,
+        .form-control-material textarea:focus + label,
+        .form-control-material select:focus + label,
+        .form-control-material input:not(:placeholder-shown) + label,
+        .form-control-material textarea:not(:placeholder-shown) + label,
+        .form-control-material select:not([value=""]) + label {
+            top: -0.5rem;
+            font-size: 0.75rem;
+            color: #d4af37;
+        }
+    </style>
+
+    {% block admin_css %}{% endblock %}
+</head>
+<body class="bg-gray-50 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white shadow-sidebar w-64 h-full fixed left-0 top-0 z-30 transition-all duration-300 ease-in-out">
+            <!-- Logo -->
+            <div class="flex items-center justify-center h-16 border-b border-gray-200">
+                <a href="{% url 'admin_panel:dashboard' %}" class="flex items-center">
+                    <img src="/static/images/logo-gold.png" alt="Barberian" class="h-8">
+                    <span class="ml-2 text-xl font-semibold text-gray-800">Admin</span>
+                </a>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <nav class="mt-4 px-4 pb-4 h-[calc(100%-4rem)] overflow-y-auto">
+                <ul>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:dashboard' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">dashboard</span>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:appointments' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'appointment' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">event</span>
+                            <span>Appointments</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:calendar' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">calendar_month</span>
+                            <span>Calendar</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:users' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">people</span>
+                            <span>Users</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:staff' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'staff' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">badge</span>
+                            <span>Staff</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:services' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'service' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">content_cut</span>
+                            <span>Services</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:categories' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'categor' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">category</span>
+                            <span>Categories</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:media' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'media' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">photo_library</span>
+                            <span>Media</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:reports' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">bar_chart</span>
+                            <span>Reports</span>
+                        </a>
+                    </li>
+
+                    <li class="mt-6 mb-2">
+                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Settings</h3>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:business_settings' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'business_settings' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">settings</span>
+                            <span>Business Settings</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:business_hours' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'business_hours' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">schedule</span>
+                            <span>Business Hours</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:holidays' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'holiday' in request.resolver_match.url_name %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">event_busy</span>
+                            <span>Holidays</span>
+                        </a>
+                    </li>
+                    <li class="mb-1">
+                        <a href="{% url 'admin_panel:logs' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'logs' %}active{% endif %}">
+                            <span class="material-icons-outlined sidebar-icon mr-3">receipt_long</span>
+                            <span>Activity Logs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div id="main-content" class="flex-1 ml-64 transition-all duration-300 ease-in-out">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-nav h-16 flex items-center justify-between px-6 sticky top-0 z-20">
+                <!-- Left Side - Toggle Button -->
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="text-gray-600 hover:text-primary-400 focus:outline-none">
+                        <span class="material-icons-round">menu</span>
+                    </button>
+                    <div class="ml-4">
+                        <h1 class="text-xl font-semibold text-gray-800">{% block page_title %}Admin Dashboard{% endblock %}</h1>
+                    </div>
+                </div>
+
+                <!-- Right Side - User Menu -->
+                <div class="flex items-center space-x-4">
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button class="text-gray-600 hover:text-primary-400 focus:outline-none">
+                            <span class="material-icons-outlined">notifications</span>
+                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="relative" x-data="{ open: false }">
+                        <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
+                            <div class="w-8 h-8 rounded-full bg-primary-400 flex items-center justify-center text-white">
+                                {{ user.get_full_name|slice:":1" }}
+                            </div>
+                            <span class="text-sm font-medium text-gray-700">{{ user.get_full_name }}</span>
+                            <span class="material-icons-outlined text-gray-500" x-bind:class="{'transform rotate-180': open}">arrow_drop_down</span>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div x-show="open"
+                             @click.away="open = false"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="transform opacity-0 scale-95"
+                             x-transition:enter-end="transform opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="transform opacity-100 scale-100"
+                             x-transition:leave-end="transform opacity-0 scale-95"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-md py-1 z-50">
+                            <a href="{% url 'client_portal:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <span class="material-icons-outlined text-gray-500 mr-2 align-middle" style="font-size: 18px;">person</span>
+                                My Profile
+                            </a>
+                            <a href="{% url 'client_portal:home' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <span class="material-icons-outlined text-gray-500 mr-2 align-middle" style="font-size: 18px;">storefront</span>
+                                Client Portal
+                            </a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="{% url 'logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <span class="material-icons-outlined text-gray-500 mr-2 align-middle" style="font-size: 18px;">logout</span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="p-6 animate-fadeIn">
+                {% if messages %}
+                    <div class="mb-6">
+                        {% for message in messages %}
+                            <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                                <span class="material-icons-outlined mr-3">
+                                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                                </span>
+                                <span>{{ message }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                {% block admin_content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Custom Admin JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar Toggle
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+
+            sidebarToggle.addEventListener('click', function() {
+                if (sidebar.classList.contains('w-64')) {
+                    // Collapse sidebar
+                    sidebar.classList.remove('w-64');
+                    sidebar.classList.add('w-20');
+                    mainContent.classList.remove('ml-64');
+                    mainContent.classList.add('ml-20');
+
+                    // Hide text in sidebar links
+                    document.querySelectorAll('.sidebar-link span:not(.material-icons-outlined)').forEach(function(el) {
+                        el.classList.add('hidden');
+                    });
+                } else {
+                    // Expand sidebar
+                    sidebar.classList.remove('w-20');
+                    sidebar.classList.add('w-64');
+                    mainContent.classList.remove('ml-20');
+                    mainContent.classList.add('ml-64');
+
+                    // Show text in sidebar links
+                    document.querySelectorAll('.sidebar-link span:not(.material-icons-outlined)').forEach(function(el) {
+                        el.classList.remove('hidden');
+                    });
+                }
+            });
+
+            // Alpine.js handles the user dropdown now
+
+            // Material Design Form Elements
+            document.querySelectorAll('.form-control-material input, .form-control-material textarea, .form-control-material select').forEach(function(element) {
+                // Check if the input has a value on page load
+                if (element.value !== '') {
+                    const label = element.nextElementSibling;
+                    if (label && label.tagName === 'LABEL') {
+                        label.classList.add('active');
+                    }
+                }
+
+                // Add event listeners
+                element.addEventListener('focus', function() {
+                    const label = this.nextElementSibling;
+                    if (label && label.tagName === 'LABEL') {
+                        label.classList.add('active');
+                    }
+                });
+
+                element.addEventListener('blur', function() {
+                    if (this.value === '') {
+                        const label = this.nextElementSibling;
+                        if (label && label.tagName === 'LABEL') {
+                            label.classList.remove('active');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+
+    {% block admin_js %}{% endblock %}
+</body>
+</html>

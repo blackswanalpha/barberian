@@ -1,0 +1,36 @@
+{% extends 'appointments/booking_base.html' %}
+
+{% block booking_content %}
+<h2 class="card-title mb-4">Select a Time</h2>
+
+<form method="post">
+    {% csrf_token %}
+    
+    {% if form.errors %}
+        <div class="alert alert-danger">
+            Please correct the errors below.
+        </div>
+    {% endif %}
+    
+    {% if not form.time.choices %}
+        <div class="alert alert-warning">
+            No available time slots for the selected date. Please select a different date.
+        </div>
+    {% else %}
+        <div class="mb-3">
+            {{ form.time.label_tag }}
+            {{ form.time }}
+            {% if form.time.errors %}
+                <div class="invalid-feedback d-block">
+                    {{ form.time.errors }}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <div class="d-flex justify-content-between mt-4">
+        <a href="{% url 'appointments:booking_date' %}" class="btn btn-outline-secondary">Back</a>
+        <button type="submit" class="btn btn-primary" {% if not form.time.choices %}disabled{% endif %}>Continue</button>
+    </div>
+</form>
+{% endblock %}

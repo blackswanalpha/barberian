@@ -1,0 +1,181 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Activity Logs | Barberian Admin{% endblock %}
+
+{% block page_title %}Activity Logs{% endblock %}
+
+{% block admin_content %}
+<!-- Filter Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">Filter Logs</h3>
+        <p class="text-sm text-gray-500 mt-1">Narrow down activity logs by user, action, or entity type</p>
+    </div>
+
+    <div class="p-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- User Filter -->
+            <div>
+                <label for="user" class="block text-sm font-medium text-gray-700 mb-1">User</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">person</span>
+                    </div>
+                    <select id="user" name="user" class="focus:ring-primary-400 focus:border-primary-400 block w-full pl-10 pr-10 py-2 text-base border-gray-300 rounded-md">
+                        <option value="">All Users</option>
+                        {% for user in users %}
+                            <option value="{{ user.id }}" {% if request.GET.user == user.id|stringformat:"i" %}selected{% endif %}>
+                                {{ user.get_full_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Action Filter -->
+            <div>
+                <label for="action" class="block text-sm font-medium text-gray-700 mb-1">Action</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">play_arrow</span>
+                    </div>
+                    <select id="action" name="action" class="focus:ring-primary-400 focus:border-primary-400 block w-full pl-10 pr-10 py-2 text-base border-gray-300 rounded-md">
+                        <option value="">All Actions</option>
+                        <option value="create" {% if request.GET.action == 'create' %}selected{% endif %}>Create</option>
+                        <option value="update" {% if request.GET.action == 'update' %}selected{% endif %}>Update</option>
+                        <option value="delete" {% if request.GET.action == 'delete' %}selected{% endif %}>Delete</option>
+                        <option value="login" {% if request.GET.action == 'login' %}selected{% endif %}>Login</option>
+                        <option value="logout" {% if request.GET.action == 'logout' %}selected{% endif %}>Logout</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Entity Type Filter -->
+            <div>
+                <label for="entity_type" class="block text-sm font-medium text-gray-700 mb-1">Entity Type</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">category</span>
+                    </div>
+                    <select id="entity_type" name="entity_type" class="focus:ring-primary-400 focus:border-primary-400 block w-full pl-10 pr-10 py-2 text-base border-gray-300 rounded-md">
+                        <option value="">All Types</option>
+                        <option value="user" {% if request.GET.entity_type == 'user' %}selected{% endif %}>User</option>
+                        <option value="appointment" {% if request.GET.entity_type == 'appointment' %}selected{% endif %}>Appointment</option>
+                        <option value="service" {% if request.GET.entity_type == 'service' %}selected{% endif %}>Service</option>
+                        <option value="category" {% if request.GET.entity_type == 'category' %}selected{% endif %}>Category</option>
+                        <option value="report" {% if request.GET.entity_type == 'report' %}selected{% endif %}>Report</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Filter Buttons -->
+            <div class="md:col-span-3 flex justify-end space-x-3">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">filter_alt</span>
+                    Apply Filters
+                </button>
+
+                {% if request.GET.user or request.GET.action or request.GET.entity_type %}
+                    <a href="{% url 'admin_panel:logs' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">clear</span>
+                        Reset Filters
+                    </a>
+                {% endif %}
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Logs Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden">
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">Activity Logs</h3>
+        <p class="text-sm text-gray-500 mt-1">Track user actions and system events</p>
+    </div>
+
+    <div class="overflow-x-auto">
+        {% if logs %}
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity Type</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entity ID</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for log in logs %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="flex items-center">
+                                    <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">schedule</span>
+                                    {{ log.created_at|date:"M d, Y" }} {{ log.created_at|time:"g:i A" }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-8 w-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                                        {{ log.user.get_full_name|slice:":1" }}
+                                    </div>
+                                    <div class="ml-3">
+                                        <div class="text-sm font-medium text-gray-900">{{ log.user.get_full_name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if log.action == 'create' %}bg-green-100 text-green-800
+                                    {% elif log.action == 'update' %}bg-blue-100 text-blue-800
+                                    {% elif log.action == 'delete' %}bg-red-100 text-red-800
+                                    {% elif log.action == 'login' %}bg-purple-100 text-purple-800
+                                    {% elif log.action == 'logout' %}bg-gray-100 text-gray-800
+                                    {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+                                    <span class="material-icons-outlined mr-1" style="font-size: 12px;">
+                                        {% if log.action == 'create' %}add_circle
+                                        {% elif log.action == 'update' %}edit
+                                        {% elif log.action == 'delete' %}delete
+                                        {% elif log.action == 'login' %}login
+                                        {% elif log.action == 'logout' %}logout
+                                        {% else %}info{% endif %}
+                                    </span>
+                                    {{ log.action|title }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="flex items-center">
+                                    <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 16px;">
+                                        {% if log.entity_type == 'user' %}person
+                                        {% elif log.entity_type == 'appointment' %}event
+                                        {% elif log.entity_type == 'service' %}design_services
+                                        {% elif log.entity_type == 'category' %}category
+                                        {% elif log.entity_type == 'report' %}analytics
+                                        {% else %}label{% endif %}
+                                    </span>
+                                    {{ log.entity_type|title }}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                {{ log.entity_id }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <div class="max-w-xs truncate" title="{{ log.details }}">
+                                    {{ log.details|truncatechars:50 }}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="flex flex-col items-center justify-center py-12">
+                <span class="material-icons-outlined text-gray-300 text-6xl mb-4">history</span>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No activity logs found</h3>
+                <p class="text-gray-500 mb-4">Activity logs will appear here as users interact with the system.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

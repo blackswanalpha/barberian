@@ -1,0 +1,114 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Business Hours | Barberian Admin{% endblock %}
+
+{% block page_title %}Business Hours{% endblock %}
+
+{% block admin_content %}
+<!-- Business Hours Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden">
+    <!-- Card Header -->
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">Business Hours</h3>
+        <p class="text-sm text-gray-500 mt-1">Set your barbershop's operating hours</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="p-6 pb-0">
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Info Alert -->
+    <div class="p-6">
+        <div class="p-4 rounded-lg bg-blue-50 text-blue-800 flex items-start">
+            <span class="material-icons-outlined mr-3 mt-0.5">info</span>
+            <p>Business hours determine when clients can book appointments. Make sure to keep them updated.</p>
+        </div>
+
+        <!-- Business Hours Table -->
+        <div class="mt-6 overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Day</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opening Time</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Closing Time</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for hour in business_hours %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600">
+                                        <span class="material-icons-outlined">
+                                            {% if hour.day_of_week == 0 %}calendar_view_day
+                                            {% elif hour.day_of_week == 1 %}calendar_view_day
+                                            {% elif hour.day_of_week == 2 %}calendar_view_day
+                                            {% elif hour.day_of_week == 3 %}calendar_view_day
+                                            {% elif hour.day_of_week == 4 %}calendar_view_day
+                                            {% elif hour.day_of_week == 5 %}weekend
+                                            {% elif hour.day_of_week == 6 %}weekend
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ hour.get_day_of_week_display }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                                    {% if hour.is_open %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {% if hour.is_open %}Open{% else %}Closed{% endif %}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    {% if hour.is_open %}
+                                        <div class="flex items-center">
+                                            <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 16px;">access_time</span>
+                                            {{ hour.opening_time|time:"g:i A" }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    {% if hour.is_open %}
+                                        <div class="flex items-center">
+                                            <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 16px;">access_time</span>
+                                            {{ hour.closing_time|time:"g:i A" }}
+                                        </div>
+                                    {% else %}
+                                        <span class="text-gray-400">—</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a href="{% url 'admin_panel:business_hour_edit' hour.id %}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                                    <span class="material-icons-outlined mr-1" style="font-size: 14px;">edit</span>
+                                    Edit
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

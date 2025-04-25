@@ -1,0 +1,233 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Business Settings | Barberian Admin{% endblock %}
+
+{% block page_title %}Business Settings{% endblock %}
+
+{% block admin_content %}
+<!-- Business Settings Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden">
+    <!-- Card Header -->
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">Business Information</h3>
+        <p class="text-sm text-gray-500 mt-1">Manage your barbershop details and contact information</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="p-6 pb-0">
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Form -->
+    <div class="p-6">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Logo Section -->
+                <div class="md:col-span-1">
+                    <div class="flex flex-col items-center">
+                        <div class="w-40 h-40 rounded-lg overflow-hidden bg-gray-100 flex items-center justify-center mb-4">
+                            {% if form.instance.logo %}
+                                <img src="{{ form.instance.logo.url }}" alt="{{ form.instance.business_name }}" class="w-full h-full object-contain">
+                            {% else %}
+                                <span class="material-icons-outlined text-gray-400 text-6xl">store</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="w-full">
+                            <label for="{{ form.logo.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Business Logo</label>
+                            <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                                <div class="space-y-1 text-center">
+                                    <span class="material-icons-outlined mx-auto text-gray-400">cloud_upload</span>
+                                    <div class="flex text-sm text-gray-600">
+                                        <label for="{{ form.logo.id_for_label }}" class="relative cursor-pointer bg-white rounded-md font-medium text-primary-400 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-400">
+                                            <span>Upload a file</span>
+                                            {{ form.logo }}
+                                        </label>
+                                        <p class="pl-1">or drag and drop</p>
+                                    </div>
+                                    <p class="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                                </div>
+                            </div>
+                            {% if form.logo.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.logo.errors }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Business Details -->
+                <div class="md:col-span-2 space-y-4">
+                    <!-- Business Name -->
+                    <div>
+                        <label for="{{ form.business_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Business Name</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">business</span>
+                            </div>
+                            {{ form.business_name }}
+                        </div>
+                        {% if form.business_name.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.business_name.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Address -->
+                    <div>
+                        <label for="{{ form.address.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">location_on</span>
+                            </div>
+                            {{ form.address }}
+                        </div>
+                        {% if form.address.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.address.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Contact Information -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Phone -->
+                        <div>
+                            <label for="{{ form.phone.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">phone</span>
+                                </div>
+                                {{ form.phone }}
+                            </div>
+                            {% if form.phone.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.phone.errors }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Email -->
+                        <div>
+                            <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">email</span>
+                                </div>
+                                {{ form.email }}
+                            </div>
+                            {% if form.email.errors %}
+                                <p class="mt-2 text-sm text-red-600">{{ form.email.errors }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- About Section -->
+            <div class="pt-4 border-t border-gray-200">
+                <label for="{{ form.about.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">About</label>
+                {{ form.about }}
+                {% if form.about.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.about.errors }}</p>
+                {% endif %}
+                <p class="mt-2 text-sm text-gray-500">This information will be displayed on the about page.</p>
+            </div>
+
+            <!-- Social Media Section -->
+            <div class="pt-4 border-t border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Social Media</h3>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <!-- Facebook -->
+                    <div>
+                        <label for="{{ form.facebook_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Facebook</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">facebook</span>
+                            </div>
+                            {{ form.facebook_url }}
+                        </div>
+                        {% if form.facebook_url.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.facebook_url.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Instagram -->
+                    <div>
+                        <label for="{{ form.instagram_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Instagram</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">photo_camera</span>
+                            </div>
+                            {{ form.instagram_url }}
+                        </div>
+                        {% if form.instagram_url.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.instagram_url.errors }}</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Twitter -->
+                    <div>
+                        <label for="{{ form.twitter_url.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Twitter</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">chat</span>
+                            </div>
+                            {{ form.twitter_url }}
+                        </div>
+                        {% if form.twitter_url.errors %}
+                            <p class="mt-2 text-sm text-red-600">{{ form.twitter_url.errors }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="pt-5 border-t border-gray-200 flex justify-end">
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">save</span>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    // File upload preview
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('{{ form.logo.id_for_label }}');
+        const previewContainer = document.querySelector('.w-40.h-40');
+
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Clear the preview container
+                        previewContainer.innerHTML = '';
+
+                        // Create image element
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.className = 'w-full h-full object-contain';
+                        img.alt = 'Business Logo Preview';
+
+                        // Add to preview container
+                        previewContainer.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

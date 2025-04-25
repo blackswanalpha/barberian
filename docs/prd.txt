@@ -1,0 +1,164 @@
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
+
+## Project Overview
+Barberian is a comprehensive barbershop management system designed to streamline operations for barbershop owners, staff, and clients. The system consists of two frontend applications (admin and public) and a backend API.
+
+## Target Audience
+1. **Barbershop Owners/Administrators**: Manage staff, services, appointments, and business operations
+2. **Staff/Barbers**: Manage their schedules, appointments, and client information
+3. **Clients**: Book appointments, view services, and manage their profiles
+
+## Key Features
+
+### Admin Portal (frontend-admin)
+1. **Authentication & Authorization**
+   - Secure login for administrators and staff
+   - Role-based access control (admin vs. staff)
+
+2. **Dashboard**
+   - Overview of daily appointments
+   - Business metrics (revenue, popular services, etc.)
+   - Staff performance analytics
+
+3. **Staff Management**
+   - Add, edit, and remove staff profiles
+   - Manage staff schedules and availability
+   - Track staff performance
+
+4. **Service Management**
+   - Create and manage service categories
+   - Add, edit, and remove services
+   - Set pricing and duration for services
+
+5. **Appointment Management**
+   - View all appointments
+   - Create, edit, and cancel appointments
+   - Filter appointments by date, staff, or status
+
+6. **Client Management**
+   - View and manage client profiles
+   - Track client appointment history
+   - Manage client communications
+
+7. **Business Settings**
+   - Configure business hours
+   - Manage business information
+   - Set notification preferences
+
+### Public Portal (frontend-public)
+1. **Authentication**
+   - Client registration and login
+   - Social media login options
+
+2. **Service Browsing**
+   - View service categories and details
+   - See pricing and duration information
+   - Filter services by category or staff
+
+3. **Staff Profiles**
+   - View staff profiles and specialties
+   - See staff availability
+
+4. **Appointment Booking**
+   - Select service
+   - Choose available staff
+   - Select date and time
+   - Confirm and pay for appointment
+
+5. **Client Profile**
+   - View and edit personal information
+   - See appointment history
+   - Manage upcoming appointments
+
+6. **Gallery**
+   - View photos of the barbershop
+   - See examples of haircuts and styles
+
+7. **Contact & Location**
+   - Find barbershop location
+   - Contact information
+   - Business hours
+
+### Backend API
+1. **Authentication & Authorization**
+   - JWT-based authentication
+   - Role-based access control
+
+2. **Data Management**
+   - CRUD operations for all entities
+   - Data validation and sanitization
+
+3. **Appointment Scheduling**
+   - Availability checking
+   - Conflict prevention
+   - Recurring appointment support
+
+4. **Notifications**
+   - Email notifications
+   - SMS reminders
+   - Push notifications
+
+5. **Analytics**
+   - Business performance metrics
+   - Staff performance tracking
+   - Service popularity analysis
+
+## Technical Requirements
+1. **Frontend**
+   - Next.js 15 for both admin and public portals
+   - Responsive design for all devices
+   - Accessibility compliance
+
+2. **Backend**
+   - Django REST Framework
+   - PostgreSQL database
+   - JWT authentication
+
+3. **Deployment**
+   - Hostpinnacle hosting
+   - Neon PostgreSQL database
+   - HTTPS security
+
+## Design Requirements
+1. **Color Scheme**
+   - Golden yellow
+   - Dark blue
+   - Black/white
+
+2. **UI Elements**
+   - Modern, interactive design
+   - Animations and transitions
+   - Responsive navigation
+   - Loading indicators
+
+3. **Branding**
+   - Logo: barbs.jpg
+   - Consistent branding across all platforms
+
+## Success Metrics
+1. **User Adoption**
+   - Number of client registrations
+   - Appointment bookings through the platform
+
+2. **Operational Efficiency**
+   - Reduction in scheduling conflicts
+   - Staff utilization rate
+
+3. **Business Growth**
+   - Increase in appointments
+   - Revenue growth
+   - Client retention rate
+
+## Timeline
+1. **Phase 1**: Backend API development and database setup
+2. **Phase 2**: Admin portal development
+3. **Phase 3**: Public portal development
+4. **Phase 4**: Testing and refinement
+5. **Phase 5**: Deployment and launch
+
+## Future Enhancements
+1. **Online Payment Processing**
+2. **Loyalty Program**
+3. **Inventory Management**
+4. **Mobile Applications**
+5. **Multi-location Support**

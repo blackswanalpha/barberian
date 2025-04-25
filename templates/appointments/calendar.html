@@ -1,0 +1,208 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>{{ calendar.month_name }} {{ calendar.year }}</h1>
+            <div>
+                <a href="{% url 'appointments:calendar_month' calendar.prev_year calendar.prev_month %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-chevron-left"></i> Previous Month
+                </a>
+                <a href="{% url 'appointments:calendar' %}" class="btn btn-outline-primary">
+                    Today
+                </a>
+                <a href="{% url 'appointments:calendar_month' calendar.next_year calendar.next_month %}" class="btn btn-outline-secondary">
+                    Next Month <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="staff" class="form-label">Filter by Staff</label>
+                        <select class="form-select" id="staff" name="staff" onchange="this.form.submit()">
+                            <option value="">All Staff</option>
+                            {% for staff in staff_members %}
+                                <option value="{{ staff.id }}" {% if selected_staff and selected_staff.id == staff.id %}selected{% endif %}>
+                                    {{ staff.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <a href="{% url 'appointments:booking_service' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i> Book New Appointment
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered calendar-table">
+                        <thead>
+                            <tr>
+                                <th>Sunday</th>
+                                <th>Monday</th>
+                                <th>Tuesday</th>
+                                <th>Wednesday</th>
+                                <th>Thursday</th>
+                                <th>Friday</th>
+                                <th>Saturday</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for week in calendar.weeks %}
+                                <tr>
+                                    {% for day in week %}
+                                        <td class="{% if not day.current_month %}text-muted{% endif %} {% if day.date == today %}today{% endif %} {% if day.is_available %}available{% endif %}">
+                                            <div class="calendar-day">
+                                                <div class="calendar-day-header">
+                                                    <span class="day-number">{{ day.day }}</span>
+                                                    {% if day.holiday %}
+                                                        <span class="badge bg-danger">{{ day.holiday }}</span>
+                                                    {% endif %}
+                                                    {% if not day.business_hours.is_open %}
+                                                        <span class="badge bg-secondary">Closed</span>
+                                                    {% endif %}
+                                                </div>
+
+                                                {% if day.appointments %}
+                                                    <div class="calendar-appointments">
+                                                        {% for appointment in day.appointments|slice:":3" %}
+                                                            <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="calendar-appointment">
+                                                                <span class="time">{{ appointment.start_time|time:"g:i A" }}</span>
+                                                                <span class="client">{{ appointment.client.get_full_name }}</span>
+                                                                <span class="service">{{ appointment.service.name }}</span>
+                                                            </a>
+                                                        {% endfor %}
+                                                        {% if day.appointments|length > 3 %}
+                                                            <div class="more-appointments">
+                                                                <a href="{% url 'appointments:day_view' day.year day.month day.day %}{% if selected_staff %}?staff={{ selected_staff.id }}{% endif %}">
+                                                                    + {{ day.appointments|length|add:"-3" }} more
+                                                                </a>
+                                                            </div>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endif %}
+
+                                                {% if day.is_available %}
+                                                    <div class="calendar-day-footer">
+                                                        <a href="{% url 'appointments:day_view' day.year day.month day.day %}{% if selected_staff %}?staff={{ selected_staff.id }}{% endif %}" class="btn btn-sm btn-outline-primary">
+                                                            View Day
+                                                        </a>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+    .calendar-table {
+        table-layout: fixed;
+    }
+
+    .calendar-table th {
+        text-align: center;
+        background-color: #f8f9fa;
+    }
+
+    .calendar-table td {
+        height: 150px;
+        padding: 0;
+        vertical-align: top;
+    }
+
+    .calendar-day {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .calendar-day-header {
+        padding: 5px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+    }
+
+    .day-number {
+        font-weight: bold;
+        margin-right: 5px;
+    }
+
+    .calendar-appointments {
+        flex-grow: 1;
+        overflow-y: auto;
+        padding: 5px;
+    }
+
+    .calendar-appointment {
+        display: block;
+        padding: 3px 5px;
+        margin-bottom: 3px;
+        background-color: #e9ecef;
+        border-radius: 3px;
+        color: #212529;
+        text-decoration: none;
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .calendar-appointment:hover {
+        background-color: #dee2e6;
+    }
+
+    .calendar-appointment .time {
+        font-weight: bold;
+    }
+
+    .calendar-day-footer {
+        padding: 5px;
+        text-align: center;
+        border-top: 1px solid #dee2e6;
+    }
+
+    .more-appointments {
+        font-size: 0.8rem;
+        text-align: center;
+        margin-top: 3px;
+    }
+
+    .today {
+        background-color: #fff3cd;
+    }
+
+    .available {
+        background-color: #d1e7dd;
+    }
+</style>
+{% endblock %}

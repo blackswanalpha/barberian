@@ -1,0 +1,164 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Reports | Barberian Admin{% endblock %}
+
+{% block page_title %}Reports{% endblock %}
+
+{% block admin_content %}
+<!-- Reports Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+    <!-- Card Header -->
+    <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="mb-4 sm:mb-0">
+            <h3 class="text-lg font-semibold text-gray-800">Reports</h3>
+            <p class="text-sm text-gray-500 mt-1">View and analyze your business data</p>
+        </div>
+        <a href="{% url 'admin_panel:report_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-400 hover:bg-primary-500 text-white rounded-lg transition-colors duration-200 shadow-sm">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">add_chart</span>
+            Create Report
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="p-6 pb-0">
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Reports Grid -->
+    <div class="p-6">
+        {% if reports %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for report in reports %}
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                            <h3 class="text-lg font-semibold text-gray-900 truncate">{{ report.name }}</h3>
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                {% if report.type == 'appointments' %}bg-primary-100 text-primary-800
+                                {% elif report.type == 'revenue' %}bg-green-100 text-green-800
+                                {% elif report.type == 'staff_performance' %}bg-blue-100 text-blue-800
+                                {% elif report.type == 'client_activity' %}bg-yellow-100 text-yellow-800
+                                {% elif report.type == 'services' %}bg-purple-100 text-purple-800
+                                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                <span class="material-icons-outlined mr-1" style="font-size: 14px;">
+                                    {% if report.type == 'appointments' %}event_note
+                                    {% elif report.type == 'revenue' %}payments
+                                    {% elif report.type == 'staff_performance' %}people
+                                    {% elif report.type == 'client_activity' %}person
+                                    {% elif report.type == 'services' %}design_services
+                                    {% else %}analytics{% endif %}
+                                </span>
+                                {{ report.get_type_display }}
+                            </span>
+                        </div>
+
+                        <div class="p-6">
+                            <div class="flex items-center text-sm text-gray-500 mb-4">
+                                <span class="material-icons-outlined mr-2" style="font-size: 16px;">person</span>
+                                <span>Created by {{ report.created_by.get_full_name }}</span>
+                            </div>
+
+                            <div class="flex items-center text-sm text-gray-500 mb-4">
+                                <span class="material-icons-outlined mr-2" style="font-size: 16px;">calendar_today</span>
+                                <span>{{ report.created_at|date:"F d, Y" }}</span>
+                            </div>
+
+                            {% if report.parameters %}
+                                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                                    <div class="flex items-start">
+                                        <span class="material-icons-outlined text-gray-400 mr-2 mt-0.5" style="font-size: 16px;">tune</span>
+                                        <div>
+                                            <p class="text-xs font-medium text-gray-500 mb-1">Parameters</p>
+                                            <p class="text-sm text-gray-700">{{ report.parameters }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-between">
+                            <a href="{% url 'admin_panel:report_detail' report.id %}" class="inline-flex items-center text-sm font-medium text-primary-400 hover:text-primary-500 transition-colors duration-200">
+                                <span class="material-icons-outlined mr-1" style="font-size: 16px;">visibility</span>
+                                View Report
+                            </a>
+                            <button onclick="confirmDelete('{{ report.id }}', '{{ report.name }}')" class="inline-flex items-center text-sm font-medium text-red-500 hover:text-red-600 transition-colors duration-200">
+                                <span class="material-icons-outlined mr-1" style="font-size: 16px;">delete</span>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="flex flex-col items-center justify-center py-12">
+                <span class="material-icons-outlined text-gray-300 text-6xl mb-4">analytics</span>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No reports found</h3>
+                <p class="text-gray-500 mb-4">Create reports to analyze your business data.</p>
+                <a href="{% url 'admin_panel:report_create' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">add_chart</span>
+                    Create Report
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl transform transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Confirm Deletion</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-sm text-gray-500">Are you sure you want to delete the report <span id="reportName" class="font-semibold"></span>? This action cannot be undone.</p>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                Cancel
+            </button>
+            <a id="deleteLink" href="#" class="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    function confirmDelete(reportId, reportName) {
+        document.getElementById('reportName').textContent = reportName;
+        document.getElementById('deleteLink').href = "{% url 'admin_panel:report_delete' 0 %}".replace('0', reportId);
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('deleteModal').classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}

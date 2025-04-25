@@ -1,0 +1,374 @@
+# Barberian Frontend Design System
+
+## Brand Identity
+
+### Logo
+- **Primary Logo**: Circular logo with "Barberians" text
+- **Logo Variations**:
+  - Full logo with "Cuts & Spa" tagline
+  - Icon-only version for small spaces
+- **Usage**: Always maintain clear space around logo, minimum size requirements
+
+### Typography
+
+#### Font Families
+- **Headings**: Roboto Serif
+  - Weights: 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
+  - CSS Variable: `--font-heading`
+  - Usage: Page titles, section headings, card titles
+
+- **Body**: Inter
+  - Weights: 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
+  - CSS Variable: `--font-sans`
+  - Usage: Body text, buttons, navigation, form elements
+
+#### Type Scale
+- **Display**: 5xl-7xl (3rem-4.5rem) - Hero headings
+- **H1**: 4xl-5xl (2.25rem-3rem) - Page titles
+- **H2**: 3xl-4xl (1.875rem-2.25rem) - Section headings
+- **H3**: xl-2xl (1.25rem-1.5rem) - Card titles, subsection headings
+- **Body**: base-lg (1rem-1.125rem) - Main content text
+- **Small**: sm-xs (0.875rem-0.75rem) - Secondary text, captions
+
+### Color Palette
+
+#### Primary Colors
+- **Gold Gradient**:
+  - `barber-gold-400`: #F5D485
+  - `barber-gold-500`: #E9B949
+  - `barber-gold-600`: #D6A429
+  - `barber-gold-700`: #B88A1C
+  - Usage: Primary buttons, accents, highlights
+
+- **Blue Gradient**:
+  - `barber-blue-700`: #1E3A8A
+  - `barber-blue-800`: #1E3A8A
+  - `barber-blue-900`: #172554
+  - `barber-blue-950`: #0F172A
+  - Usage: Secondary buttons, backgrounds, accents
+
+#### Neutral Colors
+- **Background**: 
+  - Light: #FFFFFF
+  - Dark: #121212
+  - CSS Variable: `--background`
+
+- **Foreground**:
+  - Light: #171717
+  - Dark: #F8FAFC
+  - CSS Variable: `--foreground`
+
+- **Muted**:
+  - Light: #F1F5F9
+  - Dark: #1E293B
+  - CSS Variable: `--muted`
+
+- **Muted Foreground**:
+  - Light: #64748B
+  - Dark: #94A3B8
+  - CSS Variable: `--muted-foreground`
+
+#### Semantic Colors
+- **Success**: #10B981
+- **Warning**: #F59E0B
+- **Destructive**: #EF4444
+- **Info**: #3B82F6
+
+### Spacing System
+- **Base Unit**: 0.25rem (4px)
+- **Scale**:
+  - 1: 0.25rem (4px)
+  - 2: 0.5rem (8px)
+  - 3: 0.75rem (12px)
+  - 4: 1rem (16px)
+  - 6: 1.5rem (24px)
+  - 8: 2rem (32px)
+  - 12: 3rem (48px)
+  - 16: 4rem (64px)
+  - 24: 6rem (96px)
+  - 32: 8rem (128px)
+
+## Component Design
+
+### Buttons
+
+#### Primary Button
+- **Style**: Gold gradient background (`from-barber-gold-500 to-barber-gold-700`)
+- **Text**: Black, semibold
+- **States**:
+  - Default: Gold gradient
+  - Hover: Darker gold gradient (`from-barber-gold-600 to-barber-gold-800`)
+  - Focus: Ring focus outline
+  - Disabled: Reduced opacity
+- **Variants**:
+  - Default: Rounded corners, medium padding
+  - Small: Reduced padding and font size
+  - Large: Increased padding and font size
+  - XL: Maximum size for hero CTAs
+- **Special Effects**:
+  - Shadow on hover
+  - Subtle scale transform on hover
+  - Gradient background
+
+#### Secondary Button
+- **Style**: Blue gradient background (`from-barber-blue-700 to-barber-blue-900`)
+- **Text**: White, semibold
+- **States**:
+  - Default: Blue gradient
+  - Hover: Darker blue gradient (`from-barber-blue-800 to-barber-blue-950`)
+  - Focus: Ring focus outline
+  - Disabled: Reduced opacity
+- **Variants**: Same as Primary Button
+
+#### Outline Button
+- **Style**: Transparent background, border (`border-barber-gold-500/30`)
+- **Text**: Current text color, medium weight
+- **States**:
+  - Default: Transparent with border
+  - Hover: Slight background tint
+  - Focus: Ring focus outline
+  - Disabled: Reduced opacity
+- **Variants**: Same as Primary Button
+
+#### Ghost Button
+- **Style**: Transparent background, no border
+- **Text**: Current text color
+- **States**:
+  - Default: Transparent
+  - Hover: Slight background tint
+  - Focus: Ring focus outline
+  - Disabled: Reduced opacity
+- **Variants**: Same as Primary Button
+
+### Cards
+
+#### Service Card
+- **Structure**:
+  - Image area (top)
+  - Card header with title
+  - Card content with description
+  - Card footer with action button
+- **Style**:
+  - Border: Subtle border (`border-barber-gold-500/10`)
+  - Background: Card background color
+  - Shadow: Subtle shadow on hover
+- **Special Effects**:
+  - Image zoom on hover
+  - Border color change on hover (`border-barber-gold-500/30`)
+  - Gradient overlay on image
+
+#### Staff Card
+- **Structure**:
+  - Image area (top)
+  - Card header with name and role
+  - Card content with bio
+- **Style**: Similar to Service Card
+
+#### Testimonial Card
+- **Structure**:
+  - Star rating at top
+  - Testimonial text
+  - Client name at bottom
+- **Style**:
+  - Background: Semi-transparent white (`bg-white/5`)
+  - Backdrop filter: Blur effect
+  - Border: Gold accent (`border-barber-gold-500/20`)
+  - Hover: Border highlight (`border-barber-gold-500/40`)
+
+### Navigation
+
+#### Desktop Navigation
+- **Structure**:
+  - Logo (left)
+  - Nav links (center)
+  - Action buttons (right)
+- **Style**:
+  - Background: Transparent when at top, white/black with blur when scrolled
+  - Links: Medium weight, subtle hover effect
+  - Active link: Gold text color
+- **Special Features**:
+  - Services dropdown with submenu
+  - User dropdown when logged in
+
+#### Mobile Navigation
+- **Structure**: Slide-in drawer from right
+- **Style**:
+  - Full-height drawer
+  - Stacked navigation links
+  - Nested service links
+  - Contact info and action buttons at bottom
+- **Special Features**:
+  - Animated open/close
+  - Nested service categories with indent
+
+### Form Elements
+
+#### Input
+- **Structure**:
+  - Label (optional)
+  - Input field
+  - Helper text/error message (optional)
+- **Style**:
+  - Border: Subtle border
+  - Focus: Gold ring outline
+  - Error: Red border and text
+- **States**: Default, focus, error, disabled
+
+#### Calendar
+- **Structure**:
+  - Month/year navigation
+  - Day of week headers
+  - Date grid
+- **Style**:
+  - Selected date: Gold background
+  - Today: Outlined
+  - Hover: Subtle highlight
+- **Special Features**:
+  - Month navigation with animations
+  - Date range selection
+
+#### Time Slot Selector
+- **Structure**: Grid of time buttons
+- **Style**:
+  - Available: Outline style
+  - Selected: Gold background
+  - Unavailable: Disabled appearance
+- **Special Features**: Scrollable container for many options
+
+### Hero Sections
+
+#### Main Hero
+- **Structure**:
+  - Full-width background image with overlay
+  - Centered content with heading, subheading, and CTA buttons
+  - "Open now" indicator
+- **Style**:
+  - Dark overlay gradient
+  - Large, bold heading with gradient text accent
+  - Staggered animation for elements
+- **Special Features**:
+  - Parallax-like effect
+  - Animated entrance for text and buttons
+
+#### CTA Hero
+- **Structure**: Similar to main hero but more compact
+- **Style**: Dark background with subtle gold gradient overlay
+- **Special Features**: Used at bottom of pages as call-to-action
+
+## Layout Patterns
+
+### Container
+- **Max Width**: 1280px (80rem)
+- **Padding**: 1rem (16px) on small screens, 2rem (32px) on larger screens
+- **Usage**: Wrap all main content sections
+
+### Grid Layouts
+- **Services Grid**:
+  - Mobile: 1 column
+  - Tablet: 2 columns
+  - Desktop: 4 columns
+  - Gap: 1.5rem (24px)
+
+- **Staff Grid**:
+  - Mobile: 1 column
+  - Tablet/Desktop: 3 columns
+  - Gap: 2rem (32px)
+
+- **Features Grid**:
+  - Mobile: 1 column
+  - Tablet/Desktop: 3 columns
+  - Gap: 2rem (32px)
+
+- **Testimonials Grid**:
+  - Mobile: 1 column
+  - Tablet/Desktop: 3 columns
+  - Gap: 2rem (32px)
+
+### Section Spacing
+- **Vertical Padding**:
+  - Mobile: 4rem (64px)
+  - Desktop: 6rem (96px)
+- **Between Sections**: 2rem (32px) minimum
+
+## Animation Guidelines
+
+### Scroll Animations
+- **Trigger**: When element is 100px from viewport bottom
+- **Effect**: Fade in and slight upward movement
+- **Duration**: 0.5s
+- **Easing**: Ease-out
+- **Implementation**: Add "animate-on-scroll" class to elements
+
+### Hover Animations
+- **Duration**: 0.3s
+- **Easing**: Ease-in-out
+- **Effects**:
+  - Buttons: Scale (1.05), shadow increase
+  - Cards: Subtle lift, border highlight
+  - Images: Scale (1.05)
+  - Links: Color transition
+
+### Page Transitions
+- **Page Load**: Fade in (0.5s)
+- **Between Steps**: Slide and fade
+
+## Responsive Design Guidelines
+
+### Breakpoints
+- **sm**: 640px
+- **md**: 768px
+- **lg**: 1024px
+- **xl**: 1280px
+- **2xl**: 1536px
+
+### Mobile-First Approach
+- Start with mobile layout
+- Add complexity at larger breakpoints
+- Use fluid typography and spacing where possible
+
+### Specific Adaptations
+- **Navigation**: Hamburger menu on mobile, full nav on desktop
+- **Hero**: Reduced padding, smaller text on mobile
+- **Grids**: Fewer columns on smaller screens
+- **Images**: Optimize loading with priority for above-fold content
+
+## Accessibility Guidelines
+
+### Color Contrast
+- Text on background: Minimum 4.5:1 ratio
+- Large text on background: Minimum 3:1 ratio
+- UI components and graphics: Minimum 3:1 ratio against adjacent colors
+
+### Focus States
+- Visible focus indicators on all interactive elements
+- Skip to content link for keyboard users
+
+### Semantic HTML
+- Use appropriate heading levels (h1-h6)
+- Use semantic elements (nav, main, section, article, etc.)
+- Ensure form elements have associated labels
+
+### ARIA Attributes
+- Use aria-label for elements without visible text
+- Use aria-expanded for dropdown menus
+- Use aria-current for current page in navigation
+
+## Implementation Notes
+
+### CSS Architecture
+- **Base**: Tailwind CSS
+- **Custom Properties**: CSS variables for theme values
+- **Utility Classes**: Tailwind utilities for most styling
+- **Component Classes**: Custom classes for complex components
+
+### JavaScript Behavior
+- **Animation**: Framer Motion for complex animations
+- **Form Handling**: React Hook Form
+- **Date Handling**: date-fns library
+- **State Management**: React Context for global state (auth, theme)
+
+### Performance Considerations
+- Optimize images with Next.js Image component
+- Lazy load below-fold content
+- Use appropriate image formats and sizes
+- Minimize JavaScript bundle size

@@ -1,0 +1,621 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:reports' %}">Reports</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ report.name }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>{{ report.name }}</h1>
+            <div>
+                <button class="btn btn-outline-primary me-2" id="printReport">
+                    <i class="bi bi-printer me-1"></i> Print
+                </button>
+                <button class="btn btn-outline-success me-2" id="exportCSV">
+                    <i class="bi bi-file-earmark-excel me-1"></i> Export CSV
+                </button>
+                <a href="{% url 'admin_panel:report_delete' report.id %}" class="btn btn-outline-danger">
+                    <i class="bi bi-trash me-1"></i> Delete
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card mb-4">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Report Details</h5>
+                    <span class="badge bg-{% if report.type == 'appointments' %}primary{% elif report.type == 'revenue' %}success{% elif report.type == 'staff_performance' %}info{% elif report.type == 'client_activity' %}warning{% else %}secondary{% endif %}">
+                        {{ report.get_type_display }}
+                    </span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p>
+                    <strong>Created by:</strong> {{ report.created_by.get_full_name }}<br>
+                    <strong>Created on:</strong> {{ report.created_at|date:"F d, Y" }} at {{ report.created_at|time:"g:i A" }}
+                </p>
+                {% if report.parameters %}
+                    <p>
+                        <strong>Parameters:</strong> {{ report.parameters }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Report Results</h5>
+            </div>
+            <div class="card-body">
+                {% if report.type == 'appointments' %}
+                    <div class="row">
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Total Appointments</h5>
+                                    <h2 class="mb-0">{{ data.total_appointments }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Pending Appointments</h5>
+                                    <h2 class="mb-0">{{ data.pending_appointments }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Confirmed Appointments</h5>
+                                    <h2 class="mb-0">{{ data.confirmed_appointments }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Completed Appointments</h5>
+                                    <h2 class="mb-0">{{ data.completed_appointments }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Cancelled Appointments</h5>
+                                    <h2 class="mb-0">{{ data.cancelled_appointments }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-4">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">No Show Appointments</h5>
+                                    <h2 class="mb-0">{{ data.no_show_appointments }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <canvas id="appointmentStatusChart"></canvas>
+                        </div>
+                        <div class="col-md-6">
+                            <canvas id="appointmentTrendChart"></canvas>
+                        </div>
+                    </div>
+                {% elif report.type == 'revenue' %}
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h5 class="card-title">Total Revenue</h5>
+                                    <h2 class="mb-0">${{ data.total_revenue }}</h2>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <h5>Revenue by Service</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Service</th>
+                                            <th>Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in data.revenue_by_service %}
+                                            <tr>
+                                                <td>{{ item.service__name }}</td>
+                                                <td>${{ item.total }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <canvas id="revenueByServiceChart"></canvas>
+                        </div>
+                        <div class="col-md-6 mb-4">
+                            <h5>Revenue by Staff</h5>
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Staff</th>
+                                            <th>Revenue</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for item in data.revenue_by_staff %}
+                                            <tr>
+                                                <td>{{ item.staff__first_name }} {{ item.staff__last_name }}</td>
+                                                <td>${{ item.total }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            <canvas id="revenueByStaffChart"></canvas>
+                        </div>
+                    </div>
+                {% elif report.type == 'staff_performance' %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Staff</th>
+                                    <th>Total Appointments</th>
+                                    <th>Completed</th>
+                                    <th>Cancelled</th>
+                                    <th>No Show</th>
+                                    <th>Completion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in data.staff_performance %}
+                                    <tr>
+                                        <td>{{ item.staff__first_name }} {{ item.staff__last_name }}</td>
+                                        <td>{{ item.total_appointments }}</td>
+                                        <td>{{ item.completed_appointments }}</td>
+                                        <td>{{ item.cancelled_appointments }}</td>
+                                        <td>{{ item.no_show_appointments }}</td>
+                                        <td>
+                                            {% if item.total_appointments > 0 %}
+                                                {{ item.completed_appointments|floatformat:0|default:0|add:0|multiply:100|divide:item.total_appointments|floatformat:1 }}%
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <canvas id="staffPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                {% elif report.type == 'client_activity' %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Client</th>
+                                    <th>Total Appointments</th>
+                                    <th>Completed</th>
+                                    <th>Cancelled</th>
+                                    <th>No Show</th>
+                                    <th>Completion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in data.client_activity %}
+                                    <tr>
+                                        <td>{{ item.client__first_name }} {{ item.client__last_name }}</td>
+                                        <td>{{ item.total_appointments }}</td>
+                                        <td>{{ item.completed_appointments }}</td>
+                                        <td>{{ item.cancelled_appointments }}</td>
+                                        <td>{{ item.no_show_appointments }}</td>
+                                        <td>
+                                            {% if item.total_appointments > 0 %}
+                                                {{ item.completed_appointments|floatformat:0|default:0|add:0|multiply:100|divide:item.total_appointments|floatformat:1 }}%
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <canvas id="clientActivityChart"></canvas>
+                        </div>
+                    </div>
+                {% elif report.type == 'services' %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Total Appointments</th>
+                                    <th>Completed</th>
+                                    <th>Cancelled</th>
+                                    <th>No Show</th>
+                                    <th>Completion Rate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for item in data.service_statistics %}
+                                    <tr>
+                                        <td>{{ item.service__name }}</td>
+                                        <td>{{ item.total_appointments }}</td>
+                                        <td>{{ item.completed_appointments }}</td>
+                                        <td>{{ item.cancelled_appointments }}</td>
+                                        <td>{{ item.no_show_appointments }}</td>
+                                        <td>
+                                            {% if item.total_appointments > 0 %}
+                                                {{ item.completed_appointments|floatformat:0|default:0|add:0|multiply:100|divide:item.total_appointments|floatformat:1 }}%
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <canvas id="serviceStatisticsChart"></canvas>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Print report
+        document.getElementById('printReport').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Export CSV
+        document.getElementById('exportCSV').addEventListener('click', function() {
+            alert('CSV export functionality will be implemented.');
+        });
+        
+        {% if report.type == 'appointments' %}
+            // Appointment Status Chart
+            var statusCtx = document.getElementById('appointmentStatusChart').getContext('2d');
+            var statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Pending', 'Confirmed', 'Completed', 'Cancelled', 'No Show'],
+                    datasets: [{
+                        data: [
+                            {{ data.pending_appointments }},
+                            {{ data.confirmed_appointments }},
+                            {{ data.completed_appointments }},
+                            {{ data.cancelled_appointments }},
+                            {{ data.no_show_appointments }}
+                        ],
+                        backgroundColor: [
+                            '#ffc107',
+                            '#28a745',
+                            '#17a2b8',
+                            '#dc3545',
+                            '#6c757d'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Appointment Status Distribution'
+                        }
+                    }
+                }
+            });
+            
+            // Appointment Trend Chart (placeholder)
+            var trendCtx = document.getElementById('appointmentTrendChart').getContext('2d');
+            var trendChart = new Chart(trendCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Appointments',
+                        data: [12, 19, 3, 5, 2, 3],
+                        borderColor: '#007bff',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Appointment Trend (Last 6 Months)'
+                        }
+                    }
+                }
+            });
+        {% elif report.type == 'revenue' %}
+            // Revenue by Service Chart
+            var serviceCtx = document.getElementById('revenueByServiceChart').getContext('2d');
+            var serviceChart = new Chart(serviceCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for item in data.revenue_by_service %}
+                            '{{ item.service__name }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [
+                            {% for item in data.revenue_by_service %}
+                                {{ item.total }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: '#28a745'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Revenue by Service'
+                        }
+                    }
+                }
+            });
+            
+            // Revenue by Staff Chart
+            var staffCtx = document.getElementById('revenueByStaffChart').getContext('2d');
+            var staffChart = new Chart(staffCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for item in data.revenue_by_staff %}
+                            '{{ item.staff__first_name }} {{ item.staff__last_name }}',
+                        {% endfor %}
+                    ],
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: [
+                            {% for item in data.revenue_by_staff %}
+                                {{ item.total }},
+                            {% endfor %}
+                        ],
+                        backgroundColor: '#007bff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Revenue by Staff'
+                        }
+                    }
+                }
+            });
+        {% elif report.type == 'staff_performance' %}
+            // Staff Performance Chart
+            var staffCtx = document.getElementById('staffPerformanceChart').getContext('2d');
+            var staffChart = new Chart(staffCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for item in data.staff_performance %}
+                            '{{ item.staff__first_name }} {{ item.staff__last_name }}',
+                        {% endfor %}
+                    ],
+                    datasets: [
+                        {
+                            label: 'Completed',
+                            data: [
+                                {% for item in data.staff_performance %}
+                                    {{ item.completed_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#28a745'
+                        },
+                        {
+                            label: 'Cancelled',
+                            data: [
+                                {% for item in data.staff_performance %}
+                                    {{ item.cancelled_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#dc3545'
+                        },
+                        {
+                            label: 'No Show',
+                            data: [
+                                {% for item in data.staff_performance %}
+                                    {{ item.no_show_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#6c757d'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Staff Performance'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            });
+        {% elif report.type == 'client_activity' %}
+            // Client Activity Chart
+            var clientCtx = document.getElementById('clientActivityChart').getContext('2d');
+            var clientChart = new Chart(clientCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for item in data.client_activity %}
+                            '{{ item.client__first_name }} {{ item.client__last_name }}',
+                        {% endfor %}
+                    ],
+                    datasets: [
+                        {
+                            label: 'Completed',
+                            data: [
+                                {% for item in data.client_activity %}
+                                    {{ item.completed_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#28a745'
+                        },
+                        {
+                            label: 'Cancelled',
+                            data: [
+                                {% for item in data.client_activity %}
+                                    {{ item.cancelled_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#dc3545'
+                        },
+                        {
+                            label: 'No Show',
+                            data: [
+                                {% for item in data.client_activity %}
+                                    {{ item.no_show_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#6c757d'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Client Activity'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            });
+        {% elif report.type == 'services' %}
+            // Service Statistics Chart
+            var serviceCtx = document.getElementById('serviceStatisticsChart').getContext('2d');
+            var serviceChart = new Chart(serviceCtx, {
+                type: 'bar',
+                data: {
+                    labels: [
+                        {% for item in data.service_statistics %}
+                            '{{ item.service__name }}',
+                        {% endfor %}
+                    ],
+                    datasets: [
+                        {
+                            label: 'Completed',
+                            data: [
+                                {% for item in data.service_statistics %}
+                                    {{ item.completed_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#28a745'
+                        },
+                        {
+                            label: 'Cancelled',
+                            data: [
+                                {% for item in data.service_statistics %}
+                                    {{ item.cancelled_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#dc3545'
+                        },
+                        {
+                            label: 'No Show',
+                            data: [
+                                {% for item in data.service_statistics %}
+                                    {{ item.no_show_appointments }},
+                                {% endfor %}
+                            ],
+                            backgroundColor: '#6c757d'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Service Statistics'
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true
+                        }
+                    }
+                }
+            });
+        {% endif %}
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,486 @@
+# WIREFRAME DOCUMENTATION
+
+## Overview
+This document outlines the wireframes for the Barberian application, including both the frontend-admin and frontend-public interfaces. Wireframes represent the skeletal framework of the application, focusing on space allocation, content prioritization, and functionality.
+
+## Frontend-Admin Wireframes
+
+### 1. Login Page
+- **Layout**: Centered login form on a full-screen background
+- **Elements**:
+  - Logo (barbs.jpg) at the top center
+  - Email input field
+  - Password input field
+  - "Remember me" checkbox
+  - Login button (golden yellow)
+  - Forgot password link
+  - Background with subtle barbershop-themed imagery
+
+### 2. Dashboard
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**:
+    - Logo (top left)
+    - Search bar
+    - Notifications icon
+    - Theme toggle (light/dark)
+    - User profile dropdown
+  - **Sidebar**:
+    - Dashboard link (active)
+    - Appointments link
+    - Clients link
+    - Staff link
+    - Services link
+    - Categories link
+    - Reports link
+    - Settings link
+  - **Main Content**:
+    - Welcome message with date
+    - Quick stats cards (4 cards in a row):
+      - Total appointments today
+      - Completed appointments
+      - Upcoming appointments
+      - Revenue today
+    - Today's appointments card (table format)
+    - Recent clients card
+    - Revenue chart (weekly)
+
+### 3. Appointments Page
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**: Same as Dashboard
+  - **Sidebar**: Same as Dashboard with Appointments active
+  - **Main Content**:
+    - Page title "Appointments"
+    - Filter controls:
+      - Date range picker
+      - Status dropdown (All, Scheduled, Completed, Cancelled, No Show)
+      - Staff dropdown
+      - Service dropdown
+      - Search field
+    - "Add Appointment" button
+    - Appointments table:
+      - Columns: Client, Service, Staff, Date, Time, Status, Actions
+      - Pagination controls
+    - Appointment details modal (appears when clicking on an appointment)
+
+### 4. Add/Edit Appointment Modal
+- **Layout**: Modal dialog
+- **Elements**:
+  - Modal title ("Add Appointment" or "Edit Appointment")
+  - Client dropdown/search
+  - Service dropdown
+  - Staff dropdown
+  - Date picker
+  - Time picker
+  - Notes textarea
+  - Status dropdown (for Edit only)
+  - Cancel and Save buttons
+
+### 5. Clients Page
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**: Same as Dashboard
+  - **Sidebar**: Same as Dashboard with Clients active
+  - **Main Content**:
+    - Page title "Clients"
+    - Search and filter controls
+    - "Add Client" button
+    - Clients table:
+      - Columns: Name, Email, Phone, Last Visit, Total Visits, Actions
+      - Pagination controls
+    - Client details modal
+
+### 6. Staff Page
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**: Same as Dashboard
+  - **Sidebar**: Same as Dashboard with Staff active
+  - **Main Content**:
+    - Page title "Staff"
+    - "Add Staff" button
+    - Staff cards:
+      - Staff photo
+      - Name
+      - Role/specialties
+      - Contact info
+      - Edit/Delete buttons
+    - Staff details modal
+
+### 7. Services Page
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**: Same as Dashboard
+  - **Sidebar**: Same as Dashboard with Services active
+  - **Main Content**:
+    - Page title "Services"
+    - Category filter tabs
+    - "Add Service" button
+    - Services table:
+      - Columns: Name, Category, Duration, Price, Status, Actions
+      - Pagination controls
+    - Service details modal
+
+### 8. Categories Page
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**: Same as Dashboard
+  - **Sidebar**: Same as Dashboard with Categories active
+  - **Main Content**:
+    - Page title "Categories"
+    - "Add Category" button
+    - Categories grid:
+      - Category cards with image, name, and service count
+      - Edit/Delete buttons
+    - Category details modal
+
+### 9. Reports Page
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**: Same as Dashboard
+  - **Sidebar**: Same as Dashboard with Reports active
+  - **Main Content**:
+    - Page title "Reports"
+    - Report type tabs:
+      - Revenue
+      - Appointments
+      - Services
+      - Staff Performance
+    - Date range picker
+    - Charts and graphs relevant to selected report
+    - Data table below charts
+    - Export button (PDF, CSV)
+
+### 10. Settings Page
+- **Layout**: Sidebar navigation + main content area
+- **Elements**:
+  - **Header**: Same as Dashboard
+  - **Sidebar**: Same as Dashboard with Settings active
+  - **Main Content**:
+    - Page title "Settings"
+    - Settings tabs:
+      - Business Information
+      - Business Hours
+      - Notifications
+      - User Account
+    - Form fields relevant to selected tab
+    - Save button
+
+## Frontend-Public Wireframes
+
+### 1. Home Page
+- **Layout**: Full-width layout with sections
+- **Elements**:
+  - **Header**:
+    - Logo (top left)
+    - Navigation links:
+      - Home
+      - Services
+      - Staff
+      - Gallery
+      - About
+      - Contact
+      - Book Now (call-to-action button)
+    - Login/Register button
+  - **Hero Section**:
+    - Background image of barbershop
+    - Headline "Professional Barbershop Services"
+    - Subheadline "Quality haircuts and grooming for men"
+    - "Book Now" button
+  - **Services Preview Section**:
+    - Section title "Our Services"
+    - 3-4 featured service cards with images
+    - "View All Services" button
+  - **About Section**:
+    - Brief description of the barbershop
+    - Image of the shop interior
+    - "Learn More" button
+  - **Staff Preview Section**:
+    - Section title "Meet Our Team"
+    - Staff member cards with photos
+    - "View All Staff" button
+  - **Testimonials Section**:
+    - Client testimonials carousel
+  - **Call-to-Action Section**:
+    - "Ready for a fresh look?" headline
+    - "Book Now" button
+  - **Footer**:
+    - Logo
+    - Contact information
+    - Business hours
+    - Social media links
+    - Copyright information
+
+### 2. Services Page
+- **Layout**: Full-width layout with sections
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Page Banner**:
+    - Background image
+    - Page title "Our Services"
+  - **Category Filter**:
+    - Horizontal tabs for service categories
+  - **Services Grid**:
+    - Service cards:
+      - Service image
+      - Service name
+      - Brief description
+      - Duration
+      - Price
+      - "Book Now" button
+  - **Footer**: Same as Home Page
+
+### 3. Service Detail Page
+- **Layout**: Full-width layout
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Service Details**:
+    - Service image
+    - Service name
+    - Detailed description
+    - Duration
+    - Price
+    - "Book Now" button
+  - **Related Services**:
+    - Cards for related services
+  - **Footer**: Same as Home Page
+
+### 4. Staff Page
+- **Layout**: Full-width layout
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Page Banner**:
+    - Background image
+    - Page title "Our Staff"
+  - **Staff Grid**:
+    - Staff cards:
+      - Staff photo
+      - Name
+      - Role/specialties
+      - Brief bio
+      - "Book with [Name]" button
+  - **Footer**: Same as Home Page
+
+### 5. Staff Detail Page
+- **Layout**: Full-width layout
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Staff Details**:
+    - Large staff photo
+    - Name and title
+    - Detailed bio
+    - Specialties
+    - Gallery of work
+    - "Book with [Name]" button
+  - **Footer**: Same as Home Page
+
+### 6. Gallery Page
+- **Layout**: Full-width layout
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Page Banner**:
+    - Background image
+    - Page title "Gallery"
+  - **Filter Controls**:
+    - Category filter (All, Haircuts, Beard Trims, etc.)
+  - **Image Grid**:
+    - Masonry layout of images
+    - Lightbox functionality when clicked
+  - **Footer**: Same as Home Page
+
+### 7. About Page
+- **Layout**: Full-width layout with sections
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Page Banner**:
+    - Background image
+    - Page title "About Us"
+  - **Story Section**:
+    - Barbershop history and mission
+    - Images of the shop
+  - **Team Section**:
+    - Brief introduction to the team
+    - Link to Staff page
+  - **Values Section**:
+    - Key values and commitments
+  - **Footer**: Same as Home Page
+
+### 8. Contact Page
+- **Layout**: Full-width layout
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Page Banner**:
+    - Background image
+    - Page title "Contact Us"
+  - **Contact Information**:
+    - Address
+    - Phone number
+    - Email
+    - Business hours
+  - **Map**:
+    - Google Maps embed
+  - **Contact Form**:
+    - Name input
+    - Email input
+    - Subject input
+    - Message textarea
+    - Submit button
+  - **Footer**: Same as Home Page
+
+### 9. Login/Register Page
+- **Layout**: Two-column layout
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Login Column**:
+    - "Login" heading
+    - Email input
+    - Password input
+    - "Remember me" checkbox
+    - Login button
+    - Forgot password link
+  - **Register Column**:
+    - "Register" heading
+    - First name input
+    - Last name input
+    - Email input
+    - Phone input
+    - Password input
+    - Confirm password input
+    - Register button
+  - **Footer**: Same as Home Page
+
+### 10. Booking Flow
+
+#### 10.1. Service Selection
+- **Layout**: Step-by-step wizard
+- **Elements**:
+  - Progress indicator (Step 1 of 4)
+  - "Select Service" heading
+  - Category filter
+  - Service cards with:
+    - Service name
+    - Duration
+    - Price
+    - Select button
+  - Next button (disabled until selection made)
+
+#### 10.2. Staff Selection
+- **Layout**: Step-by-step wizard
+- **Elements**:
+  - Progress indicator (Step 2 of 4)
+  - "Select Staff" heading
+  - Staff cards with:
+    - Staff photo
+    - Name
+    - Specialties
+    - Select button
+  - "No preference" option
+  - Back and Next buttons
+
+#### 10.3. Date & Time Selection
+- **Layout**: Step-by-step wizard
+- **Elements**:
+  - Progress indicator (Step 3 of 4)
+  - "Select Date & Time" heading
+  - Calendar for date selection
+  - Available time slots grid
+  - Selected service and staff summary
+  - Back and Next buttons
+
+#### 10.4. Confirmation
+- **Layout**: Step-by-step wizard
+- **Elements**:
+  - Progress indicator (Step 4 of 4)
+  - "Confirm Booking" heading
+  - Booking summary:
+    - Service details
+    - Staff details
+    - Date and time
+    - Price
+  - Notes textarea
+  - Terms and conditions checkbox
+  - Back and Confirm buttons
+  - Login/Register prompt if not logged in
+
+### 11. Client Profile Page
+- **Layout**: Sidebar navigation + main content
+- **Elements**:
+  - **Header**: Same as Home Page
+  - **Sidebar**:
+    - Profile link
+    - Appointments link
+    - Account Settings link
+    - Logout link
+  - **Main Content** (Profile):
+    - Personal information
+    - Edit profile button
+    - Profile picture upload
+  - **Main Content** (Appointments):
+    - Upcoming appointments
+    - Past appointments
+    - Cancel appointment buttons
+  - **Main Content** (Account Settings):
+    - Change password form
+    - Notification preferences
+    - Delete account option
+  - **Footer**: Same as Home Page
+
+## Responsive Design Considerations
+
+### Mobile Adaptations (Frontend-Admin)
+- Collapsible sidebar with hamburger menu
+- Stacked cards instead of grid layout
+- Simplified tables with fewer visible columns
+- Expandable rows for additional information
+- Full-width forms and inputs
+- Bottom navigation bar for key actions
+
+### Mobile Adaptations (Frontend-Public)
+- Hamburger menu for navigation
+- Single column layouts
+- Larger touch targets for buttons
+- Simplified booking process with fewer options per screen
+- Collapsible sections for content organization
+- Fixed call-to-action button at bottom of screen
+
+## Interactive Elements
+
+### Animations and Transitions
+- Subtle fade-in effects for page loading
+- Smooth transitions between booking steps
+- Hover effects on buttons and cards
+- Loading spinners for asynchronous actions
+- Slide-in notifications
+
+### Modals and Dialogs
+- Appointment details
+- Service details
+- Confirmation dialogs for deletions
+- Error messages
+- Success confirmations
+
+## Color Scheme Application
+- **Primary Color**: Golden yellow (#FFD700) for buttons, highlights, and call-to-action elements
+- **Secondary Color**: Dark blue (#1A365D) for headers, navigation, and footers
+- **Neutral Colors**: Black and white for text and backgrounds
+- **Accent Colors**: Subtle grays for cards and section backgrounds
+
+## Typography
+- **Headings**: Sans-serif font (e.g., Montserrat) in bold weight
+- **Body Text**: Sans-serif font (e.g., Open Sans) in regular weight
+- **Buttons and CTAs**: Sans-serif font in medium or semi-bold weight
+- **Size Hierarchy**:
+  - H1: 36px (desktop), 28px (mobile)
+  - H2: 28px (desktop), 24px (mobile)
+  - H3: 24px (desktop), 20px (mobile)
+  - Body: 16px (desktop), 14px (mobile)
+  - Small text: 14px (desktop), 12px (mobile)
+
+## Accessibility Considerations
+- High contrast between text and backgrounds
+- Sufficient text size for readability
+- Clear focus states for keyboard navigation
+- Alternative text for images
+- Semantic HTML structure
+- ARIA labels for interactive elements
+- Color combinations that work for color-blind users

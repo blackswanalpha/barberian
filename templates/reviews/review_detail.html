@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'reviews:review_list' %}">Reviews</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Review Details</li>
+            </ol>
+        </nav>
+        <h1>Review Details</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Review</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <div>
+                        <h4>{{ review.service.name }}</h4>
+                        <h6 class="text-muted">
+                            By {{ review.client.get_full_name }} for {{ review.staff.get_full_name }}
+                        </h6>
+                    </div>
+                    <div class="rating-stars fs-4">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= review.rating %}
+                                <i class="bi bi-star-fill text-warning"></i>
+                            {% else %}
+                                <i class="bi bi-star text-warning"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="mb-4">
+                    <h5>Comment</h5>
+                    <p>{{ review.comment }}</p>
+                </div>
+                
+                {% if not review.is_approved %}
+                    <div class="alert alert-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i> This review is pending approval.
+                    </div>
+                {% endif %}
+                
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">Posted on {{ review.created_at|date:"F d, Y" }}</small>
+                    
+                    {% if user == review.client %}
+                        <div>
+                            <a href="{% url 'reviews:review_edit' review.id %}" class="btn btn-outline-primary">
+                                <i class="bi bi-pencil me-1"></i> Edit
+                            </a>
+                            <a href="{% url 'reviews:review_delete' review.id %}" class="btn btn-outline-danger">
+                                <i class="bi bi-trash me-1"></i> Delete
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% if review.response %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Response from {{ review.response.staff.get_full_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <p>{{ review.response.response }}</p>
+                    <small class="text-muted">Responded on {{ review.response.created_at|date:"F d, Y" }}</small>
+                </div>
+            </div>
+        {% endif %}
+        
+        {% if user == review.staff or user.role == 'admin' %}
+            {% if not review.response %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Respond to Review</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ response_form.response.id_for_label }}" class="form-label">Your Response</label>
+                                {{ response_form.response }}
+                                {% if response_form.response.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ response_form.response.errors }}
+                                    </div>
+                                {% endif %}
+                                <div class="form-text">
+                                    Your response will be visible to all clients.
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Submit Response</button>
+                        </form>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Edit Response</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ response_form.response.id_for_label }}" class="form-label">Your Response</label>
+                                {{ response_form.response }}
+                                {% if response_form.response.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ response_form.response.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">Update Response</button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Service Information</h5>
+            </div>
+            <div class="card-body">
+                <h5>{{ review.service.name }}</h5>
+                <p>{{ review.service.description }}</p>
+                <div class="d-flex justify-content-between">
+                    <span>Price:</span>
+                    <span>${{ review.service.price }}</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Duration:</span>
+                    <span>{{ review.service.duration }} minutes</span>
+                </div>
+                
+                <div class="mt-3">
+                    <a href="{% url 'reviews:service_reviews' review.service.id %}" class="btn btn-outline-primary btn-sm">
+                        View All Reviews for this Service
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Staff Information</h5>
+            </div>
+            <div class="card-body">
+                <h5>{{ review.staff.get_full_name }}</h5>
+                {% if review.staff.specialization %}
+                    <p>{{ review.staff.specialization }}</p>
+                {% endif %}
+                {% if review.staff.bio %}
+                    <p>{{ review.staff.bio }}</p>
+                {% endif %}
+                
+                <div class="mt-3">
+                    <a href="{% url 'reviews:staff_reviews' review.staff.id %}" class="btn btn-outline-primary btn-sm">
+                        View All Reviews for this Staff
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

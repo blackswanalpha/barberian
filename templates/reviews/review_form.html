@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'reviews:my_reviews' %}">My Reviews</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ title }}</li>
+            </ol>
+        </nav>
+        <h1>{{ title }}</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Review Form</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    {% if not appointment %}
+                        <div class="mb-3">
+                            <label for="service" class="form-label">Service</label>
+                            <select class="form-select" id="service" name="service" required>
+                                <option value="">Select a service</option>
+                                {% for service in services %}
+                                    <option value="{{ service.id }}" {% if review and review.service.id == service.id %}selected{% endif %}>
+                                        {{ service.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="staff" class="form-label">Staff</label>
+                            <select class="form-select" id="staff" name="staff" required>
+                                <option value="">Select a staff member</option>
+                                {% for staff_member in staff %}
+                                    <option value="{{ staff_member.id }}" {% if review and review.staff.id == staff_member.id %}selected{% endif %}>
+                                        {{ staff_member.get_full_name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    {% else %}
+                        <div class="mb-4">
+                            <h5>Appointment Details</h5>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Service:</span>
+                                    <span>{{ appointment.service.name }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Staff:</span>
+                                    <span>{{ appointment.staff.get_full_name }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Date:</span>
+                                    <span>{{ appointment.start_time|date:"F d, Y" }}</span>
+                                </li>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <span>Time:</span>
+                                    <span>{{ appointment.start_time|time:"g:i A" }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="mb-3">
+                        <label class="form-label">{{ form.rating.label }}</label>
+                        <div class="rating-container">
+                            {% for radio in form.rating %}
+                                <div class="form-check form-check-inline">
+                                    {{ radio.tag }}
+                                    <label class="form-check-label" for="{{ radio.id_for_label }}">
+                                        {{ radio.choice_label }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.rating.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.rating.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            {{ form.rating.help_text }}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.comment.id_for_label }}" class="form-label">{{ form.comment.label }}</label>
+                        {{ form.comment }}
+                        {% if form.comment.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.comment.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">
+                            {{ form.comment.help_text }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'reviews:my_reviews' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Review Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <p>Please follow these guidelines when writing your review:</p>
+                <ul>
+                    <li>Be honest and specific about your experience.</li>
+                    <li>Focus on the service and staff performance.</li>
+                    <li>Avoid using offensive language or personal attacks.</li>
+                    <li>Mention what you liked and what could be improved.</li>
+                    <li>Your review will be moderated before being published.</li>
+                </ul>
+                
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i> Your review helps other clients make informed decisions and helps us improve our services.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+    .rating-container {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .rating-container .form-check {
+        margin-right: 1.5rem;
+    }
+</style>
+{% endblock %}

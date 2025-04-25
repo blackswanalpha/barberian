@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'payments:payment_methods' %}">Payment Methods</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Add Payment Method</li>
+            </ol>
+        </nav>
+        <h1>Add Payment Method</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Payment Method Information</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" id="payment-method-form">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ payment_method_form.payment_type.id_for_label }}" class="form-label">Payment Type</label>
+                        {{ payment_method_form.payment_type }}
+                        {% if payment_method_form.payment_type.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ payment_method_form.payment_type.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="credit-card-fields" class="d-none">
+                        <h5 class="mt-4 mb-3">Credit Card Information</h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ credit_card_form.card_number.id_for_label }}" class="form-label">Card Number</label>
+                            {{ credit_card_form.card_number }}
+                            {% if credit_card_form.card_number.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ credit_card_form.card_number.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ credit_card_form.card_expiry_month.id_for_label }}" class="form-label">Expiry Month</label>
+                                {{ credit_card_form.card_expiry_month }}
+                                {% if credit_card_form.card_expiry_month.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ credit_card_form.card_expiry_month.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ credit_card_form.card_expiry_year.id_for_label }}" class="form-label">Expiry Year</label>
+                                {{ credit_card_form.card_expiry_year }}
+                                {% if credit_card_form.card_expiry_year.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ credit_card_form.card_expiry_year.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ credit_card_form.card_cvc.id_for_label }}" class="form-label">CVC</label>
+                                {{ credit_card_form.card_cvc }}
+                                {% if credit_card_form.card_cvc.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ credit_card_form.card_cvc.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ payment_method_form.is_default }}
+                        <label class="form-check-label" for="{{ payment_method_form.is_default.id_for_label }}">
+                            Set as default payment method
+                        </label>
+                        {% if payment_method_form.is_default.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ payment_method_form.is_default.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'payments:payment_methods' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Payment Method</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentTypeSelect = document.getElementById('{{ payment_method_form.payment_type.id_for_label }}');
+        const creditCardFields = document.getElementById('credit-card-fields');
+        
+        // Function to toggle credit card fields based on payment type
+        function toggleCreditCardFields() {
+            const selectedType = paymentTypeSelect.value;
+            
+            if (selectedType === 'credit_card' || selectedType === 'debit_card') {
+                creditCardFields.classList.remove('d-none');
+            } else {
+                creditCardFields.classList.add('d-none');
+            }
+        }
+        
+        // Initial toggle
+        toggleCreditCardFields();
+        
+        // Listen for changes to the payment type
+        paymentTypeSelect.addEventListener('change', toggleCreditCardFields);
+        
+        // Format card number with spaces
+        const cardNumberInput = document.getElementById('{{ credit_card_form.card_number.id_for_label }}');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                let formattedValue = '';
+                
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'payments:invoice_list' %}">Invoices</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Invoice Details</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Invoice #{{ invoice.invoice_number }}</h1>
+            <div>
+                <button class="btn btn-outline-primary me-2" id="printInvoice">
+                    <i class="bi bi-printer me-1"></i> Print
+                </button>
+                <button class="btn btn-outline-secondary me-2" id="downloadPDF">
+                    <i class="bi bi-file-earmark-pdf me-1"></i> Download PDF
+                </button>
+                {% if invoice.status == 'sent' %}
+                    <a href="{% url 'payments:payment_process' invoice.appointment.id %}" class="btn btn-success">
+                        <i class="bi bi-credit-card me-1"></i> Pay Now
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card" id="invoice-card">
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h2 class="mb-3">Barberian</h2>
+                        <p>
+                            123 Main Street<br>
+                            City, State, ZIP<br>
+                            Phone: (123) 456-7890<br>
+                            Email: info@barberian.com
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h4 class="text-uppercase text-muted">Invoice</h4>
+                        <h4 class="text-uppercase text-primary">#{{ invoice.invoice_number }}</h4>
+                        <p>
+                            <strong>Issue Date:</strong> {{ invoice.issue_date|date:"F d, Y" }}<br>
+                            <strong>Due Date:</strong> {{ invoice.due_date|date:"F d, Y" }}<br>
+                            <strong>Status:</strong> 
+                            <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'sent' %}primary{% elif invoice.status == 'draft' %}secondary{% else %}danger{% endif %}">
+                                {{ invoice.get_status_display }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <h5>Bill To:</h5>
+                        <p>
+                            {{ invoice.user.get_full_name }}<br>
+                            {{ invoice.user.email }}<br>
+                            {% if invoice.user.phone_number %}
+                                {{ invoice.user.phone_number }}
+                            {% endif %}
+                        </p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <h5>Payment Method:</h5>
+                        <p>
+                            {% if invoice.payment %}
+                                {{ invoice.payment.get_payment_method_display }}
+                                {% if invoice.payment.transaction_id %}
+                                    <br>Transaction ID: {{ invoice.payment.transaction_id }}
+                                {% endif %}
+                            {% else %}
+                                Not paid yet
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Description</th>
+                                <th>Date</th>
+                                <th>Staff</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>{{ invoice.appointment.service.name }}</td>
+                                <td>{{ invoice.appointment.start_time|date:"F d, Y" }} at {{ invoice.appointment.start_time|time:"g:i A" }}</td>
+                                <td>{{ invoice.appointment.staff.get_full_name }}</td>
+                                <td>${{ invoice.amount }}</td>
+                            </tr>
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
+                                <td>${{ invoice.amount }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Tax:</strong></td>
+                                <td>${{ invoice.tax_amount }}</td>
+                            </tr>
+                            <tr>
+                                <td colspan="3" class="text-end"><strong>Total:</strong></td>
+                                <td><strong>${{ invoice.total_amount }}</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                
+                {% if invoice.notes %}
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <h5>Notes:</h5>
+                            <p>{{ invoice.notes }}</p>
+                        </div>
+                    </div>
+                {% endif %}
+                
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <p class="text-muted text-center">
+                            Thank you for your business!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #invoice-card, #invoice-card * {
+            visibility: visible;
+        }
+        #invoice-card {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Print invoice
+        document.getElementById('printInvoice').addEventListener('click', function() {
+            window.print();
+        });
+        
+        // Download PDF
+        document.getElementById('downloadPDF').addEventListener('click', function() {
+            const element = document.getElementById('invoice-card');
+            const opt = {
+                margin: 1,
+                filename: 'invoice-{{ invoice.invoice_number }}.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+            };
+            
+            // New Promise-based usage:
+            html2pdf().set(opt).from(element).save();
+        });
+    });
+</script>
+{% endblock %}

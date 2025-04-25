@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load appointment_tags %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'appointments:calendar' %}">Calendar</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ date|date:"F d, Y" }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>{{ date|date:"l, F d, Y" }}</h1>
+            <div>
+                <a href="{% url 'appointments:day_view' date.year date.month date.day|add:"-1" %}{% if selected_staff %}?staff={{ selected_staff.id }}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-chevron-left"></i> Previous Day
+                </a>
+                <a href="{% url 'appointments:calendar' %}" class="btn btn-outline-primary">
+                    Calendar
+                </a>
+                <a href="{% url 'appointments:day_view' date.year date.month date.day|add:"1" %}{% if selected_staff %}?staff={{ selected_staff.id }}{% endif %}" class="btn btn-outline-secondary">
+                    Next Day <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="staff" class="form-label">Filter by Staff</label>
+                        <select class="form-select" id="staff" name="staff" onchange="this.form.submit()">
+                            <option value="">All Staff</option>
+                            {% for staff in staff_members %}
+                                <option value="{{ staff.id }}" {% if selected_staff and selected_staff.id == staff.id %}selected{% endif %}>
+                                    {{ staff.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-6 d-flex align-items-end">
+                        <a href="{% url 'appointments:booking_service' %}" class="btn btn-primary">
+                            <i class="bi bi-plus-circle me-1"></i> Book New Appointment
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Day Information</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Day:</span>
+                        <span>{{ schedule.day_name }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Status:</span>
+                        <span>
+                            {% if schedule.is_holiday %}
+                                <span class="badge bg-danger">Holiday</span>
+                            {% elif not schedule.is_open %}
+                                <span class="badge bg-secondary">Closed</span>
+                            {% else %}
+                                <span class="badge bg-success">Open</span>
+                            {% endif %}
+                        </span>
+                    </li>
+                    {% if schedule.is_open %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Business Hours:</span>
+                            <span>{{ schedule.opening_time|time:"g:i A" }} - {{ schedule.closing_time|time:"g:i A" }}</span>
+                        </li>
+                    {% endif %}
+                    {% if selected_staff and schedule.staff_schedule %}
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Staff Hours:</span>
+                            <span>
+                                {% if schedule.staff_schedule.is_working %}
+                                    {{ schedule.staff_schedule.start_time|time:"g:i A" }} - {{ schedule.staff_schedule.end_time|time:"g:i A" }}
+                                {% else %}
+                                    <span class="badge bg-secondary">Not Working</span>
+                                {% endif %}
+                            </span>
+                        </li>
+                    {% endif %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Appointments:</span>
+                        <span>{{ schedule.appointments|length }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Available Services</h5>
+            </div>
+            <div class="card-body">
+                {% if schedule.is_available %}
+                    <div class="accordion" id="servicesAccordion">
+                        {% for service in services %}
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="heading{{ service.id }}">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ service.id }}" aria-expanded="false" aria-controls="collapse{{ service.id }}">
+                                        {{ service.name }} - ${{ service.price }}
+                                    </button>
+                                </h2>
+                                <div id="collapse{{ service.id }}" class="accordion-collapse collapse" aria-labelledby="heading{{ service.id }}" data-bs-parent="#servicesAccordion">
+                                    <div class="accordion-body">
+                                        <p>{{ service.description }}</p>
+                                        <p><strong>Duration:</strong> {{ service.duration }} minutes</p>
+
+                                        {% if service_time_slots|get_item:service.id %}
+                                            <h6>Available Time Slots:</h6>
+                                            <div class="list-group">
+                                                {% for slot in service_time_slots|get_item:service.id %}
+                                                    <a href="{% url 'appointments:booking_service' %}?service={{ service.id }}&date={{ date|date:'Y-m-d' }}&time={{ slot.start_time|time:'H:i' }}{% if selected_staff %}&staff={{ selected_staff.id }}{% endif %}" class="list-group-item list-group-item-action">
+                                                        {{ slot.formatted_time }}
+                                                    </a>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <div class="alert alert-info">
+                                                No available time slots for this service.
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        {% if schedule.is_holiday %}
+                            This day is a holiday. No services are available.
+                        {% elif not schedule.is_open %}
+                            The business is closed on this day.
+                        {% elif selected_staff and not schedule.staff_schedule.is_working %}
+                            The selected staff member is not working on this day.
+                        {% else %}
+                            No services are available on this day.
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Schedule</h5>
+            </div>
+            <div class="card-body">
+                {% if schedule.appointments %}
+                    <div class="schedule-timeline">
+                        {% if schedule.is_open %}
+                            <div class="schedule-hours">
+                                <div class="hour-marker start-hour">
+                                    {{ schedule.opening_time|time:"g:i A" }}
+                                </div>
+                                {% with opening_hour=schedule.opening_time.hour closing_hour=schedule.closing_time.hour %}
+                                    {% for hour in range_hours %}
+                                        {% if hour >= opening_hour and hour <= closing_hour %}
+                                            <div class="hour-marker">
+                                                {{ hour|format_hour }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                                <div class="hour-marker end-hour">
+                                    {{ schedule.closing_time|time:"g:i A" }}
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="appointments-container">
+                            {% for appointment in schedule.appointments %}
+                                <div class="appointment-card" style="--start-time: {{ appointment.start_time|time:'H:i' }}; --end-time: {{ appointment.end_time|time:'H:i' }}; --opening-time: {{ schedule.opening_time|time:'H:i' }}; --closing-time: {{ schedule.closing_time|time:'H:i' }};">
+                                    <div class="appointment-card-header">
+                                        <span class="time">{{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</span>
+                                        <span class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% elif appointment.status == 'cancelled' %}danger{% elif appointment.status == 'completed' %}success{% elif appointment.status == 'no_show' %}warning{% else %}secondary{% endif %}">
+                                            {{ appointment.status|title }}
+                                        </span>
+                                    </div>
+                                    <div class="appointment-card-body">
+                                        <h6>{{ appointment.service.name }}</h6>
+                                        <p>
+                                            <strong>Client:</strong> {{ appointment.client.get_full_name }}<br>
+                                            <strong>Staff:</strong> {{ appointment.staff.get_full_name }}
+                                        </p>
+                                    </div>
+                                    <div class="appointment-card-footer">
+                                        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        No appointments scheduled for this day.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+    .schedule-timeline {
+        position: relative;
+        margin-top: 20px;
+    }
+
+    .schedule-hours {
+        position: relative;
+        height: 50px;
+        border-bottom: 1px solid #dee2e6;
+        margin-bottom: 20px;
+    }
+
+    .hour-marker {
+        position: absolute;
+        top: 0;
+        transform: translateX(-50%);
+        font-size: 0.8rem;
+        color: #6c757d;
+    }
+
+    .start-hour {
+        left: 0;
+        transform: none;
+    }
+
+    .end-hour {
+        right: 0;
+        left: auto;
+        transform: none;
+    }
+
+    .appointments-container {
+        position: relative;
+        min-height: 400px;
+    }
+
+    .appointment-card {
+        position: absolute;
+        left: calc((var(--start-time-hours) - var(--opening-time-hours) + (var(--start-time-minutes) - var(--opening-time-minutes)) / 60) / (var(--closing-time-hours) - var(--opening-time-hours) + (var(--closing-time-minutes) - var(--opening-time-minutes)) / 60) * 100%);
+        width: calc((var(--end-time-hours) - var(--start-time-hours) + (var(--end-time-minutes) - var(--start-time-minutes)) / 60) / (var(--closing-time-hours) - var(--opening-time-hours) + (var(--closing-time-minutes) - var(--opening-time-minutes)) / 60) * 100%);
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+        background-color: #f8f9fa;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        overflow: hidden;
+    }
+
+    .appointment-card-header {
+        padding: 0.5rem;
+        background-color: #e9ecef;
+        border-bottom: 1px solid #dee2e6;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .appointment-card-body {
+        padding: 0.5rem;
+    }
+
+    .appointment-card-footer {
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        text-align: right;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Calculate appointment positions
+        const appointmentCards = document.querySelectorAll('.appointment-card');
+
+        appointmentCards.forEach(function(card) {
+            const startTime = card.style.getPropertyValue('--start-time').split(':');
+            const endTime = card.style.getPropertyValue('--end-time').split(':');
+            const openingTime = card.style.getPropertyValue('--opening-time').split(':');
+            const closingTime = card.style.getPropertyValue('--closing-time').split(':');
+
+            const startTimeHours = parseInt(startTime[0]);
+            const startTimeMinutes = parseInt(startTime[1]);
+            const endTimeHours = parseInt(endTime[0]);
+            const endTimeMinutes = parseInt(endTime[1]);
+            const openingTimeHours = parseInt(openingTime[0]);
+            const openingTimeMinutes = parseInt(openingTime[1]);
+            const closingTimeHours = parseInt(closingTime[0]);
+            const closingTimeMinutes = parseInt(closingTime[1]);
+
+            card.style.setProperty('--start-time-hours', startTimeHours);
+            card.style.setProperty('--start-time-minutes', startTimeMinutes);
+            card.style.setProperty('--end-time-hours', endTimeHours);
+            card.style.setProperty('--end-time-minutes', endTimeMinutes);
+            card.style.setProperty('--opening-time-hours', openingTimeHours);
+            card.style.setProperty('--opening-time-minutes', openingTimeMinutes);
+            card.style.setProperty('--closing-time-hours', closingTimeHours);
+            card.style.setProperty('--closing-time-minutes', closingTimeMinutes);
+        });
+    });
+</script>
+{% endblock %}

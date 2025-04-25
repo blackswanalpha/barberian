@@ -1,0 +1,1442 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Splash Screen Styles -->
+    <style>
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease-out, transform 0.5s ease-out;
+        }
+
+        .splash-logo-container {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin-bottom: 2rem;
+        }
+
+        .splash-logo {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .splash-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--primary);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 0.3s;
+        }
+
+        .splash-subtitle {
+            font-size: 1.25rem;
+            color: white;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 0.6s;
+            text-align: center;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .splash-loading {
+            margin-top: 2rem;
+            width: 200px;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 1s ease forwards 0.9s;
+        }
+
+        .splash-loading-bar {
+            height: 100%;
+            width: 0;
+            background-color: var(--primary);
+            border-radius: 4px;
+            animation: loading 2.5s ease forwards 1.2s;
+        }
+
+        .splash-scissors {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--primary);
+            opacity: 0;
+        }
+
+        .splash-scissors-1 {
+            top: -30px;
+            left: -30px;
+            animation: rotateFadeIn 1.5s ease forwards 0.2s;
+        }
+
+        .splash-scissors-2 {
+            bottom: -30px;
+            right: -30px;
+            animation: rotateFadeIn 1.5s ease forwards 0.4s;
+        }
+
+        .splash-scissors-3 {
+            top: -30px;
+            right: -30px;
+            animation: rotateFadeIn 1.5s ease forwards 0.6s;
+        }
+
+        .splash-scissors-4 {
+            bottom: -30px;
+            left: -30px;
+            animation: rotateFadeIn 1.5s ease forwards 0.8s;
+        }
+
+        .splash-exit {
+            opacity: 0;
+            transform: translateY(-50px);
+            pointer-events: none;
+        }
+
+        .splash-hidden {
+            display: none;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes loading {
+            from {
+                width: 0;
+            }
+            to {
+                width: 100%;
+            }
+        }
+
+        @keyframes rotateFadeIn {
+            from {
+                opacity: 0;
+                transform: rotate(-45deg);
+            }
+            to {
+                opacity: 1;
+                transform: rotate(0);
+            }
+        }
+
+        /* Background Elements */
+        .splash-bg-circle {
+            position: absolute;
+            border-radius: 50%;
+            background-color: var(--primary);
+            opacity: 0.05;
+            z-index: -1;
+        }
+
+        .splash-bg-circle-1 {
+            width: 300px;
+            height: 300px;
+            top: -150px;
+            right: -150px;
+        }
+
+        .splash-bg-circle-2 {
+            width: 400px;
+            height: 400px;
+            bottom: -200px;
+            left: -200px;
+        }
+
+        .splash-bg-line {
+            position: absolute;
+            background-color: var(--primary);
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        .splash-bg-line-1 {
+            width: 100%;
+            height: 1px;
+            top: 30%;
+            transform: rotate(-5deg);
+        }
+
+        .splash-bg-line-2 {
+            width: 100%;
+            height: 1px;
+            bottom: 35%;
+            transform: rotate(5deg);
+        }
+
+        /* Hide scrollbar when splash screen is active */
+        body.splash-active {
+            overflow: hidden;
+        }
+    </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Barberian{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <!-- AOS Animation Library -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.css" />
+
+    <!-- SlickNav CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/SlickNav/1.0.10/slicknav.min.css" />
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#D4AF37',
+              secondary: '#1E1E1E',
+              dark: '#0F0F0F',
+              light: '#F5F5F5',
+              accent: '#8B4513',
+            },
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+          }
+        }
+      }
+    </script>
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/client-style.css">
+
+    {% block extra_css %}{% endblock %}
+
+    <style>
+        :root {
+            --primary: #D4AF37;
+            --secondary: #1E1E1E;
+            --dark: #0F0F0F;
+            --light: #F5F5F5;
+            --accent: #8B4513;
+            --font-sans: 'Poppins', sans-serif;
+            --font-serif: 'Playfair Display', serif;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            color: var(--secondary);
+            background-color: var(--light);
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: var(--font-serif);
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: var(--dark);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--dark);
+            border-color: var(--dark);
+            color: var(--primary);
+        }
+
+        .text-primary {
+            color: var(--primary) !important;
+        }
+
+        .bg-primary {
+            background-color: var(--primary) !important;
+        }
+
+        /* Brber-Inspired Navbar Styles */
+        /* Top Bar */
+        .top-bar {
+            background-color: var(--dark);
+            color: var(--light);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Header Area */
+        .header-area {
+            position: absolute;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+
+        .header-transparent {
+            position: absolute;
+            top: 40px; /* Height of top bar */
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+
+        .main-header {
+            background-color: var(--dark);
+            transition: all 0.3s ease;
+            padding: 0;
+            border-bottom: none;
+        }
+
+        .header-sticky {
+            transition: all 0.3s ease;
+        }
+
+        .header-sticky.sticky-bar {
+            background-color: var(--dark);
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1030;
+        }
+
+        .menu-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 0;
+        }
+
+        /* Logo */
+        .logo {
+            padding: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 40px;
+            transition: all 0.3s ease;
+        }
+
+        .sticky-bar .logo img {
+            height: 35px;
+        }
+
+        /* Main Menu */
+        .main-menu {
+            display: flex;
+            align-items: center;
+        }
+
+        #navigation {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            list-style: none;
+        }
+
+        #navigation li {
+            position: relative;
+            margin: 0 5px;
+        }
+
+        #navigation li a {
+            color: var(--light);
+            font-weight: 600;
+            font-size: 16px;
+            text-transform: capitalize;
+            padding: 39px 20px;
+            display: block;
+            position: relative;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        #navigation li a:hover,
+        #navigation li a.active {
+            color: var(--primary);
+        }
+
+        #navigation li a::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background-color: var(--primary);
+            bottom: 30px;
+            left: 20px;
+            transition: width 0.3s ease;
+        }
+
+        #navigation li a:hover::after,
+        #navigation li a.active::after {
+            width: calc(100% - 40px);
+        }
+
+        /* Header Right Buttons */
+        .header-right-btn {
+            display: flex;
+            align-items: center;
+        }
+
+        .login-btn {
+            display: inline-flex;
+            align-items: center;
+            color: var(--light);
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .login-btn:hover {
+            color: var(--primary);
+        }
+
+        .account-btn {
+            display: inline-flex;
+            align-items: center;
+            color: var(--light);
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+
+        .account-btn:hover {
+            color: var(--primary);
+        }
+
+        .avatar-circle {
+            width: 40px;
+            height: 40px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .header-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px 30px;
+            background-color: var(--primary);
+            color: var(--dark);
+            font-weight: 600;
+            font-size: 16px;
+            border-radius: 0;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            text-transform: capitalize;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
+            white-space: nowrap;
+            border: none;
+        }
+
+        .header-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, var(--primary) 0%, #fff 100%);
+            opacity: 0;
+            z-index: -1;
+            transition: opacity 0.3s ease;
+        }
+
+        .header-btn:hover {
+            color: var(--dark);
+        }
+
+        .header-btn:hover::after {
+            opacity: 1;
+        }
+
+        /* Mobile Menu */
+        .mobile_menu {
+            position: absolute;
+            right: 0;
+            width: 100%;
+            z-index: 99;
+            top: 70px;
+        }
+
+        .slicknav_menu {
+            background: transparent;
+            padding: 0;
+        }
+
+        .slicknav_nav {
+            margin-top: 0px;
+            background-color: var(--dark);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            padding: 10px;
+        }
+
+        .slicknav_nav a {
+            color: var(--light);
+            font-size: 16px;
+            font-weight: 600;
+            padding: 10px;
+            margin: 0;
+            text-transform: capitalize;
+        }
+
+        .slicknav_nav a:hover {
+            color: var(--primary);
+            background: transparent;
+        }
+
+        .slicknav_btn {
+            background-color: transparent;
+            position: relative;
+            margin: 0;
+            padding: 0;
+            margin-right: 10px;
+        }
+
+        /* Mobile Navigation */
+        @media (max-width: 991.98px) {
+            .header-transparent {
+                top: 0;
+            }
+
+            .top-bar {
+                display: none !important;
+            }
+
+            .navbar-nav {
+                height: auto;
+                padding: 1rem 0;
+            }
+
+            .nav-item {
+                height: auto;
+            }
+
+            .nav-link {
+                padding: 1rem 1.5rem;
+                justify-content: flex-start;
+                height: auto;
+            }
+
+            .nav-link::after {
+                bottom: 0.8rem;
+                width: 0;
+                left: 1.5rem;
+            }
+
+            .nav-link:hover::after, .nav-link.active::after {
+                width: 30px;
+            }
+
+            .nav-actions {
+                flex-direction: column;
+                width: 100%;
+                padding-top: 1rem;
+                border-top: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .login-link, .btn-book-nav {
+                width: 100%;
+                margin: 0.5rem 0;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .login-link {
+                margin-right: 0 !important;
+            }
+        }
+
+        .nav-actions {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-link {
+            border: 1px solid var(--primary);
+            border-radius: 0;
+            padding: 0.85rem 1.5rem !important;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .login-link:hover {
+            background-color: var(--primary);
+            color: var(--dark) !important;
+            border-color: var(--primary);
+        }
+
+        .dropdown {
+            height: 100%;
+            display: flex;
+            align-items: center;
+        }
+
+        .dropdown-menu {
+            background-color: rgba(20, 20, 20, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 0.75rem;
+            box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .dropdown-item {
+            color: var(--light);
+            padding: 0.75rem 1.25rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            margin-bottom: 0.25rem;
+            font-weight: 500;
+            letter-spacing: 0.3px;
+        }
+
+        .dropdown-item:hover, .dropdown-item:focus {
+            background-color: rgba(255, 255, 255, 0.15);
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .dropdown-item i {
+            margin-right: 0.75rem;
+            color: var(--primary);
+            font-size: 1.1rem;
+        }
+
+        .dropdown-divider {
+            border-top-color: rgba(255, 255, 255, 0.15);
+            margin: 0.5rem 0;
+        }
+
+        footer {
+            background-color: var(--dark);
+            color: var(--light);
+            padding: 5rem 0 2rem;
+        }
+
+        .footer-links a {
+            color: var(--light);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+
+        .footer-links a:hover {
+            color: var(--primary);
+            transform: translateX(5px);
+        }
+
+        .social-icons a {
+            color: var(--light);
+            transition: all 0.3s ease;
+        }
+
+        .social-icons a:hover {
+            color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        .back-to-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background-color: var(--primary);
+            color: var(--dark);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 999;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .back-to-top.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .back-to-top:hover {
+            background-color: var(--dark);
+            color: var(--primary);
+            transform: translateY(-5px);
+        }
+
+        /* Header Spacer */
+        .header-spacer {
+            height: 120px; /* Adjusted for top bar (40px) + navbar (80px) */
+        }
+
+        @media (max-width: 991.98px) {
+            .header-spacer {
+                height: 70px; /* Only navbar height on mobile */
+            }
+        }
+
+        /* Avatar Circle */
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--dark);
+            font-weight: 700;
+            font-size: 0.9rem;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            margin-right: 0.75rem;
+        }
+
+        /* Brber-Inspired Top Bar */
+        .top-bar {
+            font-size: 0.85rem;
+            padding: 0.5rem 0 !important;
+            background-color: var(--primary) !important;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1031;
+            height: 40px;
+        }
+
+        .top-bar .text-light {
+            color: var(--dark) !important;
+            font-weight: 500;
+        }
+
+        .top-bar i.text-primary {
+            color: var(--dark) !important;
+        }
+
+        .social-icons-top a {
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            color: var(--dark) !important;
+            opacity: 0.8;
+        }
+
+        .social-icons-top a:hover {
+            opacity: 1;
+            transform: translateY(-2px);
+        }
+
+        /* Footer Styles */
+        .footer-section {
+            background-color: var(--dark);
+        }
+
+        .main-footer {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .footer-heading::after {
+            content: '';
+            display: block;
+            width: 50px;
+            height: 2px;
+            background-color: var(--primary);
+            margin-top: 15px;
+        }
+
+        .social-icon-circle {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--light);
+            transition: all 0.3s ease;
+        }
+
+        .social-icon-circle:hover {
+            background-color: var(--primary);
+            color: var(--dark);
+            transform: translateY(-5px);
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .newsletter-form .form-control {
+            height: 50px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--light);
+        }
+
+        .newsletter-form .form-control::placeholder {
+            color: rgba(255, 255, 255, 0.5);
+        }
+
+        .newsletter-form .btn {
+            height: 50px;
+        }
+
+        /* Section Styles */
+        .section-title {
+            position: relative;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 0;
+            width: 70px;
+            height: 3px;
+            background-color: var(--primary);
+        }
+
+        .section-title.text-center::after {
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-subtitle {
+            color: var(--primary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* Button Styles */
+        .btn {
+            font-weight: 500;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            transition: all 0.3s ease;
+        }
+
+        .btn-lg {
+            padding: 12px 30px;
+        }
+
+        .btn-outline-primary {
+            color: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .btn-outline-primary:hover {
+            background-color: var(--primary);
+            color: var(--dark);
+        }
+
+        .btn-outline-light:hover {
+            color: var(--dark);
+        }
+
+        /* Card Styles */
+        .card {
+            border: none;
+            border-radius: 0;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Styles */
+        .form-control {
+            border-radius: 0;
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+        }
+
+        .form-control:focus {
+            box-shadow: none;
+            border-color: var(--primary);
+        }
+
+        /* Custom Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease forwards;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+
+    {% block page_css %}{% endblock %}
+</head>
+<body class="{% if not request.COOKIES.seen_splash %}splash-active{% endif %}">
+    <!-- Splash Screen -->
+    <div id="splash-screen" class="splash-screen {% if request.COOKIES.seen_splash %}splash-hidden{% endif %}">
+        <!-- Background Elements -->
+        <div class="splash-bg-circle splash-bg-circle-1"></div>
+        <div class="splash-bg-circle splash-bg-circle-2"></div>
+        <div class="splash-bg-line splash-bg-line-1"></div>
+        <div class="splash-bg-line splash-bg-line-2"></div>
+
+        <div class="splash-logo-container">
+            <img src="{% static 'images/logo-gold.png' %}" alt="Barberian Logo" class="splash-logo">
+
+            <!-- Decorative Scissors -->
+            <div class="splash-scissors splash-scissors-1">
+                <i class="bi bi-scissors"></i>
+            </div>
+            <div class="splash-scissors splash-scissors-2">
+                <i class="bi bi-scissors"></i>
+            </div>
+            <div class="splash-scissors splash-scissors-3">
+                <i class="bi bi-scissors"></i>
+            </div>
+            <div class="splash-scissors splash-scissors-4">
+                <i class="bi bi-scissors"></i>
+            </div>
+        </div>
+
+        <h1 class="splash-title">BARBERIAN</h1>
+        <p class="splash-subtitle">Premium Grooming Experience Since 2010</p>
+
+        <div class="splash-loading">
+            <div class="splash-loading-bar"></div>
+        </div>
+    </div>
+    <header class="fixed-top w-100">
+        <!-- Brber-Inspired Top Bar -->
+        <div class="top-bar py-2 d-none d-lg-block">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <div class="d-flex text-light">
+                            <div class="me-4">
+                                <i class="bi bi-geo-alt-fill me-2 text-primary"></i>
+                                <span class="small">123 Barber Street, Haircut City</span>
+                            </div>
+                            <div class="me-4">
+                                <i class="bi bi-telephone-fill me-2 text-primary"></i>
+                                <span class="small">(123) 456-7890</span>
+                            </div>
+                            <div>
+                                <i class="bi bi-clock-fill me-2 text-primary"></i>
+                                <span class="small">Mon-Sat: 9AM-8PM</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 text-end">
+                        <div class="social-icons-top">
+                            <a href="#" class="text-light me-3"><i class="bi bi-facebook"></i></a>
+                            <a href="#" class="text-light me-3"><i class="bi bi-instagram"></i></a>
+                            <a href="#" class="text-light me-3"><i class="bi bi-twitter"></i></a>
+                            <a href="#" class="text-light"><i class="bi bi-youtube"></i></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Brber-Inspired Main Navigation -->
+        <div class="header-area header-transparent">
+            <div class="main-header header-sticky">
+                <div class="container-fluid">
+                    <div class="menu-wrapper d-flex align-items-center justify-content-between">
+                        <!-- Logo -->
+                        <div class="logo">
+                            <a href="{% url 'client_portal:home' %}">
+                                <img src="/static/images/logo.png" alt="Barberian" class="logo-img">
+                            </a>
+                        </div>
+
+                        <!-- Main Menu -->
+                        <div class="main-menu d-none d-lg-block">
+                            <nav>
+                                <ul id="navigation" class="d-flex">
+                                    <li>
+                                        <a class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'client_portal:home' %}">Home</a>
+                                    </li>
+                                    <li>
+                                        <a class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'client_portal:about' %}">About</a>
+                                    </li>
+                                    <li>
+                                        <a class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}" href="{% url 'client_portal:services' %}">Services</a>
+                                    </li>
+                                    <li>
+                                        <a href="#">Barbers</a>
+                                    </li>
+                                    <li>
+                                        <a class="{% if 'reviews' in request.path %}active{% endif %}" href="{% url 'reviews:review_list' %}">Reviews</a>
+                                    </li>
+                                    <li>
+                                        <a class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'client_portal:contact' %}">Contact</a>
+                                    </li>
+                                </ul>
+                            </nav>
+                        </div>
+
+                        <!-- Header Right Actions -->
+                        <div class="header-right-btn d-flex align-items-center">
+                            {% if user.is_authenticated %}
+                                <div class="dropdown me-3">
+                                    <a class="account-btn dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        <div class="avatar-circle me-2">
+                                            <span class="initials">{{ user.get_full_name|slice:":1" }}</span>
+                                        </div>
+                                        <span class="d-none d-lg-inline text-truncate text-white" style="max-width: 120px;">{{ user.get_full_name }}</span>
+                                    </a>
+                                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'client_portal:profile' %}">
+                                                <i class="bi bi-person"></i>
+                                                <span>My Profile</span>
+                                            </a>
+                                        </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'appointments:appointment_list' %}">
+                                                <i class="bi bi-calendar-check"></i>
+                                                <span>My Appointments</span>
+                                            </a>
+                                        </li>
+                                        {% if user.role == 'client' %}
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'appointments:calendar' %}">
+                                                    <i class="bi bi-calendar3"></i>
+                                                    <span>Calendar</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'payments:invoice_list' %}">
+                                                    <i class="bi bi-receipt"></i>
+                                                    <span>My Invoices</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'payments:payment_methods' %}">
+                                                    <i class="bi bi-credit-card"></i>
+                                                    <span>Payment Methods</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'reviews:my_reviews' %}">
+                                                    <i class="bi bi-star"></i>
+                                                    <span>My Reviews</span>
+                                                </a>
+                                            </li>
+                                        {% elif user.role == 'staff' %}
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'appointments:calendar' %}">
+                                                    <i class="bi bi-calendar3"></i>
+                                                    <span>Calendar</span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'reviews:my_staff_reviews' %}">
+                                                    <i class="bi bi-star"></i>
+                                                    <span>My Reviews</span>
+                                                </a>
+                                            </li>
+                                        {% elif user.role == 'admin' %}
+                                            <li>
+                                                <a class="dropdown-item" href="{% url 'admin_panel:dashboard' %}">
+                                                    <i class="bi bi-speedometer2"></i>
+                                                    <span>Admin Dashboard</span>
+                                                </a>
+                                            </li>
+                                        {% endif %}
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <a class="dropdown-item" href="{% url 'logout' %}">
+                                                <i class="bi bi-box-arrow-right"></i>
+                                                <span>Logout</span>
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </div>
+                            {% else %}
+                                <a class="login-btn me-3" href="{% url 'login' %}">
+                                    <i class="bi bi-box-arrow-in-right me-2"></i>
+                                    <span class="d-none d-lg-inline">Login</span>
+                                </a>
+                            {% endif %}
+
+                            <a href="{% url 'appointments:booking_service' %}" class="btn header-btn">
+                                <span>Book Now</span>
+                            </a>
+                        </div>
+
+                        <!-- Mobile Menu Toggle -->
+                        <div class="col-12">
+                            <div class="mobile_menu d-block d-lg-none"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Header Spacer -->
+    <div class="header-spacer" style="height: 120px;"></div>
+
+    <main class="container py-4">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer-section">
+        <!-- Newsletter Section -->
+        <div class="newsletter-section py-5 bg-secondary">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-lg-6 mb-4 mb-lg-0">
+                        <h3 class="text-white font-serif mb-2">Subscribe to Our Newsletter</h3>
+                        <p class="text-light mb-0">Stay updated with our latest offers, styles, and grooming tips.</p>
+                    </div>
+                    <div class="col-lg-6">
+                        <form class="newsletter-form d-flex">
+                            <input type="email" class="form-control form-control-lg rounded-0 border-0" placeholder="Your Email Address">
+                            <button type="submit" class="btn btn-primary rounded-0 px-4">Subscribe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Footer -->
+        <div class="main-footer py-5">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-lg-4 col-md-6 mb-4 mb-md-0">
+                        <div class="footer-logo-section">
+                            <img src="/static/images/logo.png" alt="Barberian" height="60" class="mb-4 footer-logo">
+                            <p class="mb-4 text-light">Your premium barbershop experience. We provide top-notch haircuts, styling, and grooming services for the modern gentleman.</p>
+                            <div class="social-icons d-flex">
+                                <a href="#" class="social-icon-circle me-3">
+                                    <i class="bi bi-facebook"></i>
+                                </a>
+                                <a href="#" class="social-icon-circle me-3">
+                                    <i class="bi bi-instagram"></i>
+                                </a>
+                                <a href="#" class="social-icon-circle me-3">
+                                    <i class="bi bi-twitter"></i>
+                                </a>
+                                <a href="#" class="social-icon-circle">
+                                    <i class="bi bi-youtube"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-2 col-md-6 mb-4 mb-md-0">
+                        <h5 class="text-white font-serif mb-4 footer-heading">Quick Links</h5>
+                        <ul class="list-unstyled footer-links">
+                            <li><a href="{% url 'client_portal:home' %}"><i class="bi bi-chevron-right"></i> Home</a></li>
+                            <li><a href="{% url 'client_portal:services' %}"><i class="bi bi-chevron-right"></i> Services</a></li>
+                            <li><a href="#"><i class="bi bi-chevron-right"></i> Our Barbers</a></li>
+                            <li><a href="{% url 'reviews:review_list' %}"><i class="bi bi-chevron-right"></i> Testimonials</a></li>
+                            <li><a href="{% url 'client_portal:about' %}"><i class="bi bi-chevron-right"></i> About Us</a></li>
+                            <li><a href="{% url 'client_portal:contact' %}"><i class="bi bi-chevron-right"></i> Contact</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6 mb-4 mb-md-0">
+                        <h5 class="text-white font-serif mb-4 footer-heading">Our Services</h5>
+                        <ul class="list-unstyled footer-links">
+                            <li><a href="#"><i class="bi bi-chevron-right"></i> Classic Haircuts</a></li>
+                            <li><a href="#"><i class="bi bi-chevron-right"></i> Beard Grooming</a></li>
+                            <li><a href="#"><i class="bi bi-chevron-right"></i> Hot Towel Shaves</a></li>
+                            <li><a href="#"><i class="bi bi-chevron-right"></i> Hair Styling</a></li>
+                            <li><a href="#"><i class="bi bi-chevron-right"></i> Hair Coloring</a></li>
+                            <li><a href="#"><i class="bi bi-chevron-right"></i> Kids Haircuts</a></li>
+                        </ul>
+                    </div>
+
+                    <div class="col-lg-3 col-md-6">
+                        <h5 class="text-white font-serif mb-4 footer-heading">Contact Information</h5>
+                        <ul class="list-unstyled contact-info">
+                            <li class="d-flex mb-3">
+                                <div class="contact-icon me-3">
+                                    <i class="bi bi-geo-alt-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 text-light">123 Barber Street</p>
+                                    <p class="mb-0 text-light">Haircut City, HC 12345</p>
+                                </div>
+                            </li>
+                            <li class="d-flex mb-3">
+                                <div class="contact-icon me-3">
+                                    <i class="bi bi-telephone-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 text-light">(123) 456-7890</p>
+                                </div>
+                            </li>
+                            <li class="d-flex mb-3">
+                                <div class="contact-icon me-3">
+                                    <i class="bi bi-envelope-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 text-light">info@barberian.com</p>
+                                </div>
+                            </li>
+                            <li class="d-flex">
+                                <div class="contact-icon me-3">
+                                    <i class="bi bi-clock-fill"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 text-light">Mon-Fri: 9:00 AM - 8:00 PM</p>
+                                    <p class="mb-0 text-light">Sat: 9:00 AM - 6:00 PM</p>
+                                    <p class="mb-0 text-light">Sun: 10:00 AM - 4:00 PM</p>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Bottom -->
+        <div class="footer-bottom py-3">
+            <div class="container">
+                <div class="row align-items-center">
+                    <div class="col-md-6 mb-3 mb-md-0">
+                        <p class="mb-0 text-light">&copy; {% now "Y" %} Barberian. All rights reserved.</p>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <div class="footer-bottom-links">
+                            <a href="#" class="text-light me-3">Privacy Policy</a>
+                            <a href="#" class="text-light me-3">Terms of Service</a>
+                            <a href="#" class="text-light">Sitemap</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Back to top button -->
+    <a href="#" class="back-to-top">
+        <i class="bi bi-arrow-up"></i>
+    </a>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <!-- AOS Animation Library -->
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@10/swiper-bundle.min.js"></script>
+
+    <!-- GSAP -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.4/ScrollTrigger.min.js"></script>
+
+    <!-- SlickNav Mobile Menu -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/SlickNav/1.0.10/jquery.slicknav.min.js"></script>
+
+    <!-- Custom JS -->
+    <script src="/static/js/client-script.js"></script>
+
+    <script>
+        // Splash Screen Handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const splashScreen = document.getElementById('splash-screen');
+
+            if (splashScreen && !splashScreen.classList.contains('splash-hidden')) {
+                // Set timeout to hide splash screen after animations
+                setTimeout(function() {
+                    splashScreen.classList.add('splash-exit');
+                    document.body.classList.remove('splash-active');
+
+                    // Hide splash screen completely after exit animation
+                    setTimeout(function() {
+                        splashScreen.classList.add('splash-hidden');
+                    }, 500);
+
+                    // Set cookie to remember that user has seen splash screen
+                    document.cookie = "seen_splash=true; max-age=86400; path=/";
+                }, 4000); // Total time: 4 seconds
+            }
+        });
+
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            easing: 'ease-out',
+            once: true,
+            offset: 100
+        });
+
+        // Brber-Inspired Sticky Header
+        $(window).on('scroll', function () {
+            var scroll = $(window).scrollTop();
+            if (scroll < 245) {
+                $(".header-sticky").removeClass("sticky-bar");
+            } else {
+                $(".header-sticky").addClass("sticky-bar");
+            }
+        });
+
+        // Back to top button
+        $(window).scroll(function() {
+            if ($(this).scrollTop() > 300) {
+                $('.back-to-top').addClass('show');
+            } else {
+                $('.back-to-top').removeClass('show');
+            }
+        });
+
+        $('.back-to-top').click(function(e) {
+            e.preventDefault();
+            $('html, body').animate({scrollTop: 0}, 800);
+            return false;
+        });
+
+        // Initialize GSAP ScrollTrigger
+        gsap.registerPlugin(ScrollTrigger);
+
+        // Initialize SlickNav Mobile Menu
+        $('#navigation').slicknav({
+            prependTo: '.mobile_menu',
+            closedSymbol: '+',
+            openedSymbol: '-',
+            label: ''
+        });
+
+        // Add active class to current nav item
+        $(document).ready(function() {
+            const currentLocation = location.pathname;
+            const menuItems = document.querySelectorAll('.navbar-nav .nav-link');
+            const menuLength = menuItems.length;
+
+            for (let i = 0; i < menuLength; i++) {
+                const href = menuItems[i].getAttribute('href');
+
+                // Skip if href is # or javascript:void(0)
+                if (href === '#' || href === 'javascript:void(0)') {
+                    continue;
+                }
+
+                // Check if current path matches or starts with the href
+                if (href === currentLocation ||
+                    (href !== '/' && currentLocation.startsWith(href))) {
+                    menuItems[i].classList.add('active');
+                }
+            }
+
+            // Initialize tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

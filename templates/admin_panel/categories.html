@@ -1,0 +1,179 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Service Categories | Barberian Admin{% endblock %}
+
+{% block page_title %}Service Categories{% endblock %}
+
+{% block admin_content %}
+<!-- Categories Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+    <!-- Card Header -->
+    <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="mb-4 sm:mb-0">
+            <h3 class="text-lg font-semibold text-gray-800">Service Categories</h3>
+            <p class="text-sm text-gray-500 mt-1">Manage your service categories</p>
+        </div>
+        <a href="{% url 'admin_panel:category_create' %}" class="inline-flex items-center px-4 py-2 bg-primary-400 hover:bg-primary-500 text-white rounded-lg transition-colors duration-200 shadow-sm">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">add</span>
+            Add New Category
+        </a>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="p-6 pb-0">
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Categories Grid -->
+    <div class="p-6">
+        {% if categories %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {% for category in categories %}
+                    <div class="bg-white rounded-xl shadow-card overflow-hidden transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-200 relative">
+                            {% if category.image %}
+                                <img src="{{ category.image.url }}" alt="{{ category.name }}" class="object-cover w-full h-full">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center bg-gray-100">
+                                    <span class="material-icons-outlined text-gray-400 text-5xl">category</span>
+                                </div>
+                            {% endif %}
+
+                            <!-- Status Badge -->
+                            <div class="absolute top-3 right-3">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                                    {% if category.is_active %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {% if category.is_active %}Active{% else %}Inactive{% endif %}
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="p-4">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ category.name }}</h3>
+                            <p class="text-sm text-gray-600 mb-3 line-clamp-2">{{ category.description|truncatechars:100 }}</p>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span class="material-icons-outlined mr-1" style="font-size: 14px;">design_services</span>
+                                {{ category.service_set.count }} services
+                            </div>
+                        </div>
+
+                        <div class="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-between">
+                            <a href="{% url 'admin_panel:category_edit' category.id %}" class="inline-flex items-center text-sm font-medium text-primary-400 hover:text-primary-500 transition-colors duration-200">
+                                <span class="material-icons-outlined mr-1" style="font-size: 16px;">edit</span>
+                                Edit
+                            </a>
+                            <button onclick="confirmDelete('{{ category.id }}', '{{ category.name }}')" class="inline-flex items-center text-sm font-medium text-red-500 hover:text-red-600 transition-colors duration-200">
+                                <span class="material-icons-outlined mr-1" style="font-size: 16px;">delete</span>
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="flex flex-col items-center justify-center py-12">
+                <span class="material-icons-outlined text-gray-300 text-6xl mb-4">category</span>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No categories found</h3>
+                <p class="text-gray-500 mb-4">Add some categories to organize your services.</p>
+                <a href="{% url 'admin_panel:category_create' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">add</span>
+                    Add New Category
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl transform transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Confirm Deletion</h3>
+            <button onclick="closeModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-sm text-gray-500">Are you sure you want to delete <span id="categoryName" class="font-semibold"></span>? This action cannot be undone and will also delete all services in this category.</p>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeModal()" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                Cancel
+            </button>
+            <a id="deleteLink" href="#" class="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    function confirmDelete(categoryId, categoryName) {
+        document.getElementById('categoryName').textContent = categoryName;
+        document.getElementById('deleteLink').href = "{% url 'admin_panel:category_delete' 0 %}".replace('0', categoryId);
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    document.getElementById('deleteModal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !document.getElementById('deleteModal').classList.contains('hidden')) {
+            closeModal();
+        }
+    });
+</script>
+{% endblock %}
+
+{% block admin_css %}
+<style>
+    /* Aspect ratio utility */
+    .aspect-w-16 {
+        position: relative;
+        padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
+        --tw-aspect-w: 16;
+    }
+
+    .aspect-h-9 {
+        --tw-aspect-h: 9;
+    }
+
+    .aspect-w-16 > * {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+
+    /* Line clamp for text truncation */
+    .line-clamp-2 {
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+    }
+</style>
+{% endblock %}

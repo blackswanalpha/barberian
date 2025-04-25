@@ -1,0 +1,83 @@
+{% extends 'admin_base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:business_hours' %}">Business Hours</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Edit Business Hours</li>
+            </ol>
+        </nav>
+        <h1>Edit Business Hours</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Edit Hours for {{ business_hour.get_day_of_week_display }}</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.is_open }}
+                        <label class="form-check-label" for="{{ form.is_open.id_for_label }}">
+                            Open on this day
+                        </label>
+                        {% if form.is_open.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.is_open.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.opening_time.id_for_label }}" class="form-label">Opening Time</label>
+                            {{ form.opening_time }}
+                            {% if form.opening_time.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.opening_time.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="{{ form.closing_time.id_for_label }}" class="form-label">Closing Time</label>
+                            {{ form.closing_time }}
+                            {% if form.closing_time.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ form.closing_time.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'admin_panel:business_hours' %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

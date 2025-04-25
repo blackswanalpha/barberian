@@ -1,0 +1,27 @@
+{% extends 'emails/base.html' %}
+
+{% block title %}Payment Confirmation{% endblock %}
+
+{% block header %}Payment Confirmation{% endblock %}
+
+{% block content %}
+<p>Dear {{ user.get_full_name }},</p>
+
+<p>Thank you for your payment! Your transaction has been successfully processed.</p>
+
+<div class="payment-details">
+    <p><strong>Service:</strong> {{ payment.appointment.service.name }}</p>
+    <p><strong>Amount:</strong> ${{ payment.amount }}</p>
+    <p><strong>Payment Method:</strong> {{ payment.get_payment_method_display }}</p>
+    <p><strong>Transaction ID:</strong> {{ payment.transaction_id|default:"N/A" }}</p>
+    <p><strong>Date:</strong> {{ payment.payment_date|date:"F d, Y" }}</p>
+</div>
+
+<p>Your invoice has been marked as paid. You can view your invoice and payment details by clicking the button below.</p>
+
+<a href="http://localhost:8000/payments/invoices/{{ payment.invoice.id }}/" class="btn">View Invoice</a>
+
+<p>Thank you for choosing Barberian!</p>
+
+<p>Best regards,<br>The Barberian Team</p>
+{% endblock %}

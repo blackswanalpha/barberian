@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row mb-4" data-aos="fade-up">
+    <div class="col-md-12">
+        <h1 class="mb-0">{{ title }}</h1>
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'client_portal:home' %}">Home</a></li>
+                <li class="breadcrumb-item active" aria-current="page">My Appointments</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4" data-aos="fade-up" data-aos-delay="100">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0"><i class="bi bi-funnel me-2"></i>Filter Appointments</h5>
+            </div>
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="date" class="form-label">Date</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-calendar3"></i></span>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ request.GET.date }}">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="status" class="form-label">Status</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="bi bi-tag"></i></span>
+                            <select class="form-select" id="status" name="status">
+                                <option value="">All</option>
+                                <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                                <option value="confirmed" {% if request.GET.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                                <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                <option value="completed" {% if request.GET.status == 'completed' %}selected{% endif %}>Completed</option>
+                                <option value="no_show" {% if request.GET.status == 'no_show' %}selected{% endif %}>No Show</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">
+                            <i class="bi bi-search me-1"></i> Filter
+                        </button>
+                        <a href="{% url 'appointments:appointment_list' %}" class="btn btn-outline-secondary">
+                            <i class="bi bi-x-circle me-1"></i> Reset
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row" data-aos="fade-up" data-aos-delay="200">
+    <div class="col-md-12">
+        {% if user.role == 'client' %}
+            <div class="d-flex justify-content-end mb-3">
+                <a href="{% url 'appointments:booking_service' %}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i> Book New Appointment
+                </a>
+            </div>
+        {% endif %}
+
+        {% if appointments %}
+            <div class="card shadow-sm">
+                <div class="card-header bg-light">
+                    <ul class="nav nav-tabs card-header-tabs" id="appointmentTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="true">
+                                <i class="bi bi-calendar-check me-2"></i>Upcoming
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab" aria-controls="past" aria-selected="false">
+                                <i class="bi bi-calendar-x me-2"></i>Past
+                            </button>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content" id="appointmentTabsContent">
+                        <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+                            <div class="row g-4">
+                                {% for appointment in appointments %}
+                                    {% if appointment.is_upcoming %}
+                                        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:2 }}00">
+                                            <div class="card h-100 border-0 shadow-sm appointment-card">
+                                                <div class="card-header bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% else %}secondary{% endif %} text-white">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h5 class="mb-0">{{ appointment.service.name }}</h5>
+                                                        <span class="badge bg-light text-dark">{{ appointment.start_time|date:"M d, Y" }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="appointment-details">
+                                                        <div class="appointment-detail">
+                                                            <i class="bi bi-clock me-2 text-primary"></i>
+                                                            <span>{{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</span>
+                                                        </div>
+
+                                                        {% if user.role == 'client' %}
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-person me-2 text-primary"></i>
+                                                                <span>{{ appointment.staff.get_full_name }}</span>
+                                                            </div>
+                                                        {% elif user.role == 'staff' %}
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-person me-2 text-primary"></i>
+                                                                <span>{{ appointment.client.get_full_name }}</span>
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-person me-2 text-primary"></i>
+                                                                <span>Client: {{ appointment.client.get_full_name }}</span>
+                                                            </div>
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-scissors me-2 text-primary"></i>
+                                                                <span>Barber: {{ appointment.staff.get_full_name }}</span>
+                                                            </div>
+                                                        {% endif %}
+
+                                                        <div class="appointment-detail">
+                                                            <i class="bi bi-tag me-2 text-primary"></i>
+                                                            <span class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% else %}secondary{% endif %}">{{ appointment.status|title }}</span>
+                                                        </div>
+
+                                                        <div class="appointment-detail">
+                                                            <i class="bi bi-currency-dollar me-2 text-primary"></i>
+                                                            <span>${{ appointment.service.price }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer bg-light">
+                                                    <div class="d-flex justify-content-between">
+                                                        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-sm btn-primary">
+                                                            <i class="bi bi-eye me-1"></i> View Details
+                                                        </a>
+                                                        <div>
+                                                            {% if appointment.status in 'pending,confirmed' %}
+                                                                <a href="{% url 'appointments:appointment_reschedule' appointment.id %}" class="btn btn-sm btn-outline-secondary">
+                                                                    <i class="bi bi-calendar-plus me-1"></i> Reschedule
+                                                                </a>
+                                                                <a href="{% url 'appointments:appointment_cancel' appointment.id %}" class="btn btn-sm btn-outline-danger">
+                                                                    <i class="bi bi-x-circle me-1"></i> Cancel
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% empty %}
+                                    <div class="col-12">
+                                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                                            <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+                                            <div>
+                                                No upcoming appointments found.
+                                                {% if user.role == 'client' %}
+                                                    <a href="{% url 'appointments:booking_service' %}" class="alert-link ms-2">Book an appointment now</a>.
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
+                            <div class="row g-4">
+                                {% for appointment in appointments %}
+                                    {% if appointment.is_past %}
+                                        <div class="col-lg-6" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:2 }}00">
+                                            <div class="card h-100 border-0 shadow-sm appointment-card">
+                                                <div class="card-header bg-{% if appointment.status == 'completed' %}success{% elif appointment.status == 'cancelled' %}danger{% elif appointment.status == 'no_show' %}warning{% else %}secondary{% endif %} text-white">
+                                                    <div class="d-flex justify-content-between align-items-center">
+                                                        <h5 class="mb-0">{{ appointment.service.name }}</h5>
+                                                        <span class="badge bg-light text-dark">{{ appointment.start_time|date:"M d, Y" }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="card-body">
+                                                    <div class="appointment-details">
+                                                        <div class="appointment-detail">
+                                                            <i class="bi bi-clock me-2 text-primary"></i>
+                                                            <span>{{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</span>
+                                                        </div>
+
+                                                        {% if user.role == 'client' %}
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-person me-2 text-primary"></i>
+                                                                <span>{{ appointment.staff.get_full_name }}</span>
+                                                            </div>
+                                                        {% elif user.role == 'staff' %}
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-person me-2 text-primary"></i>
+                                                                <span>{{ appointment.client.get_full_name }}</span>
+                                                            </div>
+                                                        {% else %}
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-person me-2 text-primary"></i>
+                                                                <span>Client: {{ appointment.client.get_full_name }}</span>
+                                                            </div>
+                                                            <div class="appointment-detail">
+                                                                <i class="bi bi-scissors me-2 text-primary"></i>
+                                                                <span>Barber: {{ appointment.staff.get_full_name }}</span>
+                                                            </div>
+                                                        {% endif %}
+
+                                                        <div class="appointment-detail">
+                                                            <i class="bi bi-tag me-2 text-primary"></i>
+                                                            <span class="badge bg-{% if appointment.status == 'completed' %}success{% elif appointment.status == 'cancelled' %}danger{% elif appointment.status == 'no_show' %}warning{% else %}secondary{% endif %}">{{ appointment.status|title }}</span>
+                                                        </div>
+
+                                                        <div class="appointment-detail">
+                                                            <i class="bi bi-currency-dollar me-2 text-primary"></i>
+                                                            <span>${{ appointment.service.price }}</span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="card-footer bg-light">
+                                                    <div class="d-flex justify-content-between">
+                                                        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-sm btn-primary">
+                                                            <i class="bi bi-eye me-1"></i> View Details
+                                                        </a>
+                                                        {% if user.role == 'client' and appointment.status == 'completed' %}
+                                                            <a href="{% url 'appointments:booking_service' %}" class="btn btn-sm btn-success">
+                                                                <i class="bi bi-arrow-repeat me-1"></i> Book Again
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% empty %}
+                                    <div class="col-12">
+                                        <div class="alert alert-info d-flex align-items-center" role="alert">
+                                            <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+                                            <div>
+                                                No past appointments found.
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="alert alert-info d-flex align-items-center" role="alert">
+                <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+                <div>
+                    No appointments found.
+                    {% if user.role == 'client' %}
+                        <a href="{% url 'appointments:booking_service' %}" class="alert-link ms-2">Book an appointment now</a>.
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<style>
+    .appointment-card {
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+
+    .appointment-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .appointment-card .card-header {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .appointment-card .card-header::before {
+        content: '';
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 40px;
+        height: 40px;
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 50%;
+        transform: scale(0);
+        transition: transform 0.5s ease;
+    }
+
+    .appointment-card:hover .card-header::before {
+        transform: scale(10);
+    }
+
+    .appointment-details {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .appointment-detail {
+        display: flex;
+        align-items: center;
+    }
+
+    .appointment-detail i {
+        font-size: 1.2rem;
+        width: 24px;
+    }
+
+    .card-footer .btn {
+        transition: all 0.3s ease;
+    }
+
+    .card-footer .btn:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Tab styling */
+    .nav-tabs .nav-link {
+        border: none;
+        color: var(--dark-gray);
+        font-weight: 500;
+        padding: 10px 20px;
+        border-radius: 0;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .nav-tabs .nav-link::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 3px;
+        background-color: var(--golden-yellow);
+        transition: width 0.3s ease;
+    }
+
+    .nav-tabs .nav-link.active {
+        color: var(--dark-blue);
+        background-color: transparent;
+        border: none;
+    }
+
+    .nav-tabs .nav-link.active::after {
+        width: 100%;
+    }
+
+    .nav-tabs .nav-link:hover::after {
+        width: 100%;
+    }
+
+    /* Animation for tab content */
+    .tab-pane {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+{% endblock %}

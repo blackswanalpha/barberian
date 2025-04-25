@@ -1,0 +1,26 @@
+{% extends 'emails/base.html' %}
+
+{% block title %}Appointment Cancellation{% endblock %}
+
+{% block header %}Appointment Cancellation{% endblock %}
+
+{% block content %}
+<p>Dear {{ client.get_full_name }},</p>
+
+<p>Your appointment has been cancelled. Here are the details of the cancelled appointment:</p>
+
+<div class="appointment-details">
+    <p><strong>Service:</strong> {{ service.name }}</p>
+    <p><strong>Date:</strong> {{ appointment.start_time|date:"F d, Y" }}</p>
+    <p><strong>Time:</strong> {{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</p>
+    <p><strong>Barber:</strong> {{ staff.get_full_name }}</p>
+</div>
+
+<p>If you would like to book a new appointment, please visit our website or give us a call.</p>
+
+<a href="http://localhost:8000/client/appointments/booking/service/" class="btn">Book New Appointment</a>
+
+<p>Thank you for choosing Barberian.</p>
+
+<p>Best regards,<br>The Barberian Team</p>
+{% endblock %}

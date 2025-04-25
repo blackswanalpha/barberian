@@ -1,0 +1,391 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Media Gallery | Barberian Admin{% endblock %}
+
+{% block page_title %}Media Gallery{% endblock %}
+
+{% block admin_content %}
+<!-- Media Gallery Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-xl font-semibold text-gray-800">Media Gallery</h2>
+        <p class="text-sm text-gray-500 mt-1">Manage your media files in a visual gallery view</p>
+    </div>
+    <div class="mt-4 md:mt-0 flex flex-col sm:flex-row gap-3">
+        <a href="{% url 'admin_panel:media' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">list</span>
+            List View
+        </a>
+        <button type="button" class="inline-flex items-center px-4 py-2 bg-primary-400 hover:bg-primary-500 text-white rounded-lg transition-colors duration-200 shadow-sm" data-bs-toggle="modal" data-bs-target="#uploadModal">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">add_photo_alternate</span>
+            Add New Media
+        </button>
+    </div>
+</div>
+
+<!-- Filters Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+    <div class="p-6">
+        <form method="get" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="filter_type" class="block text-sm font-medium text-gray-700 mb-1">Media Type</label>
+                <select name="type" id="filter_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md">
+                    <option value="">All Types</option>
+                    <option value="image" {% if request.GET.type == 'image' %}selected{% endif %}>Images</option>
+                    <option value="video" {% if request.GET.type == 'video' %}selected{% endif %}>Videos</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="filter_service" class="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                <select name="service" id="filter_service" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md">
+                    <option value="">All Services</option>
+                    {% for service in services %}
+                        <option value="{{ service.id }}" {% if request.GET.service == service.id|stringformat:"i" %}selected{% endif %}>{{ service.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="flex items-end">
+                <div class="flex gap-2 w-full">
+                    <button type="submit" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">filter_alt</span>
+                        Apply Filters
+                    </button>
+                    
+                    {% if request.GET.type or request.GET.service %}
+                        <a href="{% url 'admin_panel:media_gallery' %}" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">clear</span>
+                            Clear
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Gallery Content -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden">
+    <div class="p-6">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% if media_files %}
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                {% for media in media_files %}
+                    <div class="group relative bg-white rounded-lg overflow-hidden shadow-card hover:shadow-card-hover transition-all duration-300 transform hover:-translate-y-1">
+                        <div class="aspect-w-16 aspect-h-9 bg-gray-200 relative">
+                            {% if media.media_type == 'image' %}
+                                <img src="{{ media.file.url }}" alt="{{ media.file.name }}" class="object-cover w-full h-full">
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center bg-gray-800">
+                                    <video class="w-full h-full object-cover">
+                                        <source src="{{ media.file.url }}" type="video/mp4">
+                                        Your browser does not support the video tag.
+                                    </video>
+                                    <span class="absolute material-icons-outlined text-white text-5xl">play_circle</span>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Overlay with actions -->
+                            <div class="absolute inset-0 bg-black bg-opacity-60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                <div class="flex space-x-2">
+                                    <a href="{{ media.file.url }}" target="_blank" class="p-2 bg-white rounded-full text-gray-800 hover:text-primary-500 transition-colors duration-200" title="View">
+                                        <span class="material-icons-outlined">visibility</span>
+                                    </a>
+                                    {% if media.media_type == 'image' %}
+                                        <a href="{% url 'admin_panel:media_edit' media.id %}" class="p-2 bg-white rounded-full text-gray-800 hover:text-primary-500 transition-colors duration-200" title="Edit">
+                                            <span class="material-icons-outlined">edit</span>
+                                        </a>
+                                    {% endif %}
+                                    {% if media.service and not media.is_primary %}
+                                        <a href="{% url 'admin_panel:media_set_primary' media.id %}" class="p-2 bg-white rounded-full text-gray-800 hover:text-primary-500 transition-colors duration-200" title="Set as Primary">
+                                            <span class="material-icons-outlined">star</span>
+                                        </a>
+                                    {% endif %}
+                                    <button onclick="confirmDelete('{{ media.id }}', '{{ media.file.name|truncatechars:20 }}')" class="p-2 bg-white rounded-full text-gray-800 hover:text-red-500 transition-colors duration-200" title="Delete">
+                                        <span class="material-icons-outlined">delete</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-4">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ media.file.name|truncatechars:20 }}</p>
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        {% if media.service %}
+                                            {{ media.service.name }}
+                                        {% else %}
+                                            Unassigned
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                {% if media.is_primary %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Primary
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="flex flex-col items-center justify-center py-12">
+                <span class="material-icons-outlined text-gray-300 text-6xl mb-4">image_not_supported</span>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No media files found</h3>
+                <p class="text-gray-500 mb-4">Upload some media files to get started.</p>
+                <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">add_photo_alternate</span>
+                    Upload Media
+                </button>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl transform transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Upload Media</h3>
+            <button onclick="closeUploadModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+        <form method="post" enctype="multipart/form-data" action="{% url 'admin_panel:media_upload' %}">
+            {% csrf_token %}
+            <div class="space-y-4">
+                <div>
+                    <label for="media_type" class="block text-sm font-medium text-gray-700">Media Type</label>
+                    <select name="media_type" id="media_type" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md">
+                        <option value="image">Image</option>
+                        <option value="video">Video</option>
+                    </select>
+                </div>
+                
+                <div>
+                    <label for="service" class="block text-sm font-medium text-gray-700">Service (Optional)</label>
+                    <select name="service" id="service" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md">
+                        <option value="">-- Select Service --</option>
+                        {% for service in services %}
+                            <option value="{{ service.id }}">{{ service.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500">If selected, this media will be associated with the service.</p>
+                </div>
+                
+                <div>
+                    <label for="file" class="block text-sm font-medium text-gray-700">File</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <span class="material-icons-outlined mx-auto text-gray-400 text-3xl">cloud_upload</span>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="file" class="relative cursor-pointer bg-white rounded-md font-medium text-primary-400 hover:text-primary-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-primary-400">
+                                    <span>Upload a file</span>
+                                    <input id="file" name="file" type="file" class="sr-only" required>
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PNG, JPG, GIF, MP4 up to 10MB</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        <input id="is_primary" name="is_primary" type="checkbox" class="focus:ring-primary-400 h-4 w-4 text-primary-400 border-gray-300 rounded">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="is_primary" class="font-medium text-gray-700">Set as primary</label>
+                        <p class="text-gray-500">If checked, this will be the main image/video for the service.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="mt-5 sm:mt-6 flex justify-end space-x-3">
+                <button type="button" onclick="closeUploadModal()" class="inline-flex justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    Cancel
+                </button>
+                <button type="submit" class="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    Upload
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center z-50 hidden">
+    <div class="bg-white rounded-lg max-w-md w-full p-6 shadow-xl transform transition-all">
+        <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-gray-900">Confirm Deletion</h3>
+            <button onclick="closeDeleteModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                <span class="material-icons-outlined">close</span>
+            </button>
+        </div>
+        <div class="mb-6">
+            <p class="text-sm text-gray-500">Are you sure you want to delete <span id="mediaName" class="font-semibold"></span>? This action cannot be undone.</p>
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="closeDeleteModal()" class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                Cancel
+            </button>
+            <a id="deleteLink" href="#" class="inline-flex justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                Delete
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_css %}
+<style>
+    /* Aspect ratio utility */
+    .aspect-w-16 {
+        position: relative;
+        padding-bottom: calc(var(--tw-aspect-h) / var(--tw-aspect-w) * 100%);
+        --tw-aspect-w: 16;
+    }
+    
+    .aspect-h-9 {
+        --tw-aspect-h: 9;
+    }
+    
+    .aspect-w-16 > * {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+    }
+    
+    /* File upload styling */
+    .file-upload-container {
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .file-upload-container input[type="file"] {
+        position: absolute;
+        font-size: 100px;
+        opacity: 0;
+        right: 0;
+        top: 0;
+    }
+</style>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    // File upload preview
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('file');
+        const fileUploadContainer = document.querySelector('.border-dashed');
+        
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.createElement('div');
+                        preview.className = 'mt-3';
+                        
+                        if (file.type.startsWith('image/')) {
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'h-24 w-auto mx-auto rounded';
+                            preview.appendChild(img);
+                        } else if (file.type.startsWith('video/')) {
+                            const videoContainer = document.createElement('div');
+                            videoContainer.className = 'h-24 w-auto mx-auto bg-gray-800 rounded flex items-center justify-center';
+                            
+                            const icon = document.createElement('span');
+                            icon.className = 'material-icons-outlined text-white text-3xl';
+                            icon.textContent = 'video_file';
+                            
+                            videoContainer.appendChild(icon);
+                            preview.appendChild(videoContainer);
+                        }
+                        
+                        const fileName = document.createElement('p');
+                        fileName.className = 'text-xs text-gray-500 mt-1 text-center';
+                        fileName.textContent = file.name;
+                        preview.appendChild(fileName);
+                        
+                        // Remove existing preview if any
+                        const existingPreview = fileUploadContainer.querySelector('.mt-3');
+                        if (existingPreview) {
+                            existingPreview.remove();
+                        }
+                        
+                        fileUploadContainer.appendChild(preview);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+    });
+
+    // Delete confirmation modal
+    function confirmDelete(mediaId, mediaName) {
+        document.getElementById('mediaName').textContent = mediaName;
+        document.getElementById('deleteLink').href = "{% url 'admin_panel:media_delete' 0 %}".replace('0', mediaId);
+        document.getElementById('deleteModal').classList.remove('hidden');
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.add('hidden');
+    }
+
+    // Upload modal
+    function closeUploadModal() {
+        document.getElementById('uploadModal').classList.add('hidden');
+    }
+
+    // Show upload modal
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadButtons = document.querySelectorAll('[data-bs-toggle="modal"][data-bs-target="#uploadModal"]');
+        uploadButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('uploadModal').classList.remove('hidden');
+            });
+        });
+    });
+
+    // Close modals when clicking outside
+    document.addEventListener('click', function(e) {
+        const deleteModal = document.getElementById('deleteModal');
+        const uploadModal = document.getElementById('uploadModal');
+        
+        if (e.target === deleteModal) {
+            closeDeleteModal();
+        }
+        
+        if (e.target === uploadModal) {
+            closeUploadModal();
+        }
+    });
+
+    // Close modals with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDeleteModal();
+            closeUploadModal();
+        }
+    });
+</script>
+{% endblock %}

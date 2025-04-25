@@ -1,0 +1,191 @@
+# Barberian Public Frontend Wireframes
+
+## Global Layout Components
+
+### Main Layout
+- **Structure**: Full-page layout with fixed header, main content area, and footer
+- **Components**:
+  - Navbar (fixed at top)
+  - Main content area (dynamic based on route)
+  - Footer (at bottom)
+- **Behavior**:
+  - Shows splash screen on initial load
+  - Handles protected routes (booking page requires authentication)
+  - Manages scroll animations for elements with "animate-on-scroll" class
+
+### Navbar
+- **Structure**: Responsive navigation bar with logo, navigation links, and action buttons
+- **Components**:
+  - Logo (left-aligned): Image + text "Barberians Cuts & Spa"
+  - Navigation links (center): Home, Services (dropdown), Gallery, About, Contact
+  - Action buttons (right): Login/User dropdown, Book Now button
+- **Behavior**:
+  - Changes background on scroll (transparent to white/black with blur)
+  - Services dropdown shows submenu with service categories
+  - Mobile view: Collapses to hamburger menu with slide-in drawer
+  - User dropdown shows profile, appointments, logout options when logged in
+  - Shows login button when not authenticated
+
+### Footer
+- **Structure**: Four-column layout with company info, quick links, contact info, and newsletter
+- **Components**:
+  - Company section: Logo, description, social media links
+  - Quick Links: Services, Staff, Gallery, About, Contact, Book Appointment
+  - Contact Info: Address, phone, email, hours
+  - Newsletter: Email input and subscribe button
+  - Bottom bar: Copyright, terms, privacy policy links
+- **Behavior**: Static footer with hover effects on links
+
+## Page Components
+
+### Home Page
+- **Sections**:
+  1. **Hero Section**:
+     - Full-width background image with overlay
+     - Heading with gradient text effect
+     - Subheading text
+     - Two CTA buttons: "Book Appointment" and "Our Services"
+     - "Open Today" indicator with pulse animation
+  
+  2. **Features Section**:
+     - Heading with gold accent
+     - Three feature cards with icons: Expert Barbers, Premium Experience, Convenient Booking
+     - Each card has icon, title, and description
+  
+  3. **Services Section**:
+     - Heading with gold accent
+     - Grid of service cards (4 cards)
+     - Each card has: image, service name, price, duration, description, and "Book Now" button
+     - "View All Services" button at bottom
+  
+  4. **About Section**:
+     - Imported from About component
+  
+  5. **Staff Section**:
+     - Heading with description
+     - Three staff cards with images, names, roles, and bios
+     - "Meet All Staff" button at bottom
+  
+  6. **Testimonials Section**:
+     - Dark background with gold accents
+     - Heading with client testimonials
+     - Three testimonial cards with star ratings, text, and client name
+  
+  7. **Contact/Location Section**:
+     - Two-column layout
+     - Left: Heading, description, address, hours, contact info, and CTA button
+     - Right: Google Maps embed
+  
+  8. **CTA Section**:
+     - Full-width background image with overlay
+     - Heading with gold accent
+     - Description text
+     - Two CTA buttons: "Book Appointment" and "Contact Us"
+
+### Booking Page
+- **Structure**: Multi-step booking form with progress indicator
+- **Steps**:
+  1. **Service Selection**:
+     - Grid of service cards
+     - Each card shows service name, description, price, duration
+     - Click to select and proceed
+  
+  2. **Date & Time Selection**:
+     - Calendar component for date selection
+     - Time slot grid for available times
+     - Back and Continue buttons
+  
+  3. **Customer Details**:
+     - Form with fields: First Name, Last Name, Email, Phone, Notes
+     - Back and Continue buttons
+  
+  4. **Booking Confirmation**:
+     - Summary of booking details
+     - Service, date, time, customer info
+     - Confirm Booking button
+     - Success message after booking
+
+## UI Components
+
+### Button
+- **Variants**: Default, primary, outline, ghost, link, destructive
+- **Sizes**: Default, sm, lg, xl
+- **States**: Default, hover, focus, disabled
+- **Special Styles**: Gradient buttons with gold/blue gradients
+
+### Card
+- **Structure**: Container with optional header, content, and footer sections
+- **Components**: CardHeader, CardTitle, CardDescription, CardContent, CardFooter
+- **Variants**: Default, with hover effects, with border accents
+
+### Form Elements
+- **Input**: Text input with label
+- **Textarea**: Multi-line text input
+- **Calendar**: Date picker with month navigation
+- **Dropdown**: Menu with items and separators
+
+### Dialog/Modal
+- **Structure**: Overlay with centered content
+- **Components**: DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter
+
+### Toast Notifications
+- **Variants**: Default, success, error, warning
+- **Structure**: Title, description, optional close button
+- **Behavior**: Appears and disappears with animation
+
+### Loading States
+- **Spinner**: Animated loading indicator
+- **Skeleton**: Placeholder loading state for content
+
+### Splash Screen
+- **Structure**: Full-screen overlay with logo animation
+- **Behavior**: Shows on initial load, fades out when complete
+
+## Responsive Design
+
+### Desktop (1024px+)
+- Full navigation menu visible
+- Multi-column layouts for features, services, staff
+- Side-by-side layouts for contact/location section
+
+### Tablet (768px - 1023px)
+- Full navigation menu visible
+- Reduced columns for features, services, staff
+- Adjusted spacing and font sizes
+
+### Mobile (< 768px)
+- Hamburger menu with slide-in drawer
+- Single column layouts
+- Stacked elements in hero section
+- Reduced padding and margins
+- Simplified footer layout
+
+## Animation and Interaction
+
+### Scroll Animations
+- Elements with "animate-on-scroll" class fade in when scrolled into view
+- Progressive reveal of content as user scrolls down
+
+### Hover Effects
+- Buttons: Scale, shadow, and color transitions
+- Cards: Subtle lift and border color changes
+- Images: Subtle scale effect
+- Links: Color transitions
+
+### Page Transitions
+- Smooth fade-in for page content
+- Animated progress indicators for multi-step forms
+
+## Color Scheme and Typography
+
+### Colors
+- Primary: Gold gradient (barber-gold-500 to barber-gold-700)
+- Secondary: Blue gradient (barber-blue-700 to barber-blue-900)
+- Background: White (light mode) / Dark gray (dark mode)
+- Text: Dark gray (light mode) / White (dark mode)
+- Accents: Gold highlights for important elements
+
+### Typography
+- Headings: Roboto Serif (variable font with weights 400-700)
+- Body: Inter (variable font)
+- Special text: Gradient text effects for emphasis

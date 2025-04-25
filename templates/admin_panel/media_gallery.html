@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+
+{% block title %}Media Gallery | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:media' %}">Media</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Gallery</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Media Gallery</h1>
+            <div>
+                <a href="{% url 'admin_panel:media' %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-list me-1"></i> List View
+                </a>
+                <a href="{% url 'admin_panel:media_upload_modal' %}" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#uploadModal">
+                    <i class="bi bi-upload me-1"></i> Upload Media
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group mb-4">
+            <a href="{% url 'admin_panel:dashboard' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+            <a href="{% url 'admin_panel:appointments' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-check me-2"></i> Appointments
+            </a>
+            <a href="{% url 'admin_panel:calendar' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar3 me-2"></i> Calendar
+            </a>
+            <a href="{% url 'admin_panel:users' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-people me-2"></i> Users
+            </a>
+            <a href="{% url 'admin_panel:staff' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-person-badge me-2"></i> Staff
+            </a>
+            <a href="{% url 'admin_panel:services' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-scissors me-2"></i> Services
+            </a>
+            <a href="{% url 'admin_panel:categories' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-tags me-2"></i> Categories
+            </a>
+            <a href="{% url 'admin_panel:media' %}" class="list-group-item list-group-item-action active">
+                <i class="bi bi-images me-2"></i> Media
+            </a>
+            <a href="{% url 'admin_panel:reports' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-bar-chart me-2"></i> Reports
+            </a>
+            <a href="{% url 'admin_panel:business_settings' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-gear me-2"></i> Business Settings
+            </a>
+            <a href="{% url 'admin_panel:business_hours' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-clock me-2"></i> Business Hours
+            </a>
+            <a href="{% url 'admin_panel:holidays' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-x me-2"></i> Holidays
+            </a>
+            <a href="{% url 'admin_panel:logs' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-list-check me-2"></i> Activity Logs
+            </a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Filter</h5>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="mb-3">
+                        <label for="filter_type" class="form-label">Media Type</label>
+                        <select name="type" id="filter_type" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Types</option>
+                            <option value="image" {% if request.GET.type == 'image' %}selected{% endif %}>Images</option>
+                            <option value="video" {% if request.GET.type == 'video' %}selected{% endif %}>Videos</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="filter_service" class="form-label">Service</label>
+                        <select name="service" id="filter_service" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Services</option>
+                            {% for service in services %}
+                                <option value="{{ service.id }}" {% if request.GET.service == service.id|stringformat:"i" %}selected{% endif %}>{{ service.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if request.GET.type or request.GET.service %}
+                        <div class="d-grid">
+                            <a href="{% url 'admin_panel:media_gallery' %}" class="btn btn-outline-secondary">Clear Filters</a>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if media_files %}
+                    <div class="gallery-container">
+                        {% for media in media_files %}
+                            <div class="gallery-item" data-id="{{ media.id }}">
+                                <div class="gallery-item-inner">
+                                    {% if media.media_type == 'image' %}
+                                        <img src="{{ media.file.url }}" alt="Media" class="gallery-img">
+                                    {% else %}
+                                        <div class="video-thumbnail">
+                                            <i class="bi bi-play-circle-fill"></i>
+                                            <video>
+                                                <source src="{{ media.file.url }}" type="video/mp4">
+                                            </video>
+                                        </div>
+                                    {% endif %}
+                                    
+                                    <div class="gallery-overlay">
+                                        <div class="gallery-info">
+                                            <h6>{{ media.file.name|truncatechars:20 }}</h6>
+                                            {% if media.is_primary %}
+                                                <span class="badge bg-success">Primary</span>
+                                            {% endif %}
+                                            {% if media.service %}
+                                                <p>{{ media.service.name }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="gallery-actions">
+                                            <a href="{{ media.file.url }}" target="_blank" class="btn btn-sm btn-light">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                            {% if media.media_type == 'image' %}
+                                                <a href="{% url 'admin_panel:media_edit' media.id %}" class="btn btn-sm btn-light">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            {% endif %}
+                                            {% if media.service and not media.is_primary %}
+                                                <a href="{% url 'admin_panel:media_set_primary' media.id %}" class="btn btn-sm btn-light">
+                                                    <i class="bi bi-star"></i>
+                                                </a>
+                                            {% endif %}
+                                            <a href="{% url 'admin_panel:media_delete' media.id %}" class="btn btn-sm btn-light" onclick="return confirm('Are you sure you want to delete this media?');">
+                                                <i class="bi bi-trash"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        No media files found.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" aria-labelledby="uploadModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadModalLabel">Upload Media</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="post" enctype="multipart/form-data" action="{% url 'admin_panel:media_upload' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="media_type" class="form-label">Media Type</label>
+                        <select name="media_type" id="media_type" class="form-select">
+                            <option value="image">Image</option>
+                            <option value="video">Video</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="service" class="form-label">Service (Optional)</label>
+                        <select name="service" id="service" class="form-select">
+                            <option value="">-- Select Service --</option>
+                            {% for service in services %}
+                                <option value="{{ service.id }}">{{ service.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">If selected, this media will be associated with the service.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="file" class="form-label">File</label>
+                        <input type="file" name="file" id="file" class="form-control" required>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" name="is_primary" id="is_primary" class="form-check-input">
+                        <label for="is_primary" class="form-check-label">Set as primary</label>
+                        <div class="form-text">If checked, this will be the main image/video for the service.</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Upload</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+    .gallery-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        grid-gap: 15px;
+    }
+    
+    .gallery-item {
+        position: relative;
+        overflow: hidden;
+        border-radius: 8px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+    
+    .gallery-item:hover {
+        transform: translateY(-5px);
+    }
+    
+    .gallery-item-inner {
+        position: relative;
+        width: 100%;
+        height: 0;
+        padding-bottom: 100%;
+        background-color: #f8f9fa;
+    }
+    
+    .gallery-img {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .video-thumbnail {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: #212529;
+    }
+    
+    .video-thumbnail i {
+        font-size: 3rem;
+        color: white;
+    }
+    
+    .gallery-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+        color: white;
+        padding: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .gallery-item:hover .gallery-overlay {
+        opacity: 1;
+    }
+    
+    .gallery-info {
+        margin-bottom: 10px;
+    }
+    
+    .gallery-info h6 {
+        margin: 0;
+        font-size: 0.9rem;
+    }
+    
+    .gallery-info p {
+        margin: 0;
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    .gallery-actions {
+        display: flex;
+        justify-content: space-between;
+    }
+</style>
+{% endblock %}
+
+{% block page_js %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}

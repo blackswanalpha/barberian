@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h1>Our Staff</h1>
+        <p class="lead">Meet our talented team of professionals ready to serve you.</p>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-md-3 g-4">
+    {% for staff_member in staff_members %}
+        <div class="col">
+            <div class="card h-100">
+                {% if staff_member.profile_image %}
+                    <img src="{{ staff_member.profile_image.url }}" class="card-img-top" alt="{{ staff_member.get_full_name }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=No+Image" class="card-img-top" alt="No Image">
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title">{{ staff_member.get_full_name }}</h5>
+                    <p class="card-text">
+                        {% if staff_member.bio %}
+                            {{ staff_member.bio|truncatewords:20 }}
+                        {% else %}
+                            No bio available.
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'client_portal:staff_detail' staff_member.id %}" class="btn btn-primary">View Profile</a>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i> No staff members available at the moment.
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

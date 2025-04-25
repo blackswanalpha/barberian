@@ -1,0 +1,538 @@
+# UI DESIGN DOCUMENTATION
+
+## Design Philosophy
+The Barberian UI design follows a modern, professional aesthetic that balances sophistication with usability. The design language emphasizes clarity, consistency, and visual hierarchy while incorporating interactive elements that enhance the user experience.
+
+## Brand Identity
+
+### Logo
+- Primary logo: barbs.jpg
+- Logo variations:
+  - Full color (for light backgrounds)
+  - White (for dark backgrounds)
+  - Icon only (for favicon and mobile)
+- Clear space: Maintain padding equal to 25% of logo height on all sides
+- Minimum size: 40px height for digital applications
+
+### Color Palette
+
+#### Primary Colors
+- **Golden Yellow** (#FFD700)
+  - Used for: Primary buttons, highlights, accents, call-to-action elements
+  - Accessibility: Ensure sufficient contrast with text (use dark text)
+  
+- **Dark Blue** (#1A365D)
+  - Used for: Headers, navigation backgrounds, footers, secondary buttons
+  - Accessibility: Pair with white or light text for readability
+
+#### Secondary Colors
+- **Black** (#000000)
+  - Used for: Primary text, icons, borders
+  
+- **White** (#FFFFFF)
+  - Used for: Backgrounds, text on dark surfaces, cards
+
+#### Neutral Colors
+- **Light Gray** (#F5F5F5)
+  - Used for: Background accents, disabled states, section dividers
+  
+- **Medium Gray** (#CCCCCC)
+  - Used for: Borders, dividers, secondary text
+  
+- **Dark Gray** (#666666)
+  - Used for: Secondary text, icons
+
+#### Accent Colors
+- **Success Green** (#28A745)
+  - Used for: Success messages, completed status
+  
+- **Warning Orange** (#FFC107)
+  - Used for: Warnings, pending status
+  
+- **Error Red** (#DC3545)
+  - Used for: Error messages, cancelled status
+
+### Typography
+
+#### Font Families
+- **Primary Font**: Montserrat
+  - Headings, buttons, navigation
+  - Weights: 400 (regular), 500 (medium), 700 (bold)
+  
+- **Secondary Font**: Open Sans
+  - Body text, form elements, tables
+  - Weights: 400 (regular), 600 (semibold)
+
+#### Font Sizes
+- **Headings**:
+  - H1: 36px/2.25rem (desktop), 28px/1.75rem (mobile)
+  - H2: 28px/1.75rem (desktop), 24px/1.5rem (mobile)
+  - H3: 24px/1.5rem (desktop), 20px/1.25rem (mobile)
+  - H4: 20px/1.25rem (desktop), 18px/1.125rem (mobile)
+  - H5: 18px/1.125rem (desktop), 16px/1rem (mobile)
+  - H6: 16px/1rem (desktop), 14px/0.875rem (mobile)
+  
+- **Body Text**:
+  - Regular: 16px/1rem
+  - Small: 14px/0.875rem
+  - Extra Small: 12px/0.75rem
+  
+- **Button Text**:
+  - Primary: 16px/1rem
+  - Secondary: 14px/0.875rem
+
+#### Line Heights
+- Headings: 1.2
+- Body text: 1.5
+- Buttons: 1.2
+
+#### Letter Spacing
+- Headings: -0.5px
+- Body text: 0
+- Buttons and labels: 0.5px
+
+## Design Elements
+
+### Buttons
+
+#### Primary Button
+- Background: Golden Yellow (#FFD700)
+- Text: Black (#000000)
+- Border: None
+- Border Radius: 4px
+- Padding: 12px 24px
+- Font: Montserrat Medium, 16px
+- Hover State: Darken background by 10%
+- Active State: Darken background by 15%
+- Disabled State: 50% opacity
+
+#### Secondary Button
+- Background: Dark Blue (#1A365D)
+- Text: White (#FFFFFF)
+- Border: None
+- Border Radius: 4px
+- Padding: 12px 24px
+- Font: Montserrat Medium, 16px
+- Hover State: Lighten background by 10%
+- Active State: Lighten background by 15%
+- Disabled State: 50% opacity
+
+#### Tertiary Button (Outline)
+- Background: Transparent
+- Text: Dark Blue (#1A365D)
+- Border: 1px solid Dark Blue (#1A365D)
+- Border Radius: 4px
+- Padding: 12px 24px
+- Font: Montserrat Medium, 16px
+- Hover State: 10% Dark Blue background
+- Active State: 15% Dark Blue background
+- Disabled State: 50% opacity
+
+#### Icon Button
+- Size: 40px x 40px
+- Border Radius: 4px (or 20px for circular)
+- Icon Size: 20px
+- Padding: 10px
+- Hover State: 10% background tint
+- Active State: 15% background tint
+
+### Form Elements
+
+#### Text Input
+- Height: 40px
+- Border: 1px solid Medium Gray (#CCCCCC)
+- Border Radius: 4px
+- Padding: 8px 12px
+- Font: Open Sans Regular, 16px
+- Focus State: 2px Golden Yellow border
+- Error State: 1px Error Red border with error message below
+- Disabled State: Light Gray background, 50% opacity text
+
+#### Dropdown
+- Height: 40px
+- Border: 1px solid Medium Gray (#CCCCCC)
+- Border Radius: 4px
+- Padding: 8px 12px
+- Font: Open Sans Regular, 16px
+- Icon: Chevron down, right aligned
+- Focus State: 2px Golden Yellow border
+- Dropdown Menu: White background, 1px Medium Gray border, 4px border radius
+- Option Hover: Light Gray background
+
+#### Checkbox
+- Size: 20px x 20px
+- Border: 1px solid Medium Gray (#CCCCCC)
+- Border Radius: 4px
+- Checked State: Golden Yellow background, white checkmark
+- Focus State: 2px Golden Yellow border
+- Label: Open Sans Regular, 16px, left-aligned with 8px spacing
+
+#### Radio Button
+- Size: 20px x 20px
+- Border: 1px solid Medium Gray (#CCCCCC)
+- Border Radius: 10px (circular)
+- Checked State: Golden Yellow outer ring, Golden Yellow inner circle
+- Focus State: 2px Golden Yellow border
+- Label: Open Sans Regular, 16px, left-aligned with 8px spacing
+
+#### Date Picker
+- Input: Same as Text Input
+- Calendar Popup: White background, 1px Medium Gray border, 4px border radius
+- Selected Date: Golden Yellow background, Black text
+- Today: Bold text
+- Navigation: Dark Blue icons for previous/next month
+
+#### Time Picker
+- Display: Grid of available time slots
+- Available Slot: White background, 1px Medium Gray border, 4px border radius
+- Selected Slot: Golden Yellow background, Black text
+- Unavailable Slot: Light Gray background, Medium Gray text, disabled
+
+### Cards
+
+#### Standard Card
+- Background: White (#FFFFFF)
+- Border: 1px solid Light Gray (#F5F5F5)
+- Border Radius: 8px
+- Padding: 24px
+- Shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
+- Hover State: Shadow increase to 0 4px 8px rgba(0, 0, 0, 0.1)
+
+#### Service Card
+- Background: White (#FFFFFF)
+- Border: 1px solid Light Gray (#F5F5F5)
+- Border Radius: 8px
+- Image: Top-aligned, full width, 16:9 ratio
+- Title: Montserrat Bold, 18px, 16px padding from image
+- Description: Open Sans Regular, 14px
+- Price: Montserrat Bold, 16px
+- Duration: Open Sans Regular, 14px
+- Button: Bottom-aligned, full width
+
+#### Staff Card
+- Background: White (#FFFFFF)
+- Border: 1px solid Light Gray (#F5F5F5)
+- Border Radius: 8px
+- Image: Top-aligned, full width, 1:1 ratio (square)
+- Name: Montserrat Bold, 18px, 16px padding from image
+- Title: Open Sans Regular, 14px, Dark Gray
+- Specialties: Pills with Light Gray background
+- Bio: Open Sans Regular, 14px
+- Button: Bottom-aligned, full width
+
+#### Appointment Card
+- Background: White (#FFFFFF)
+- Border-left: 4px solid status color (Golden Yellow for scheduled, Success Green for completed, Error Red for cancelled)
+- Border Radius: 8px
+- Padding: 16px
+- Client/Service: Montserrat Bold, 16px
+- Date/Time: Open Sans Regular, 14px
+- Staff: Open Sans Regular, 14px
+- Status: Pill with status color background
+- Actions: Icon buttons for edit/cancel/complete
+
+### Tables
+
+#### Standard Table
+- Header Background: Dark Blue (#1A365D)
+- Header Text: White (#FFFFFF), Montserrat Medium, 14px
+- Row Background: White (#FFFFFF)
+- Alternate Row Background: Light Gray (#F5F5F5)
+- Row Border: 1px solid Light Gray (#F5F5F5)
+- Cell Padding: 12px 16px
+- Cell Text: Open Sans Regular, 14px
+- Hover State: 5% Golden Yellow tint
+- Selected State: 10% Golden Yellow tint
+
+#### Responsive Table
+- Desktop: Standard table layout
+- Mobile: Card-based layout with label-value pairs
+- Label: Montserrat Medium, 14px
+- Value: Open Sans Regular, 14px
+
+### Navigation
+
+#### Main Navigation (Admin)
+- Background: Dark Blue (#1A365D)
+- Text: White (#FFFFFF), Montserrat Medium, 14px
+- Active Item: Golden Yellow left border, White text
+- Hover State: 10% white overlay
+- Icon: 20px, left-aligned
+- Text: Right of icon, vertically centered
+- Padding: 12px 16px
+- Submenu: Indented by 16px
+
+#### Main Navigation (Public)
+- Background: Transparent or Dark Blue (#1A365D)
+- Text: White (#FFFFFF), Montserrat Medium, 16px
+- Active Item: Golden Yellow underline
+- Hover State: Golden Yellow underline
+- Padding: 12px 16px
+- Spacing: 24px between items
+
+#### Mobile Navigation
+- Hamburger Icon: 24px, right-aligned
+- Menu Background: Dark Blue (#1A365D)
+- Text: White (#FFFFFF), Montserrat Medium, 16px
+- Active Item: Golden Yellow left border
+- Divider: 1px solid rgba(255, 255, 255, 0.1)
+- Padding: 16px
+- Close Icon: 24px, top-right corner
+
+#### Pagination
+- Container: Centered, 24px top margin
+- Page Number: 36px x 36px, 4px border radius
+- Active Page: Golden Yellow background, Black text
+- Inactive Page: White background, Black text, 1px Medium Gray border
+- Hover State: Light Gray background
+- Previous/Next: Icon buttons with arrows
+
+### Modals
+
+#### Standard Modal
+- Background: White (#FFFFFF)
+- Border Radius: 8px
+- Shadow: 0 4px 16px rgba(0, 0, 0, 0.2)
+- Header: 24px padding, Montserrat Bold, 20px
+- Body: 24px padding, Open Sans Regular, 16px
+- Footer: 24px padding, right-aligned buttons
+- Close Icon: 24px, top-right corner
+- Overlay: Black (#000000) at 50% opacity
+
+#### Confirmation Modal
+- Width: 400px
+- Icon: 48px, centered (check for success, exclamation for warning, x for error)
+- Title: Montserrat Bold, 20px, centered
+- Message: Open Sans Regular, 16px, centered
+- Buttons: Centered, stacked on mobile
+
+### Notifications
+
+#### Toast Notification
+- Background: Based on type (White for info, Success Green for success, Warning Orange for warning, Error Red for error)
+- Border Radius: 4px
+- Padding: 12px 16px
+- Icon: Left-aligned, 20px
+- Text: Open Sans Regular, 14px
+- Close Icon: Right-aligned, 16px
+- Duration: 5 seconds auto-dismiss (except for error)
+- Position: Top-right corner, stacked
+
+#### In-Page Notification
+- Background: 10% of notification color
+- Border: 1px solid notification color
+- Border Radius: 4px
+- Padding: 12px 16px
+- Icon: Left-aligned, 20px
+- Text: Open Sans Regular, 14px
+- Close Icon: Right-aligned, 16px
+
+### Loaders
+
+#### Spinner
+- Size: 24px (small), 48px (medium), 72px (large)
+- Color: Golden Yellow (#FFD700)
+- Animation: 1.5-second rotation
+
+#### Progress Bar
+- Height: 4px
+- Background: Light Gray (#F5F5F5)
+- Fill: Golden Yellow (#FFD700)
+- Border Radius: 2px
+- Animation: Pulse effect on indeterminate
+
+#### Skeleton Loader
+- Background: Light Gray (#F5F5F5)
+- Border Radius: 4px
+- Animation: Pulse effect (opacity 0.6 to 0.8)
+- Shapes: Match content being loaded (text lines, images, etc.)
+
+## Layout Guidelines
+
+### Grid System
+- Columns: 12-column grid
+- Gutter: 24px
+- Margin: 24px (desktop), 16px (mobile)
+- Breakpoints:
+  - Extra Small: < 576px
+  - Small: 576px - 767px
+  - Medium: 768px - 991px
+  - Large: 992px - 1199px
+  - Extra Large: ≥ 1200px
+
+### Spacing System
+- Base Unit: 8px
+- Scale:
+  - 2xs: 4px (0.5x)
+  - xs: 8px (1x)
+  - sm: 16px (2x)
+  - md: 24px (3x)
+  - lg: 32px (4x)
+  - xl: 48px (6x)
+  - 2xl: 64px (8x)
+  - 3xl: 96px (12x)
+
+### Container Widths
+- Small: 100% (max-width: 540px)
+- Medium: 100% (max-width: 720px)
+- Large: 100% (max-width: 960px)
+- Extra Large: 100% (max-width: 1140px)
+- Extra Extra Large: 100% (max-width: 1320px)
+
+### Section Padding
+- Top/Bottom: 48px (desktop), 32px (mobile)
+- Left/Right: Container margins
+
+## Interactive Elements
+
+### Hover States
+- Buttons: Darken/lighten background
+- Cards: Increase shadow
+- Links: Underline
+- Table Rows: Background tint
+- Navigation Items: Background tint or underline
+
+### Focus States
+- Form Elements: 2px Golden Yellow border
+- Interactive Elements: Blue outline (for accessibility)
+- Visible focus ring for keyboard navigation
+
+### Animations
+
+#### Transitions
+- Duration: 0.2s for UI elements, 0.3s for larger components
+- Easing: Ease-out for natural movement
+- Properties: opacity, transform, background-color, border-color
+
+#### Micro-interactions
+- Button Click: Slight scale down (transform: scale(0.98))
+- Form Submission: Loading spinner
+- Notification Appearance: Slide in from right
+- Modal Open/Close: Fade and scale
+- Menu Toggle: Smooth height/width transition
+
+#### Page Transitions
+- Page Load: Fade in (opacity 0 to 1)
+- Route Change: Fade out current, fade in new
+- Content Load: Skeleton loaders to final content
+
+### Scrolling Behavior
+- Smooth Scrolling: For anchor links and "back to top"
+- Infinite Scroll: For long lists (appointments, clients)
+- Lazy Loading: For images and content below the fold
+- Sticky Elements: Header, action buttons
+
+## Responsive Design
+
+### Mobile-First Approach
+- Design for mobile first, then expand for larger screens
+- Simplify UI for smaller screens
+- Prioritize content based on screen size
+
+### Responsive Patterns
+- Stack columns on mobile
+- Hide secondary information on small screens
+- Expand/collapse sections on mobile
+- Convert tables to cards on mobile
+- Full-width buttons on mobile
+
+### Touch Considerations
+- Minimum touch target size: 44px x 44px
+- Adequate spacing between interactive elements
+- Swipe gestures for common actions
+- Bottom navigation for key actions on mobile
+
+## Accessibility Guidelines
+
+### Color Contrast
+- Text on background: Minimum 4.5:1 ratio
+- Large text on background: Minimum 3:1 ratio
+- UI components and graphics: Minimum 3:1 ratio against adjacent colors
+
+### Text Alternatives
+- Alt text for all images
+- ARIA labels for interactive elements
+- Descriptive link text
+
+### Keyboard Navigation
+- All interactive elements focusable
+- Logical tab order
+- Visible focus indicators
+- Keyboard shortcuts for common actions
+
+### Screen Reader Support
+- Semantic HTML structure
+- ARIA roles and properties
+- Proper heading hierarchy
+- Form labels and error messages
+
+## Design System Components
+
+### Frontend-Admin Components
+- Dashboard widgets
+- Data tables
+- Form layouts
+- Modal dialogs
+- Sidebar navigation
+- Header components
+- Calendar views
+- Charts and graphs
+- Status indicators
+- Action buttons
+
+### Frontend-Public Components
+- Hero sections
+- Service cards
+- Staff profiles
+- Testimonial carousel
+- Gallery grid
+- Contact form
+- Booking wizard
+- Footer layout
+- Mobile navigation
+- Login/register forms
+
+## Implementation Guidelines
+
+### CSS Methodology
+- BEM (Block, Element, Modifier) naming convention
+- CSS variables for colors, typography, and spacing
+- Mobile-first media queries
+- Component-based organization
+
+### Asset Optimization
+- SVG for icons and simple illustrations
+- WebP with JPEG/PNG fallbacks for photos
+- Lazy loading for images
+- Responsive images with srcset
+- Icon font or SVG sprite for common icons
+
+### Performance Considerations
+- Minimize CSS and JavaScript
+- Optimize image loading
+- Reduce render-blocking resources
+- Implement code splitting
+- Use caching strategies
+
+## Design Deliverables
+
+### Design Files
+- Figma design system
+- Component library
+- Page templates
+- Responsive variations
+- Interactive prototypes
+
+### Style Guide
+- Brand guidelines
+- Color palette
+- Typography specifications
+- Component documentation
+- Usage examples
+
+### Asset Package
+- Logo files (SVG, PNG)
+- Icon set
+- Image assets
+- Font files
+- Favicon package

@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h1>Payment Methods</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-end">
+            <a href="{% url 'payments:payment_method_add' %}" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i> Add Payment Method
+            </a>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Your Payment Methods</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if payment_methods %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Default</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for method in payment_methods %}
+                                    <tr>
+                                        <td>{{ method.get_payment_type_display }}</td>
+                                        <td>
+                                            {% if method.payment_type in 'credit_card,debit_card' %}
+                                                {{ method.card_brand }} **** {{ method.card_last_four }} (Expires: {{ method.card_expiry_month }}/{{ method.card_expiry_year }})
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if method.is_default %}
+                                                <span class="badge bg-success">Default</span>
+                                            {% else %}
+                                                <a href="{% url 'payments:payment_method_set_default' method.id %}" class="btn btn-sm btn-outline-primary">Set as Default</a>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'payments:payment_method_delete' method.id %}" class="btn btn-sm btn-outline-danger">
+                                                <i class="bi bi-trash"></i> Delete
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        You don't have any payment methods saved. Click the "Add Payment Method" button to add one.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

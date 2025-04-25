@@ -1,0 +1,179 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}{{ title }} | Barberian Admin{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block admin_content %}
+<!-- Breadcrumb -->
+<nav class="flex mb-5" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'admin_panel:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-500">
+                <span class="material-icons-outlined mr-2" style="font-size: 16px;">dashboard</span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <a href="{% url 'admin_panel:services' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-500">Services</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <span class="ml-1 text-sm font-medium text-gray-500">{{ title }}</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<!-- Service Form Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden max-w-3xl mx-auto">
+    <!-- Card Header -->
+    <div class="px-6 py-4 border-b border-gray-100">
+        <h3 class="text-lg font-semibold text-gray-800">{{ title }}</h3>
+        <p class="text-sm text-gray-500 mt-1">{% if form.instance.id %}Update{% else %}Create a new{% endif %} service for your barbershop</p>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="p-6 pb-0">
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Form -->
+    <div class="p-6">
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Service Name -->
+            <div>
+                <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Service Name</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">design_services</span>
+                    </div>
+                    {{ form.name }}
+                </div>
+                {% if form.name.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.name.errors }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Description -->
+            <div>
+                <label for="{{ form.description.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <div class="relative rounded-md shadow-sm">
+                    {{ form.description }}
+                </div>
+                {% if form.description.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.description.errors }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Price and Duration -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Price -->
+                <div>
+                    <label for="{{ form.price.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Price ($)</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">attach_money</span>
+                        </div>
+                        {{ form.price }}
+                    </div>
+                    {% if form.price.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.price.errors }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Duration -->
+                <div>
+                    <label for="{{ form.duration.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Duration (minutes)</label>
+                    <div class="relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">schedule</span>
+                        </div>
+                        {{ form.duration }}
+                    </div>
+                    {% if form.duration.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.duration.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Category -->
+            <div>
+                <label for="{{ form.category.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <div class="relative rounded-md shadow-sm">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">category</span>
+                    </div>
+                    {{ form.category }}
+                </div>
+                {% if form.category.errors %}
+                    <p class="mt-2 text-sm text-red-600">{{ form.category.errors }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Active Status -->
+            <div class="relative flex items-start">
+                <div class="flex items-center h-5">
+                    {{ form.is_active }}
+                </div>
+                <div class="ml-3 text-sm">
+                    <label for="{{ form.is_active.id_for_label }}" class="font-medium text-gray-700">Active</label>
+                    <p class="text-gray-500">If unchecked, this service will not be visible to clients.</p>
+                    {% if form.is_active.errors %}
+                        <p class="mt-2 text-sm text-red-600">{{ form.is_active.errors }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="pt-5 border-t border-gray-200 flex justify-between">
+                <a href="{% url 'admin_panel:services' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 16px;">arrow_back</span>
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 16px;">save</span>
+                    Save Service
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_css %}
+<style>
+    /* Style form inputs */
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+        @apply pl-10 py-2 focus:ring-primary-400 focus:border-primary-400 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md;
+    }
+
+    /* Style textarea */
+    textarea {
+        @apply pl-3 min-h-[120px];
+    }
+
+    /* Style checkbox */
+    input[type="checkbox"] {
+        @apply h-4 w-4 text-primary-400 border-gray-300 rounded focus:ring-primary-400;
+    }
+</style>
+{% endblock %}

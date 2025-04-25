@@ -1,0 +1,253 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'appointments:appointment_list' %}">Appointments</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'appointments:appointment_detail' appointment.id %}">Appointment Details</a></li>
+                <li class="breadcrumb-item active" aria-current="page">Process Payment</li>
+            </ol>
+        </nav>
+        <h1>Process Payment</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Payment Information</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post" id="payment-form">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ payment_form.payment_method.id_for_label }}" class="form-label">Payment Method</label>
+                        {{ payment_form.payment_method }}
+                        {% if payment_form.payment_method.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ payment_form.payment_method.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div id="credit-card-fields" class="d-none">
+                        <h5 class="mt-4 mb-3">Credit Card Information</h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ credit_card_form.card_number.id_for_label }}" class="form-label">Card Number</label>
+                            {{ credit_card_form.card_number }}
+                            {% if credit_card_form.card_number.errors %}
+                                <div class="invalid-feedback d-block">
+                                    {{ credit_card_form.card_number.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ credit_card_form.card_expiry_month.id_for_label }}" class="form-label">Expiry Month</label>
+                                {{ credit_card_form.card_expiry_month }}
+                                {% if credit_card_form.card_expiry_month.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ credit_card_form.card_expiry_month.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ credit_card_form.card_expiry_year.id_for_label }}" class="form-label">Expiry Year</label>
+                                {{ credit_card_form.card_expiry_year }}
+                                {% if credit_card_form.card_expiry_year.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ credit_card_form.card_expiry_year.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="{{ credit_card_form.card_cvc.id_for_label }}" class="form-label">CVC</label>
+                                {{ credit_card_form.card_cvc }}
+                                {% if credit_card_form.card_cvc.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ credit_card_form.card_cvc.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            {{ credit_card_form.save_card }}
+                            <label class="form-check-label" for="{{ credit_card_form.save_card.id_for_label }}">
+                                Save card for future payments
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div id="saved-cards" class="d-none mb-4">
+                        <h5 class="mt-4 mb-3">Saved Cards</h5>
+                        
+                        {% if payment_methods %}
+                            <div class="list-group">
+                                {% for method in payment_methods %}
+                                    {% if method.payment_type in 'credit_card,debit_card' %}
+                                        <div class="list-group-item">
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="radio" name="saved_card" id="card-{{ method.id }}" value="{{ method.id }}">
+                                                <label class="form-check-label" for="card-{{ method.id }}">
+                                                    {{ method.card_brand }} **** {{ method.card_last_four }} (Expires: {{ method.card_expiry_month }}/{{ method.card_expiry_year }})
+                                                    {% if method.is_default %}
+                                                        <span class="badge bg-primary">Default</span>
+                                                    {% endif %}
+                                                </label>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            
+                            <div class="mt-2">
+                                <a href="#" id="use-new-card" class="btn btn-sm btn-outline-secondary">Use a new card</a>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                You don't have any saved cards. Please enter your card details.
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ payment_form.notes.id_for_label }}" class="form-label">Notes (Optional)</label>
+                        {{ payment_form.notes }}
+                        {% if payment_form.notes.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ payment_form.notes.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-outline-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Process Payment</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Order Summary</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Service:</span>
+                    <span>{{ appointment.service.name }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Date:</span>
+                    <span>{{ appointment.start_time|date:"F d, Y" }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Time:</span>
+                    <span>{{ appointment.start_time|time:"g:i A" }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Barber:</span>
+                    <span>{{ appointment.staff.get_full_name }}</span>
+                </div>
+                
+                <hr>
+                
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Subtotal:</span>
+                    <span>${{ appointment.service.price }}</span>
+                </div>
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Tax:</span>
+                    <span>$0.00</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Total:</span>
+                    <span>${{ appointment.service.price }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://js.stripe.com/v3/"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const paymentMethodSelect = document.getElementById('{{ payment_form.payment_method.id_for_label }}');
+        const creditCardFields = document.getElementById('credit-card-fields');
+        const savedCards = document.getElementById('saved-cards');
+        
+        // Function to toggle credit card fields based on payment method
+        function toggleCreditCardFields() {
+            const selectedMethod = paymentMethodSelect.value;
+            
+            if (selectedMethod === 'credit_card' || selectedMethod === 'debit_card') {
+                {% if payment_methods %}
+                    savedCards.classList.remove('d-none');
+                    creditCardFields.classList.add('d-none');
+                {% else %}
+                    creditCardFields.classList.remove('d-none');
+                    savedCards.classList.add('d-none');
+                {% endif %}
+            } else {
+                creditCardFields.classList.add('d-none');
+                savedCards.classList.add('d-none');
+            }
+        }
+        
+        // Initial toggle
+        toggleCreditCardFields();
+        
+        // Listen for changes to the payment method
+        paymentMethodSelect.addEventListener('change', toggleCreditCardFields);
+        
+        // Handle "Use a new card" button
+        const useNewCardButton = document.getElementById('use-new-card');
+        if (useNewCardButton) {
+            useNewCardButton.addEventListener('click', function(e) {
+                e.preventDefault();
+                savedCards.classList.add('d-none');
+                creditCardFields.classList.remove('d-none');
+            });
+        }
+        
+        // Format card number with spaces
+        const cardNumberInput = document.getElementById('{{ credit_card_form.card_number.id_for_label }}');
+        if (cardNumberInput) {
+            cardNumberInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                let formattedValue = '';
+                
+                for (let i = 0; i < value.length; i++) {
+                    if (i > 0 && i % 4 === 0) {
+                        formattedValue += ' ';
+                    }
+                    formattedValue += value[i];
+                }
+                
+                e.target.value = formattedValue;
+            });
+        }
+    });
+</script>
+{% endblock %}

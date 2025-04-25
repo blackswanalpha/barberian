@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <h1 class="mb-4">Our Services</h1>
+        <p class="lead">Discover our range of premium barbering services designed to keep you looking your best.</p>
+    </div>
+</div>
+
+{% if categories %}
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h2 class="card-title">Categories</h2>
+                    <div class="d-flex flex-wrap gap-2">
+                        <a href="#all" class="btn btn-outline-primary">All Services</a>
+                        {% for category in categories %}
+                            <a href="#category-{{ category.id }}" class="btn btn-outline-primary">{{ category.name }}</a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% for category in categories %}
+        <div class="row mb-4" id="category-{{ category.id }}">
+            <div class="col-md-12">
+                <h2 class="mb-3">{{ category.name }}</h2>
+                <p>{{ category.description }}</p>
+                
+                <div class="row">
+                    {% for service in services %}
+                        {% if service.category == category %}
+                            <div class="col-md-4 mb-4">
+                                <div class="card h-100">
+                                    {% if service.media.exists %}
+                                        {% with primary_media=service.media.filter.first %}
+                                            {% if primary_media %}
+                                                <img src="{{ primary_media.file.url }}" class="card-img-top" alt="{{ service.name }}">
+                                            {% endif %}
+                                        {% endwith %}
+                                    {% endif %}
+                                    <div class="card-body">
+                                        <h3 class="card-title h5">{{ service.name }}</h3>
+                                        <p class="card-text">{{ service.description|truncatewords:20 }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-primary">${{ service.price }}</span>
+                                            <span class="text-muted">{{ service.duration }} min</span>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer">
+                                        <div class="d-grid gap-2">
+                                            <a href="{% url 'client_portal:service_detail' service.id %}" class="btn btn-outline-primary">View Details</a>
+                                            <a href="#" class="btn btn-primary">Book Now</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                No services available at the moment. Please check back later.
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+<div class="row mt-4">
+    <div class="col-md-12 text-center">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Need a Custom Service?</h2>
+                <p class="card-text">Can't find what you're looking for? Contact us to discuss your specific needs.</p>
+                <a href="{% url 'client_portal:contact' %}" class="btn btn-primary">Contact Us</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

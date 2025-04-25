@@ -1,0 +1,342 @@
+# SITEMAP DOCUMENTATION
+
+## Overview
+This document outlines the complete sitemap for the Barberian application, including both the frontend-admin and frontend-public interfaces. The sitemap provides a hierarchical structure of all pages and their relationships.
+
+## Frontend-Admin Sitemap
+
+### 1. Authentication
+- Login (/admin/login)
+- Forgot Password (/admin/forgot-password)
+- Reset Password (/admin/reset-password)
+
+### 2. Dashboard
+- Main Dashboard (/admin/dashboard)
+
+### 3. Appointments
+- Appointments List (/admin/appointments)
+- Appointment Details (/admin/appointments/[id])
+- Add Appointment (/admin/appointments/add)
+- Edit Appointment (/admin/appointments/[id]/edit)
+
+### 4. Clients
+- Clients List (/admin/clients)
+- Client Details (/admin/clients/[id])
+- Add Client (/admin/clients/add)
+- Edit Client (/admin/clients/[id]/edit)
+
+### 5. Staff
+- Staff List (/admin/staff)
+- Staff Details (/admin/staff/[id])
+- Add Staff (/admin/staff/add)
+- Edit Staff (/admin/staff/[id]/edit)
+- Staff Schedule (/admin/staff/[id]/schedule)
+
+### 6. Services
+- Services List (/admin/services)
+- Service Details (/admin/services/[id])
+- Add Service (/admin/services/add)
+- Edit Service (/admin/services/[id]/edit)
+
+### 7. Categories
+- Categories List (/admin/categories)
+- Category Details (/admin/categories/[id])
+- Add Category (/admin/categories/add)
+- Edit Category (/admin/categories/[id]/edit)
+
+### 8. Reports
+- Reports Dashboard (/admin/reports)
+- Revenue Reports (/admin/reports/revenue)
+- Appointment Reports (/admin/reports/appointments)
+- Service Reports (/admin/reports/services)
+- Staff Performance Reports (/admin/reports/staff)
+
+### 9. Settings
+- Business Information (/admin/settings/business)
+- Business Hours (/admin/settings/hours)
+- Notification Settings (/admin/settings/notifications)
+- User Account Settings (/admin/settings/account)
+
+## Frontend-Public Sitemap
+
+### 1. Main Pages
+- Home (/)
+- Services (/services)
+- Staff (/staff)
+- Gallery (/gallery)
+- About (/about)
+- Contact (/contact)
+
+### 2. Authentication
+- Login (/login)
+- Register (/register)
+- Forgot Password (/forgot-password)
+- Reset Password (/reset-password/[token])
+
+### 3. Services
+- Services List (/services)
+- Service Categories (/services/categories)
+- Service Details (/services/[id])
+- Service Category Details (/services/categories/[id])
+
+### 4. Staff
+- Staff List (/staff)
+- Staff Details (/staff/[id])
+
+### 5. Booking
+- Booking Start (/booking)
+- Service Selection (/booking/services)
+- Staff Selection (/booking/staff)
+- Date & Time Selection (/booking/datetime)
+- Booking Confirmation (/booking/confirm)
+- Booking Success (/booking/success)
+
+### 6. Client Profile
+- Profile Dashboard (/profile)
+- My Appointments (/profile/appointments)
+- Appointment Details (/profile/appointments/[id])
+- Account Settings (/profile/settings)
+- Change Password (/profile/change-password)
+
+## URL Structure
+
+### Frontend-Admin
+- Base URL: https://admin.barberianspa.com/ or https://barberianspa.com/admin/
+- URL Pattern: /admin/[resource]/[action]/[id]
+- Examples:
+  - /admin/appointments
+  - /admin/clients/add
+  - /admin/services/5/edit
+
+### Frontend-Public
+- Base URL: https://barberianspa.com/
+- URL Pattern: /[resource]/[id]
+- Examples:
+  - /services
+  - /staff/3
+  - /booking/services
+
+## Page Relationships
+
+### Frontend-Admin
+
+#### Dashboard Connections
+- Dashboard → Appointments (Today's appointments)
+- Dashboard → Clients (Recent clients)
+- Dashboard → Reports (Revenue summary)
+
+#### Appointment Connections
+- Appointments List → Appointment Details
+- Appointment Details → Client Details
+- Appointment Details → Service Details
+- Appointment Details → Staff Details
+
+#### Client Connections
+- Clients List → Client Details
+- Client Details → Appointment History
+- Client Details → Add Appointment
+
+#### Staff Connections
+- Staff List → Staff Details
+- Staff Details → Staff Schedule
+- Staff Details → Staff Appointments
+
+#### Service Connections
+- Services List → Service Details
+- Service Details → Category Details
+- Service Details → Related Services
+
+### Frontend-Public
+
+#### Home Page Connections
+- Home → Services (Featured services)
+- Home → Staff (Featured staff)
+- Home → Booking (Call-to-action)
+- Home → Gallery (Featured images)
+
+#### Service Connections
+- Services List → Service Details
+- Service Details → Booking (with pre-selected service)
+- Service Details → Related Services
+
+#### Staff Connections
+- Staff List → Staff Details
+- Staff Details → Booking (with pre-selected staff)
+
+#### Booking Flow
+- Booking Start → Service Selection
+- Service Selection → Staff Selection
+- Staff Selection → Date & Time Selection
+- Date & Time Selection → Booking Confirmation
+- Booking Confirmation → Booking Success
+- Booking Success → My Appointments
+
+#### Profile Connections
+- Profile Dashboard → My Appointments
+- My Appointments → Appointment Details
+- Profile Dashboard → Account Settings
+
+## Navigation Structure
+
+### Frontend-Admin
+
+#### Main Navigation (Sidebar)
+- Dashboard
+- Appointments
+- Clients
+- Staff
+- Services
+- Categories
+- Reports
+- Settings
+
+#### Secondary Navigation (Header)
+- Notifications
+- User Profile
+- Logout
+
+#### Contextual Navigation
+- Breadcrumbs on all pages
+- Back buttons on detail pages
+- Action buttons (Add, Edit, Delete)
+
+### Frontend-Public
+
+#### Main Navigation (Header)
+- Home
+- Services
+- Staff
+- Gallery
+- About
+- Contact
+- Book Now (Call-to-action)
+
+#### User Navigation (Header)
+- Login/Register (when not logged in)
+- My Profile (when logged in)
+- My Appointments (when logged in)
+- Logout (when logged in)
+
+#### Footer Navigation
+- Home
+- Services
+- Staff
+- Gallery
+- About
+- Contact
+- Terms of Service
+- Privacy Policy
+
+## Access Control
+
+### Frontend-Admin
+
+#### Public Access
+- Login
+- Forgot Password
+- Reset Password
+
+#### Admin Access
+- All pages and features
+
+#### Staff Access
+- Dashboard (limited view)
+- Appointments (own appointments only)
+- Clients (read-only)
+- Services (read-only)
+- Own Profile
+- Own Schedule
+
+### Frontend-Public
+
+#### Public Access
+- Home
+- Services
+- Staff
+- Gallery
+- About
+- Contact
+- Login
+- Register
+- Forgot Password
+- Reset Password
+
+#### Authenticated Client Access
+- All public pages
+- Booking flow
+- Profile Dashboard
+- My Appointments
+- Account Settings
+
+## SEO Considerations
+
+### Key Pages for SEO
+- Home
+- Services
+- Service Details
+- Staff
+- Gallery
+- About
+- Contact
+
+### URL Structure for SEO
+- Clean, descriptive URLs
+- Use of keywords in URLs
+- Avoidance of query parameters
+- Proper use of hyphens for word separation
+
+### Metadata
+- Unique title tags for each page
+- Meta descriptions with relevant keywords
+- Open Graph tags for social sharing
+- Structured data for services and business information
+
+## Mobile Considerations
+
+### Responsive Breakpoints
+- Mobile: < 768px
+- Tablet: 768px - 1024px
+- Desktop: > 1024px
+
+### Mobile-Specific Pages
+- Mobile navigation menu
+- Simplified booking flow
+- Touch-optimized gallery
+
+## Technical Implementation
+
+### Frontend-Admin
+- Next.js 15 application
+- Dynamic routes for resource details
+- Server-side rendering for dashboard and reports
+- Client-side rendering for forms and interactive elements
+
+### Frontend-Public
+- Next.js 15 application
+- Static generation for content pages
+- Server-side rendering for dynamic content
+- Client-side rendering for booking flow
+
+### API Integration
+- RESTful API endpoints for all resources
+- JWT authentication for secure access
+- Real-time updates for appointments and notifications
+
+## Future Expansion
+
+### Planned Pages
+- Online Store (/shop)
+- Product Categories (/shop/categories)
+- Product Details (/shop/products/[id])
+- Shopping Cart (/shop/cart)
+- Checkout (/shop/checkout)
+- Order Confirmation (/shop/orders/[id])
+- Order History (/profile/orders)
+
+### Potential Features
+- Blog (/blog)
+- Blog Post (/blog/[slug])
+- Loyalty Program (/loyalty)
+- Gift Cards (/gift-cards)
+- Special Offers (/offers)
+- Events (/events)

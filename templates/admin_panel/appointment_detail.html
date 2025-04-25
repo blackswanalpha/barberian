@@ -1,0 +1,402 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Appointment Details | Barberian Admin{% endblock %}
+
+{% block page_title %}Appointment Details{% endblock %}
+
+{% block admin_content %}
+<!-- Breadcrumb -->
+<nav class="flex mb-5" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'admin_panel:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-400">
+                <span class="material-icons-outlined mr-2 text-sm">dashboard</span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <a href="{% url 'admin_panel:appointments' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-400">Appointments</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <span class="ml-1 text-sm font-medium text-gray-500">Appointment Details</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<!-- Main Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Appointment Information Card - Takes up 2/3 of the grid on large screens -->
+    <div class="lg:col-span-2">
+        <div class="bg-white rounded-xl shadow-card overflow-hidden mb-6">
+            <!-- Card Header -->
+            <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-lg font-semibold text-gray-800">Appointment Information</h3>
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                        {% if appointment.status == 'confirmed' %}bg-green-100 text-green-800
+                        {% elif appointment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                        {% elif appointment.status == 'cancelled' %}bg-red-100 text-red-800
+                        {% elif appointment.status == 'completed' %}bg-green-100 text-green-800
+                        {% elif appointment.status == 'no_show' %}bg-yellow-100 text-yellow-800
+                        {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        <span class="material-icons-outlined mr-1" style="font-size: 14px;">
+                            {% if appointment.status == 'confirmed' %}check_circle
+                            {% elif appointment.status == 'pending' %}schedule
+                            {% elif appointment.status == 'cancelled' %}cancel
+                            {% elif appointment.status == 'completed' %}task_alt
+                            {% elif appointment.status == 'no_show' %}person_off
+                            {% else %}help{% endif %}
+                        </span>
+                        {{ appointment.status|title }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card Body -->
+            <div class="p-6">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                            <span class="material-icons-outlined mr-3">
+                                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                            </span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                <!-- Appointment Details Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Service -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <span class="material-icons-outlined text-gray-500 mr-2">content_cut</span>
+                            <h4 class="text-sm font-medium text-gray-500">Service</h4>
+                        </div>
+                        <p class="text-gray-900 font-medium">{{ appointment.service.name }}</p>
+                        <p class="text-primary-400 font-semibold mt-1">${{ appointment.service.price }}</p>
+                    </div>
+
+                    <!-- Date & Time -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <span class="material-icons-outlined text-gray-500 mr-2">event</span>
+                            <h4 class="text-sm font-medium text-gray-500">Date & Time</h4>
+                        </div>
+                        <p class="text-gray-900 font-medium">{{ appointment.start_time|date:"F d, Y" }}</p>
+                        <p class="text-gray-700 mt-1">{{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</p>
+                    </div>
+
+                    <!-- Client -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <span class="material-icons-outlined text-gray-500 mr-2">person</span>
+                            <h4 class="text-sm font-medium text-gray-500">Client</h4>
+                        </div>
+                        <p class="text-gray-900 font-medium">{{ appointment.client.get_full_name }}</p>
+                        <p class="text-gray-700 mt-1 text-sm truncate">{{ appointment.client.email }}</p>
+                    </div>
+
+                    <!-- Staff -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <span class="material-icons-outlined text-gray-500 mr-2">badge</span>
+                            <h4 class="text-sm font-medium text-gray-500">Staff</h4>
+                        </div>
+                        <p class="text-gray-900 font-medium">{{ appointment.staff.get_full_name }}</p>
+                        <p class="text-gray-700 mt-1 text-sm truncate">{{ appointment.staff.email }}</p>
+                    </div>
+
+                    <!-- Created -->
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <span class="material-icons-outlined text-gray-500 mr-2">history</span>
+                            <h4 class="text-sm font-medium text-gray-500">Created</h4>
+                        </div>
+                        <p class="text-gray-900 font-medium">{{ appointment.created_at|date:"F d, Y" }}</p>
+                        <p class="text-gray-700 mt-1">{{ appointment.created_at|time:"g:i A" }}</p>
+                    </div>
+
+                    {% if appointment.notes %}
+                    <!-- Notes (spans 2 columns) -->
+                    <div class="bg-gray-50 rounded-lg p-4 md:col-span-2">
+                        <div class="flex items-center mb-2">
+                            <span class="material-icons-outlined text-gray-500 mr-2">notes</span>
+                            <h4 class="text-sm font-medium text-gray-500">Notes</h4>
+                        </div>
+                        <p class="text-gray-700">{{ appointment.notes }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Card Footer -->
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
+                <a href="{% url 'admin_panel:appointments' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full sm:w-auto justify-center">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+                    Back to Appointments
+                </a>
+
+                {% if appointment.is_upcoming %}
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" type="button" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full sm:w-auto justify-center">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">update</span>
+                        Update Status
+                        <span class="material-icons-outlined ml-1" style="font-size: 18px;">arrow_drop_down</span>
+                    </button>
+
+                    <!-- Dropdown Menu -->
+                    <div x-show="open" @click.away="open = false" class="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100 focus:outline-none z-10" x-transition:enter="transition ease-out duration-100" x-transition:enter-start="transform opacity-0 scale-95" x-transition:enter-end="transform opacity-100 scale-100" x-transition:leave="transition ease-in duration-75" x-transition:leave-start="transform opacity-100 scale-100" x-transition:leave-end="transform opacity-0 scale-95">
+                        <div class="py-1">
+                            <form method="post" action="{% url 'admin_panel:appointment_update' appointment.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="pending">
+                                <button type="submit" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left {% if appointment.status == 'pending' %}bg-gray-100 text-gray-900{% endif %}">
+                                    <span class="material-icons-outlined mr-3 text-yellow-500" style="font-size: 18px;">schedule</span>
+                                    Pending
+                                </button>
+                            </form>
+
+                            <form method="post" action="{% url 'admin_panel:appointment_update' appointment.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="confirmed">
+                                <button type="submit" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left {% if appointment.status == 'confirmed' %}bg-gray-100 text-gray-900{% endif %}">
+                                    <span class="material-icons-outlined mr-3 text-green-500" style="font-size: 18px;">check_circle</span>
+                                    Confirmed
+                                </button>
+                            </form>
+
+                            <form method="post" action="{% url 'admin_panel:appointment_update' appointment.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left {% if appointment.status == 'cancelled' %}bg-gray-100 text-gray-900{% endif %}">
+                                    <span class="material-icons-outlined mr-3 text-red-500" style="font-size: 18px;">cancel</span>
+                                    Cancelled
+                                </button>
+                            </form>
+                        </div>
+
+                        {% if appointment.is_today %}
+                        <div class="py-1">
+                            <form method="post" action="{% url 'admin_panel:appointment_update' appointment.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left {% if appointment.status == 'completed' %}bg-gray-100 text-gray-900{% endif %}">
+                                    <span class="material-icons-outlined mr-3 text-green-500" style="font-size: 18px;">task_alt</span>
+                                    Completed
+                                </button>
+                            </form>
+
+                            <form method="post" action="{% url 'admin_panel:appointment_update' appointment.id %}">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="no_show">
+                                <button type="submit" class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left {% if appointment.status == 'no_show' %}bg-gray-100 text-gray-900{% endif %}">
+                                    <span class="material-icons-outlined mr-3 text-yellow-500" style="font-size: 18px;">person_off</span>
+                                    No Show
+                                </button>
+                            </form>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Sidebar - Takes up 1/3 of the grid on large screens -->
+    <div class="space-y-6">
+        <!-- Client Information Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-semibold">
+                        {{ appointment.client.get_full_name|slice:":1" }}
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Client Information</h3>
+                        <p class="text-sm text-gray-500">Details about the client</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <h4 class="font-medium text-gray-900 mb-3">{{ appointment.client.get_full_name }}</h4>
+
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center text-sm">
+                        <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">email</span>
+                        <span class="text-gray-700">{{ appointment.client.email }}</span>
+                    </div>
+                    {% if appointment.client.phone_number %}
+                    <div class="flex items-center text-sm">
+                        <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">phone</span>
+                        <span class="text-gray-700">{{ appointment.client.phone_number }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="border-t border-gray-100 pt-4 mt-4">
+                    <h4 class="font-medium text-gray-900 mb-3 flex items-center">
+                        <span class="material-icons-outlined text-gray-500 mr-2" style="font-size: 18px;">history</span>
+                        Client History
+                    </h4>
+
+                    <div class="space-y-2">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600">Total Appointments:</span>
+                            <span class="font-medium text-gray-900">{{ appointment.client.appointment_set.count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600">Completed:</span>
+                            <span class="font-medium text-green-600">{{ appointment.client.appointment_set.filter.status.completed.count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600">Cancelled:</span>
+                            <span class="font-medium text-red-600">{{ appointment.client.appointment_set.filter.status.cancelled.count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-600">No Shows:</span>
+                            <span class="font-medium text-yellow-600">{{ appointment.client.appointment_set.filter.status.no_show.count }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-5">
+                    <a href="{% url 'admin_panel:user_edit' appointment.client.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full justify-center">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">person</span>
+                        View Client Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Information Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
+                        {{ appointment.staff.get_full_name|slice:":1" }}
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Staff Information</h3>
+                        <p class="text-sm text-gray-500">Details about the staff member</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <h4 class="font-medium text-gray-900 mb-3">{{ appointment.staff.get_full_name }}</h4>
+
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center text-sm">
+                        <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">email</span>
+                        <span class="text-gray-700">{{ appointment.staff.email }}</span>
+                    </div>
+                    {% if appointment.staff.phone_number %}
+                    <div class="flex items-center text-sm">
+                        <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">phone</span>
+                        <span class="text-gray-700">{{ appointment.staff.phone_number }}</span>
+                    </div>
+                    {% endif %}
+                    {% if appointment.staff.specialization %}
+                    <div class="flex items-center text-sm">
+                        <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">star</span>
+                        <span class="text-gray-700">{{ appointment.staff.specialization }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mt-5">
+                    <a href="{% url 'admin_panel:user_edit' appointment.staff.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full justify-center">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">badge</span>
+                        View Staff Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Service Details Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                        <span class="material-icons-outlined">content_cut</span>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Service Details</h3>
+                        <p class="text-sm text-gray-500">Information about the service</p>
+                    </div>
+                </div>
+            </div>
+            <div class="p-6">
+                <h4 class="font-medium text-gray-900 mb-2">{{ appointment.service.name }}</h4>
+                <p class="text-gray-700 text-sm mb-4">{{ appointment.service.description }}</p>
+
+                <div class="bg-gray-50 rounded-lg p-4 space-y-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 text-sm flex items-center">
+                            <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">payments</span>
+                            Price
+                        </span>
+                        <span class="font-medium text-primary-500">${{ appointment.service.price }}</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 text-sm flex items-center">
+                            <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">schedule</span>
+                            Duration
+                        </span>
+                        <span class="font-medium text-gray-900">{{ appointment.service.duration }} minutes</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-600 text-sm flex items-center">
+                            <span class="material-icons-outlined text-gray-400 mr-2" style="font-size: 18px;">category</span>
+                            Category
+                        </span>
+                        <span class="font-medium text-gray-900">{{ appointment.service.category.name }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    // Initialize Alpine.js dropdown functionality
+    document.addEventListener('alpine:init', () => {
+        // If Alpine.js is not loaded, we need to handle the dropdown manually
+        if (typeof Alpine === 'undefined') {
+            const dropdownButton = document.querySelector('[x-data]');
+            const dropdownMenu = document.querySelector('[x-show]');
+
+            if (dropdownButton && dropdownMenu) {
+                // Hide the dropdown initially
+                dropdownMenu.style.display = 'none';
+
+                // Toggle dropdown on button click
+                dropdownButton.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    const isHidden = dropdownMenu.style.display === 'none';
+                    dropdownMenu.style.display = isHidden ? 'block' : 'none';
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function() {
+                    dropdownMenu.style.display = 'none';
+                });
+
+                // Prevent dropdown from closing when clicking inside it
+                dropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        }
+    });
+</script>
+{% endblock %}

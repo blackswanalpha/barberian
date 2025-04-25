@@ -1,0 +1,122 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{{ title }} | Barberian Admin{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>Manage Reviews</h1>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="get" class="row g-3">
+                    <div class="col-md-6">
+                        <label for="approval_status" class="form-label">Filter by Status</label>
+                        <select class="form-select" id="approval_status" name="approval_status" onchange="this.form.submit()">
+                            <option value="">All Reviews</option>
+                            <option value="approved" {% if approval_status == 'approved' %}selected{% endif %}>Approved</option>
+                            <option value="pending" {% if approval_status == 'pending' %}selected{% endif %}>Pending Approval</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Reviews</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if reviews %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Client</th>
+                                    <th>Service</th>
+                                    <th>Staff</th>
+                                    <th>Rating</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for review in reviews %}
+                                    <tr>
+                                        <td>{{ review.id }}</td>
+                                        <td>{{ review.client.get_full_name }}</td>
+                                        <td>{{ review.service.name }}</td>
+                                        <td>{{ review.staff.get_full_name }}</td>
+                                        <td>
+                                            <div class="rating-stars">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= review.rating %}
+                                                        <i class="bi bi-star-fill text-warning"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-star text-warning"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </td>
+                                        <td>{{ review.created_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if review.is_approved %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% else %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'reviews:review_detail' review.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> View
+                                                </a>
+                                                {% if not review.is_approved %}
+                                                    <a href="{% url 'reviews:admin_review_approve' review.id %}" class="btn btn-sm btn-outline-success">
+                                                        <i class="bi bi-check-circle"></i> Approve
+                                                    </a>
+                                                {% endif %}
+                                                <a href="{% url 'reviews:review_delete' review.id %}" class="btn btn-sm btn-outline-danger">
+                                                    <i class="bi bi-trash"></i> Delete
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        No reviews found.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

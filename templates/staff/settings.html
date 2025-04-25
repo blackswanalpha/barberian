@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h1>Settings</h1>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group mb-4">
+            <a href="{% url 'staff:dashboard' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+            <a href="{% url 'staff:profile' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-person me-2"></i> My Profile
+            </a>
+            <a href="{% url 'staff:schedule' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-week me-2"></i> My Schedule
+            </a>
+            <a href="{% url 'staff:appointments' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-check me-2"></i> My Appointments
+            </a>
+            <a href="{% url 'staff:settings' %}" class="list-group-item list-group-item-action active">
+                <i class="bi bi-gear me-2"></i> Settings
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Notification Settings</h5>
+            </div>
+            <div class="card-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+                
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.notification_preference.id_for_label }}" class="form-label">Notification Preference</label>
+                        {{ form.notification_preference }}
+                        {% if form.notification_preference.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.notification_preference.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.email_notifications }}
+                        <label class="form-check-label" for="{{ form.email_notifications.id_for_label }}">
+                            Receive Email Notifications
+                        </label>
+                        {% if form.email_notifications.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.email_notifications.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.sms_notifications }}
+                        <label class="form-check-label" for="{{ form.sms_notifications.id_for_label }}">
+                            Receive SMS Notifications
+                        </label>
+                        {% if form.sms_notifications.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.sms_notifications.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        {{ form.auto_confirm_appointments }}
+                        <label class="form-check-label" for="{{ form.auto_confirm_appointments.id_for_label }}">
+                            Auto-confirm Appointments
+                        </label>
+                        {% if form.auto_confirm_appointments.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.auto_confirm_appointments.errors }}
+                            </div>
+                        {% endif %}
+                        <div class="form-text">If enabled, new appointments will be automatically confirmed.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="{{ form.calendar_view_preference.id_for_label }}" class="form-label">Calendar View Preference</label>
+                        {{ form.calendar_view_preference }}
+                        {% if form.calendar_view_preference.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.calendar_view_preference.errors }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">Save Settings</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Change Password</h5>
+            </div>
+            <div class="card-body">
+                <p>To change your password, please click the button below:</p>
+                <a href="{% url 'password_change' %}" class="btn btn-outline-primary">Change Password</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

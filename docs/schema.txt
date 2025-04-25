@@ -1,0 +1,400 @@
+# Barberian Database Schema
+
+## Overview
+This schema defines the database structure for the Barberian barbershop management system. It includes tables for users, services, appointments, business settings, and more.
+
+## Tables
+
+### users
+Stores all user accounts including clients, staff, and administrators.
+
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    password VARCHAR(255) NOT NULL,
+    first_name VARCHAR(150) NOT NULL,
+    last_name VARCHAR(150) NOT NULL,
+    phone_number VARCHAR(20),
+    role VARCHAR(10) NOT NULL DEFAULT 'client', -- 'admin', 'staff', 'client'
+    bio TEXT,
+    profile_image VARCHAR(255),
+    specialization VARCHAR(100),
+    is_active BOOLEAN DEFAULT TRUE,
+    date_joined TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP
+);
+
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_users_role ON users(role);
+```
+
+### categories
+Stores service categories for organizing services.
+
+```sql
+CREATE TABLE categories (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    image_url VARCHAR(255),
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### services
+Stores services offered by the barbershop.
+
+```sql
+CREATE TABLE services (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    price DECIMAL(10, 2) NOT NULL,
+    duration INTEGER NOT NULL, -- in minutes
+    category_id INTEGER NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_services_category ON services(category_id);
+```
+
+### service_media
+Stores images and other media related to services.
+
+```sql
+CREATE TABLE service_media (
+    id SERIAL PRIMARY KEY,
+    service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    media_type VARCHAR(20) NOT NULL, -- 'image', 'video', etc.
+    url VARCHAR(255) NOT NULL,
+    is_primary BOOLEAN DEFAULT FALSE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_service_media_service ON service_media(service_id);
+```
+
+### appointments
+Stores appointment bookings.
+
+```sql
+CREATE TABLE appointments (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    staff_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    start_time TIMESTAMP NOT NULL,
+    end_time TIMESTAMP NOT NULL,
+    status VARCHAR(20) NOT NULL DEFAULT 'pending', -- 'pending', 'confirmed', 'cancelled', 'completed', 'no_show'
+    notes TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_appointments_client ON appointments(client_id);
+CREATE INDEX idx_appointments_staff ON appointments(staff_id);
+CREATE INDEX idx_appointments_service ON appointments(service_id);
+CREATE INDEX idx_appointments_start_time ON appointments(start_time);
+CREATE INDEX idx_appointments_status ON appointments(status);
+```
+
+### client_profiles
+Stores additional information for clients.
+
+```sql
+CREATE TABLE client_profiles (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_client_profiles_user ON client_profiles(user_id);
+```
+
+### client_preferences
+Stores client preferences for customizing their experience.
+
+```sql
+CREATE TABLE client_preferences (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    email_notifications BOOLEAN DEFAULT TRUE,
+    sms_notifications BOOLEAN DEFAULT TRUE,
+    reminder_time INTEGER DEFAULT 24, -- hours before appointment
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_client_preferences_client ON client_preferences(client_id);
+```
+
+### preferred_staff
+Stores client preferences for specific staff members.
+
+```sql
+CREATE TABLE preferred_staff (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    staff_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(client_id, staff_id)
+);
+
+CREATE INDEX idx_preferred_staff_client ON preferred_staff(client_id);
+CREATE INDEX idx_preferred_staff_staff ON preferred_staff(staff_id);
+```
+
+### preferred_services
+Stores client preferences for specific services.
+
+```sql
+CREATE TABLE preferred_services (
+    id SERIAL PRIMARY KEY,
+    client_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    service_id INTEGER NOT NULL REFERENCES services(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(client_id, service_id)
+);
+
+CREATE INDEX idx_preferred_services_client ON preferred_services(client_id);
+CREATE INDEX idx_preferred_services_service ON preferred_services(service_id);
+```
+
+### staff_settings
+Stores settings and preferences for staff members.
+
+```sql
+CREATE TABLE staff_settings (
+    id SERIAL PRIMARY KEY,
+    staff_id INTEGER NOT NULL UNIQUE REFERENCES users(id) ON DELETE CASCADE,
+    notification_preference VARCHAR(20) NOT NULL DEFAULT 'all', -- 'all', 'appointments_only', 'important_only', 'none'
+    email_notifications BOOLEAN DEFAULT TRUE,
+    sms_notifications BOOLEAN DEFAULT TRUE,
+    auto_confirm_appointments BOOLEAN DEFAULT FALSE,
+    calendar_view_preference VARCHAR(10) DEFAULT 'week', -- 'day', 'week', 'month'
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_staff_settings_staff ON staff_settings(staff_id);
+```
+
+### schedules
+Stores staff work schedules.
+
+```sql
+CREATE TABLE schedules (
+    id SERIAL PRIMARY KEY,
+    staff_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    day_of_week INTEGER NOT NULL, -- 0 (Monday) to 6 (Sunday)
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    is_working BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(staff_id, day_of_week)
+);
+
+CREATE INDEX idx_schedules_staff ON schedules(staff_id);
+```
+
+### business_hours
+Stores business operating hours.
+
+```sql
+CREATE TABLE business_hours (
+    id SERIAL PRIMARY KEY,
+    day_of_week INTEGER NOT NULL UNIQUE, -- 0 (Monday) to 6 (Sunday)
+    is_open BOOLEAN DEFAULT TRUE,
+    opening_time TIME NOT NULL DEFAULT '09:00',
+    closing_time TIME NOT NULL DEFAULT '18:00',
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### holidays
+Stores holiday dates when the shop is closed.
+
+```sql
+CREATE TABLE holidays (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    date DATE NOT NULL,
+    is_recurring BOOLEAN DEFAULT FALSE, -- recurring annually
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_holidays_date ON holidays(date);
+```
+
+### business_settings
+Stores general business settings.
+
+```sql
+CREATE TABLE business_settings (
+    id SERIAL PRIMARY KEY,
+    business_name VARCHAR(100) NOT NULL DEFAULT 'Barberian',
+    address TEXT,
+    phone VARCHAR(20),
+    email VARCHAR(255),
+    logo_url VARCHAR(255),
+    about TEXT,
+    facebook_url VARCHAR(255),
+    instagram_url VARCHAR(255),
+    twitter_url VARCHAR(255),
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### notifications
+Stores notification records sent to users.
+
+```sql
+CREATE TABLE notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    type VARCHAR(20) NOT NULL, -- 'appointment', 'reminder', 'promotion', etc.
+    title VARCHAR(100) NOT NULL,
+    message TEXT NOT NULL,
+    is_read BOOLEAN DEFAULT FALSE,
+    related_appointment_id INTEGER REFERENCES appointments(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_notifications_is_read ON notifications(is_read);
+```
+
+### sms_notifications
+Stores SMS notification records.
+
+```sql
+CREATE TABLE sms_notifications (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    phone_number VARCHAR(20) NOT NULL,
+    message TEXT NOT NULL,
+    status VARCHAR(20) NOT NULL, -- 'sent', 'failed', 'delivered'
+    related_appointment_id INTEGER REFERENCES appointments(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_sms_notifications_user ON sms_notifications(user_id);
+```
+
+### reports
+Stores generated reports.
+
+```sql
+CREATE TABLE reports (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    type VARCHAR(50) NOT NULL, -- 'appointments', 'revenue', 'staff_performance', etc.
+    parameters JSONB,
+    created_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_reports_type ON reports(type);
+CREATE INDEX idx_reports_created_by ON reports(created_by);
+```
+
+### report_exports
+Stores exported report files.
+
+```sql
+CREATE TABLE report_exports (
+    id SERIAL PRIMARY KEY,
+    report_id INTEGER NOT NULL REFERENCES reports(id) ON DELETE CASCADE,
+    file_url VARCHAR(255) NOT NULL,
+    format VARCHAR(10) NOT NULL, -- 'pdf', 'csv', 'xlsx'
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_report_exports_report ON report_exports(report_id);
+```
+
+### user_logs
+Stores user activity logs for auditing.
+
+```sql
+CREATE TABLE user_logs (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    action VARCHAR(50) NOT NULL, -- 'login', 'logout', 'create', 'update', 'delete'
+    entity_type VARCHAR(50), -- 'appointment', 'service', 'user', etc.
+    entity_id INTEGER,
+    details JSONB,
+    ip_address VARCHAR(45),
+    user_agent TEXT,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_user_logs_user ON user_logs(user_id);
+CREATE INDEX idx_user_logs_action ON user_logs(action);
+CREATE INDEX idx_user_logs_created_at ON user_logs(created_at);
+```
+
+### media_files
+Stores uploaded media files.
+
+```sql
+CREATE TABLE media_files (
+    id SERIAL PRIMARY KEY,
+    file_name VARCHAR(255) NOT NULL,
+    file_type VARCHAR(50) NOT NULL, -- 'image', 'document', etc.
+    file_url VARCHAR(255) NOT NULL,
+    file_size INTEGER NOT NULL, -- in bytes
+    uploaded_by INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX idx_media_files_uploaded_by ON media_files(uploaded_by);
+CREATE INDEX idx_media_files_file_type ON media_files(file_type);
+```
+
+## Relationships
+
+1. **One-to-One Relationships**:
+   - users ↔ client_profiles (one user can have one client profile)
+   - users ↔ client_preferences (one user can have one set of preferences)
+   - users ↔ staff_settings (one staff user can have one set of settings)
+
+2. **One-to-Many Relationships**:
+   - categories → services (one category can have many services)
+   - services → service_media (one service can have many media items)
+   - users → appointments (as client) (one client can have many appointments)
+   - users → appointments (as staff) (one staff can have many appointments)
+   - users → notifications (one user can receive many notifications)
+   - users → sms_notifications (one user can receive many SMS notifications)
+   - users → reports (one user can create many reports)
+   - reports → report_exports (one report can have many exports)
+   - users → user_logs (one user can have many activity logs)
+   - users → media_files (one user can upload many media files)
+
+3. **Many-to-Many Relationships**:
+   - users (clients) ↔ users (staff) through preferred_staff (clients can prefer multiple staff, staff can be preferred by multiple clients)
+   - users (clients) ↔ services through preferred_services (clients can prefer multiple services, services can be preferred by multiple clients)
+
+## Notes
+
+1. The `users` table uses a role-based approach to distinguish between admins, staff, and clients, rather than separate tables for each user type.
+
+2. Timestamps (`created_at`, `updated_at`) are included in most tables for auditing and tracking purposes.
+
+3. Appropriate indexes are created to optimize query performance, especially for frequently accessed columns and foreign keys.
+
+4. The schema uses PostgreSQL-specific syntax but can be adapted for other database systems like MySQL with minor modifications.
+
+5. JSON/JSONB fields are used for flexible data storage in reports and user logs.
+
+6. The schema includes comprehensive support for business operations, including scheduling, notifications, reporting, and user management.

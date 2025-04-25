@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block title %}Day View | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'admin_panel:calendar' %}">Calendar</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ date|date:"F d, Y" }}</li>
+            </ol>
+        </nav>
+        <div class="d-flex justify-content-between align-items-center">
+            <h1>{{ date|date:"F d, Y" }}</h1>
+            <div>
+                <a href="{% url 'admin_panel:day_view' prev_day.year prev_day.month prev_day.day %}{% if selected_staff %}?staff={{ selected_staff.id }}{% endif %}" class="btn btn-outline-secondary">
+                    <i class="bi bi-chevron-left"></i> Previous Day
+                </a>
+                <a href="{% url 'admin_panel:calendar' %}" class="btn btn-outline-primary">
+                    Back to Calendar
+                </a>
+                <a href="{% url 'admin_panel:day_view' next_day.year next_day.month next_day.day %}{% if selected_staff %}?staff={{ selected_staff.id }}{% endif %}" class="btn btn-outline-secondary">
+                    Next Day <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group mb-4">
+            <a href="{% url 'admin_panel:dashboard' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+            <a href="{% url 'admin_panel:appointments' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-check me-2"></i> Appointments
+            </a>
+            <a href="{% url 'admin_panel:calendar' %}" class="list-group-item list-group-item-action active">
+                <i class="bi bi-calendar3 me-2"></i> Calendar
+            </a>
+            <a href="{% url 'admin_panel:users' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-people me-2"></i> Users
+            </a>
+            <a href="{% url 'admin_panel:staff' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-person-badge me-2"></i> Staff
+            </a>
+            <a href="{% url 'admin_panel:services' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-scissors me-2"></i> Services
+            </a>
+            <a href="{% url 'admin_panel:categories' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-tags me-2"></i> Categories
+            </a>
+            <a href="{% url 'admin_panel:reports' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-bar-chart me-2"></i> Reports
+            </a>
+            <a href="{% url 'admin_panel:business_settings' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-gear me-2"></i> Business Settings
+            </a>
+            <a href="{% url 'admin_panel:business_hours' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-clock me-2"></i> Business Hours
+            </a>
+            <a href="{% url 'admin_panel:holidays' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-calendar-x me-2"></i> Holidays
+            </a>
+            <a href="{% url 'admin_panel:logs' %}" class="list-group-item list-group-item-action">
+                <i class="bi bi-list-check me-2"></i> Activity Logs
+            </a>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Filter Options</h5>
+            </div>
+            <div class="card-body">
+                <form method="get">
+                    <div class="mb-3">
+                        <label for="staff" class="form-label">Staff Member</label>
+                        <select name="staff" id="staff" class="form-select" onchange="this.form.submit()">
+                            <option value="">All Staff</option>
+                            {% for staff_member in staff_members %}
+                                <option value="{{ staff_member.id }}" {% if selected_staff.id == staff_member.id %}selected{% endif %}>
+                                    {{ staff_member.get_full_name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    {% if request.GET.staff %}
+                        <div class="d-grid">
+                            <a href="{% url 'admin_panel:day_view' date.year date.month date.day %}" class="btn btn-outline-secondary">Clear Filters</a>
+                        </div>
+                    {% endif %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Appointments for {{ date|date:"F d, Y" }}</h5>
+                    <a href="{% url 'admin_panel:appointment_create' %}?date={{ date|date:'Y-m-d' }}{% if selected_staff %}&staff={{ selected_staff.id }}{% endif %}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-circle me-1"></i> Add Appointment
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if holiday %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-calendar-x me-2"></i> Holiday: {{ holiday.name }}
+                    </div>
+                {% endif %}
+                
+                {% if appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Client</th>
+                                    <th>Staff</th>
+                                    <th>Service</th>
+                                    <th>Duration</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in appointments %}
+                                    <tr>
+                                        <td>{{ appointment.start_time|time:"g:i A" }}</td>
+                                        <td>{{ appointment.client.get_full_name }}</td>
+                                        <td>{{ appointment.staff.get_full_name }}</td>
+                                        <td>{{ appointment.service.name }}</td>
+                                        <td>{{ appointment.service.duration }} min</td>
+                                        <td>
+                                            <span class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% elif appointment.status == 'cancelled' %}danger{% elif appointment.status == 'completed' %}success{% elif appointment.status == 'no_show' %}warning{% else %}secondary{% endif %}">
+                                                {{ appointment.status|title }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group">
+                                                <a href="{% url 'admin_panel:appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                <a href="{% url 'admin_panel:appointment_update' appointment.id %}" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="bi bi-pencil"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        No appointments scheduled for this day.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if selected_staff %}
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Availability for {{ selected_staff.get_full_name }}</h5>
+                </div>
+                <div class="card-body">
+                    {% if business_hours %}
+                        <div class="alert alert-info">
+                            <strong>Business Hours:</strong> {{ business_hours.opening_time|time:"g:i A" }} - {{ business_hours.closing_time|time:"g:i A" }}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="availability-timeline">
+                                    {% for hour in hours %}
+                                        <div class="hour-block">
+                                            <div class="hour-label">{{ hour|time:"g:i A" }}</div>
+                                            <div class="hour-slots">
+                                                {% for slot in slots %}
+                                                    {% if slot.hour == hour.hour %}
+                                                        <div class="time-slot {% if slot.is_available %}available{% else %}unavailable{% endif %}">
+                                                            {% if not slot.is_available and slot.appointment %}
+                                                                <a href="{% url 'admin_panel:appointment_detail' slot.appointment.id %}" class="appointment-slot">
+                                                                    {{ slot.appointment.client.get_full_name }} - {{ slot.appointment.service.name }}
+                                                                </a>
+                                                            {% endif %}
+                                                        </div>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning">
+                            Business is closed on this day.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+<style>
+    .availability-timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .hour-block {
+        display: flex;
+        align-items: center;
+    }
+    
+    .hour-label {
+        width: 80px;
+        font-weight: bold;
+    }
+    
+    .hour-slots {
+        flex: 1;
+        display: flex;
+        height: 40px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        overflow: hidden;
+    }
+    
+    .time-slot {
+        flex: 1;
+        height: 100%;
+        border-right: 1px solid #dee2e6;
+    }
+    
+    .time-slot:last-child {
+        border-right: none;
+    }
+    
+    .time-slot.available {
+        background-color: #d1e7dd;
+    }
+    
+    .time-slot.unavailable {
+        background-color: #f8d7da;
+    }
+    
+    .appointment-slot {
+        display: block;
+        height: 100%;
+        padding: 5px;
+        color: #212529;
+        text-decoration: none;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+    
+    .appointment-slot:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+</style>
+{% endblock %}

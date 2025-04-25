@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} | Barberian{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'client_portal:home' %}">Home</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'client_portal:staff_list' %}">Our Staff</a></li>
+                <li class="breadcrumb-item active" aria-current="page">{{ staff_member.get_full_name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            {% if staff_member.profile_image %}
+                <img src="{{ staff_member.profile_image.url }}" class="card-img-top" alt="{{ staff_member.get_full_name }}">
+            {% else %}
+                <img src="https://via.placeholder.com/300x300?text=No+Image" class="card-img-top" alt="No Image">
+            {% endif %}
+            <div class="card-body">
+                <h1 class="card-title h3">{{ staff_member.get_full_name }}</h1>
+                <p class="card-text">
+                    <i class="bi bi-envelope me-2"></i> {{ staff_member.email }}
+                </p>
+                {% if staff_member.phone_number %}
+                    <p class="card-text">
+                        <i class="bi bi-telephone me-2"></i> {{ staff_member.phone_number }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h2 class="card-title h4 mb-0">About</h2>
+            </div>
+            <div class="card-body">
+                {% if staff_member.bio %}
+                    <p>{{ staff_member.bio }}</p>
+                {% else %}
+                    <p class="text-muted">No bio available.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title h4 mb-0">Services Offered</h2>
+            </div>
+            <div class="card-body">
+                {% if services %}
+                    <div class="list-group">
+                        {% for service in services %}
+                            <a href="{% url 'client_portal:service_detail' service.id %}" class="list-group-item list-group-item-action">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h5 class="mb-1">{{ service.name }}</h5>
+                                    <span class="badge bg-primary rounded-pill">${{ service.price }}</span>
+                                </div>
+                                <p class="mb-1">{{ service.description|truncatewords:20 }}</p>
+                                <small class="text-muted">Duration: {{ service.duration }} minutes</small>
+                            </a>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> No services available for this staff member.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+            <a href="{% url 'appointments:booking_service' %}?staff={{ staff_member.id }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-calendar-plus me-2"></i> Book an Appointment
+            </a>
+            <a href="{% url 'client_portal:staff_list' %}" class="btn btn-outline-secondary btn-lg">
+                <i class="bi bi-arrow-left me-2"></i> Back to Staff List
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block page_css %}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% endblock %}

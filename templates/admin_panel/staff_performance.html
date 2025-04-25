@@ -1,0 +1,465 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Staff Performance | Barberian Admin{% endblock %}
+
+{% block page_title %}Staff Performance{% endblock %}
+
+{% block admin_content %}
+<!-- Breadcrumb -->
+<nav class="flex mb-5" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'admin_panel:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-500">
+                <span class="material-icons-outlined mr-2" style="font-size: 16px;">dashboard</span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <a href="{% url 'admin_panel:staff' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-500">Staff</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <span class="ml-1 text-sm font-medium text-gray-500">Performance</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<!-- Back Button -->
+<div class="flex justify-end mb-5">
+    <a href="{% url 'admin_panel:staff' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+        <span class="material-icons-outlined mr-2" style="font-size: 16px;">arrow_back</span>
+        Back to Staff
+    </a>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+    <!-- Sidebar -->
+    <div class="lg:col-span-1 space-y-6">
+        <!-- Staff Members Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Staff Members</h3>
+            </div>
+            <div class="divide-y divide-gray-100">
+                {% for staff_member in staff_members %}
+                    <a href="{% url 'admin_panel:staff_performance' %}?staff={{ staff_member.id }}"
+                       class="flex items-center px-6 py-3 hover:bg-gray-50 transition-colors duration-150
+                              {% if selected_staff.id == staff_member.id %}bg-primary-50 text-primary-600{% endif %}">
+                        <div class="flex-shrink-0">
+                            {% if staff_member.profile_image %}
+                                <img src="{{ staff_member.profile_image.url }}" alt="{{ staff_member.get_full_name }}"
+                                     class="h-10 w-10 rounded-full object-cover">
+                            {% else %}
+                                <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                    <span class="material-icons-outlined text-gray-500">person</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium {% if selected_staff.id == staff_member.id %}text-primary-600{% else %}text-gray-900{% endif %}">
+                                {{ staff_member.get_full_name }}
+                            </p>
+                        </div>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Date Range Card -->
+        <div class="bg-white rounded-xl shadow-card overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Date Range</h3>
+            </div>
+            <div class="p-6">
+                <form method="get" action="{% url 'admin_panel:staff_performance' %}" class="space-y-4">
+                    {% if selected_staff %}
+                        <input type="hidden" name="staff" value="{{ selected_staff.id }}">
+                    {% endif %}
+
+                    <div>
+                        <label for="date_range" class="block text-sm font-medium text-gray-700 mb-1">Preset Ranges</label>
+                        <div class="relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">date_range</span>
+                            </div>
+                            <select id="date_range" name="range"
+                                    class="pl-10 py-2 focus:ring-primary-400 focus:border-primary-400 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
+                                    onchange="toggleCustomDateRange(this.value)">
+                                <option value="7" {% if date_range == '7' %}selected{% endif %}>Last 7 Days</option>
+                                <option value="30" {% if date_range == '30' %}selected{% endif %}>Last 30 Days</option>
+                                <option value="90" {% if date_range == '90' %}selected{% endif %}>Last 90 Days</option>
+                                <option value="180" {% if date_range == '180' %}selected{% endif %}>Last 6 Months</option>
+                                <option value="365" {% if date_range == '365' %}selected{% endif %}>Last Year</option>
+                                <option value="custom" {% if date_range == 'custom' %}selected{% endif %}>Custom Range</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="customDateRange" class="space-y-4 {% if date_range != 'custom' %}hidden{% endif %}">
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">event</span>
+                                </div>
+                                <input type="date" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}"
+                                       class="pl-10 py-2 focus:ring-primary-400 focus:border-primary-400 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">event</span>
+                                </div>
+                                <input type="date" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}"
+                                       class="pl-10 py-2 focus:ring-primary-400 focus:border-primary-400 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            </div>
+                        </div>
+
+                        <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">check</span>
+                            Apply Range
+                        </button>
+                    </div>
+
+                    <div class="{% if date_range == 'custom' %}hidden{% endif %}">
+                        <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">refresh</span>
+                            Update
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="lg:col-span-3 space-y-6">
+        {% if selected_staff %}
+            <!-- Metrics Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Appointments -->
+                <div class="bg-gradient-to-br from-primary-400 to-primary-600 rounded-xl shadow-card overflow-hidden text-white">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-primary-100 text-sm font-medium">Total Appointments</p>
+                                <h3 class="text-3xl font-bold mt-1">{{ metrics.total_appointments }}</h3>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-full">
+                                <span class="material-icons-outlined text-white">event_note</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Total Revenue -->
+                <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-xl shadow-card overflow-hidden text-white">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-green-100 text-sm font-medium">Total Revenue</p>
+                                <h3 class="text-3xl font-bold mt-1">${{ metrics.total_revenue|floatformat:2 }}</h3>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-full">
+                                <span class="material-icons-outlined text-white">payments</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Average Rating -->
+                <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-xl shadow-card overflow-hidden text-white">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="text-yellow-100 text-sm font-medium">Average Rating</p>
+                                <h3 class="text-3xl font-bold mt-1">{{ metrics.average_rating|floatformat:1 }} <span class="text-lg">/5</span></h3>
+                            </div>
+                            <div class="bg-white/20 p-3 rounded-full">
+                                <span class="material-icons-outlined text-white">star</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Appointments by Status -->
+                <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800">Appointments by Status</h3>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="appointmentStatusChart" class="w-full h-64"></canvas>
+                    </div>
+                </div>
+
+                <!-- Revenue by Service -->
+                <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-100">
+                        <h3 class="text-lg font-semibold text-gray-800">Revenue by Service</h3>
+                    </div>
+                    <div class="p-6">
+                        <canvas id="revenueByServiceChart" class="w-full h-64"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Appointments Over Time -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800">Appointments Over Time</h3>
+                </div>
+                <div class="p-6">
+                    <canvas id="appointmentsOverTimeChart" class="w-full h-72"></canvas>
+                </div>
+            </div>
+
+            <!-- Recent Reviews -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="text-lg font-semibold text-gray-800">Recent Reviews</h3>
+                </div>
+                <div class="p-6">
+                    {% if reviews %}
+                        <div class="space-y-4">
+                            {% for review in reviews %}
+                                <div class="bg-gray-50 rounded-lg p-4">
+                                    <div class="flex justify-between items-center mb-2">
+                                        <div class="flex items-center">
+                                            <div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                                                <span class="material-icons-outlined text-gray-500">person</span>
+                                            </div>
+                                            <div class="ml-3">
+                                                <p class="text-sm font-medium text-gray-900">{{ review.client.get_full_name }}</p>
+                                                <p class="text-xs text-gray-500">{{ review.created_at|date:"M d, Y" }}</p>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center">
+                                            {% for i in "12345" %}
+                                                <span class="material-icons-outlined text-yellow-400" style="font-size: 18px;">
+                                                    {% if forloop.counter <= review.rating %}star{% else %}star_border{% endif %}
+                                                </span>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600">{{ review.comment }}</p>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="flex flex-col items-center justify-center py-12 text-center">
+                            <span class="material-icons-outlined text-gray-300 text-6xl mb-4">rate_review</span>
+                            <h3 class="text-lg font-medium text-gray-900 mb-1">No reviews yet</h3>
+                            <p class="text-gray-500 max-w-md">This staff member hasn't received any reviews yet. Reviews will appear here once clients rate their services.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        {% else %}
+            <!-- No Staff Selected -->
+            <div class="bg-white rounded-xl shadow-card overflow-hidden">
+                <div class="flex flex-col items-center justify-center py-16 text-center px-6">
+                    <span class="material-icons-outlined text-gray-300 text-6xl mb-4">person_search</span>
+                    <h3 class="text-xl font-medium text-gray-900 mb-2">Select a Staff Member</h3>
+                    <p class="text-gray-500 max-w-md mb-6">Please select a staff member from the list to view their performance metrics and analytics.</p>
+                    <a href="{% url 'admin_panel:staff' %}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">people</span>
+                        View All Staff
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Toggle custom date range
+    function toggleCustomDateRange(value) {
+        const customDateRange = document.getElementById('customDateRange');
+        const updateButton = document.querySelector('.{% if date_range == "custom" %}hidden{% endif %}');
+
+        if (value === 'custom') {
+            customDateRange.classList.remove('hidden');
+            updateButton.classList.add('hidden');
+        } else {
+            customDateRange.classList.add('hidden');
+            updateButton.classList.remove('hidden');
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        {% if selected_staff %}
+            // Appointment Status Chart
+            const appointmentStatusCtx = document.getElementById('appointmentStatusChart').getContext('2d');
+            new Chart(appointmentStatusCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: {{ metrics.status_labels|safe }},
+                    datasets: [{
+                        data: {{ metrics.status_data|safe }},
+                        backgroundColor: [
+                            '#10B981', // confirmed
+                            '#F59E0B', // pending
+                            '#EF4444', // cancelled
+                            '#3B82F6', // completed
+                            '#6B7280'  // no_show
+                        ],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            displayColors: false
+                        }
+                    }
+                }
+            });
+
+            // Revenue by Service Chart
+            const revenueByServiceCtx = document.getElementById('revenueByServiceChart').getContext('2d');
+            new Chart(revenueByServiceCtx, {
+                type: 'bar',
+                data: {
+                    labels: {{ metrics.service_labels|safe }},
+                    datasets: [{
+                        label: 'Revenue ($)',
+                        data: {{ metrics.service_data|safe }},
+                        backgroundColor: '#8B5CF6',
+                        borderRadius: 6,
+                        barThickness: 'flex',
+                        maxBarThickness: 35
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            },
+                            callbacks: {
+                                label: function(context) {
+                                    return '$ ' + context.raw.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Appointments Over Time Chart
+            const appointmentsOverTimeCtx = document.getElementById('appointmentsOverTimeChart').getContext('2d');
+            new Chart(appointmentsOverTimeCtx, {
+                type: 'line',
+                data: {
+                    labels: {{ metrics.time_labels|safe }},
+                    datasets: [{
+                        label: 'Appointments',
+                        data: {{ metrics.time_data|safe }},
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.3,
+                        borderWidth: 2,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#3B82F6',
+                        pointBorderWidth: 2,
+                        pointRadius: 4,
+                        pointHoverRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                precision: 0
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleFont: {
+                                size: 14
+                            },
+                            bodyFont: {
+                                size: 13
+                            }
+                        }
+                    }
+                }
+            });
+        {% endif %}
+    });
+</script>
+{% endblock %}

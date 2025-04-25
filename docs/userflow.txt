@@ -1,0 +1,169 @@
+Below is a detailed and comprehensive user flow outlining the interactions and operations for each module (Admin, Staff, Client). This user flow not only describes the authentication and CRUD processes but also the business logic and notifications involved.
+
+---
+
+## 1. Admin Module User Flow
+
+### 1.1. Authentication and Login
+- **Step 1:** Open the admin login page.
+- **Step 2:** Enter the credentials:
+  - **Username:** `admin@barberian.com`
+  - **Password:** `admin1234`
+- **Step 3:** The system verifies the credentials via the authentication service.
+- **Step 4:** Upon successful authentication, the admin is redirected to the Admin Dashboard.
+
+### 1.2. Staff Management
+- **Step 1:** From the Dashboard, select the “Staff Management” section.
+- **Step 2:** **List Staff:** View a list of all staff members along with their status (active/inactive), username, and assigned passwords.
+- **Step 3:** **Add New Staff:** 
+  - Click on “Add Staff.”
+  - Fill in the required fields (name, username, password, email, active status).
+  - Submit to create a new staff record.
+- **Step 4:** **Update Staff:** Select a staff record to update details such as password, active status, or other personal information.
+- **Step 5:** **Delete Staff:** Remove a staff record if no longer needed.
+
+### 1.3. User Log Management
+- **Step 1:** Access the “User Logs” section from the Dashboard.
+- **Step 2:** **View Logs:** See detailed logs for all staff members that include actions (login, update, CRUD operations) along with timestamps.
+- **Step 3:** **Search/Filter Logs:** Use search criteria (e.g., date range, staff name, action type) to filter logs.
+- **Step 4:** **Archive/Remove Logs:** Perform CRUD operations on logs if necessary (e.g., archiving older logs or deleting erroneous entries).
+
+### 1.4. Service Management with Media Integration
+- **Step 1:** Select the “Service Management” option.
+- **Step 2:** **List Services:** View existing services along with their descriptions, pricing, and associated images or videos.
+- **Step 3:** **Add New Service:**
+  - Provide details (service name, description, price).
+  - **Media Integration:** Upload images/videos using the media management component.
+  - Save the new service.
+- **Step 4:** **Update Service:** Modify service details or replace associated media files.
+- **Step 5:** **Delete Service:** Remove a service and its associated media if required.
+
+### 1.5. Appointment Management
+- **Step 1:** Navigate to “Appointment Management.”
+- **Step 2:** **View Appointments:** List all appointments for every staff member.
+- **Step 3:** **CRUD Operations:**
+  - **Create:** Schedule a new appointment manually if needed.
+  - **Update:** Modify appointment details (e.g., reschedule, update status such as confirmed, cancelled).
+  - **Delete:** Cancel or remove appointments.
+- **Step 4:** **Logical Operations:** Apply business rules (e.g., conflict checks, notifications on updates).
+
+### 1.6. Calendar Operations
+- **Step 1:** Open the “Calendar” view.
+- **Step 2:** **Daily Overview:** Display a calendar grid showing all appointments for each staff member.
+- **Step 3:** **Availability Check:** Highlight available staff slots for the day.
+- **Step 4:** **Filter Options:** Allow filtering by date, staff, or service type.
+
+### 1.7. Reports Management
+- **Step 1:** Access the “Reports” section.
+- **Step 2:** **Generate Reports:** Create reports based on appointments, staff performance, client interactions, etc.
+- **Step 3:** **CRUD Operations on Reports:**
+  - **Create:** Generate a new report.
+  - **Read:** View generated reports.
+  - **Update:** Edit report parameters.
+  - **Delete:** Remove outdated or incorrect reports.
+- **Step 4:** **Business Logic:** Apply business rules (aggregation, data filtering) to produce meaningful insights.
+
+### 1.8. Profile Management
+- **Step 1:** Access “Profile Settings.”
+- **Step 2:** **View/Update Profile:** Update personal details (e.g., name, email, contact information) and change password.
+- **Step 3:** Save changes and update session details if needed.
+
+### 1.9. Client Management
+- **Step 1:** Navigate to “Client Management.”
+- **Step 2:** **List Clients:** View all client accounts.
+- **Step 3:** **CRUD Operations:**
+  - **Add:** Register a new client manually.
+  - **Update:** Modify client details.
+  - **Delete:** Remove a client account.
+
+### 1.10. Media Management
+- **Step 1:** Access the “Media Management” section.
+- **Step 2:** **Upload Files:** Store images and videos to the server (for service or promotional use).
+- **Step 3:** **List Media:** View all uploaded media files.
+- **Step 4:** **Update/Delete:** Edit metadata or remove files as needed.
+
+### 1.11. Settings Operations
+- **Step 1:** Go to “Settings” on the Dashboard.
+- **Step 2:** **Update Global Settings:** Configure system-wide options such as notification preferences, system integrations, and application-level configurations.
+- **Step 3:** **Save Changes:** Persist settings that affect all modules.
+
+---
+
+## 2. Staff Module User Flow
+
+### 2.1. Authentication
+- **Step 1:** Staff navigates to the staff login page.
+- **Step 2:** Enters username and password (credentials provided by the admin).
+- **Step 3:** **Active Check:** The system checks if the staff account is activated. If not active, the login is rejected with an appropriate message.
+- **Step 4:** On successful login, the staff member is taken to the Staff Dashboard.
+
+### 2.2. Scheduling and Availability
+- **Step 1:** Select “Schedule Management.”
+- **Step 2:** **CRUD Operations:**
+  - **Create:** Add available time slots (e.g., availableFrom, availableTo).
+  - **Read:** View existing schedule entries.
+  - **Update:** Modify available times.
+  - **Delete:** Remove outdated schedule slots.
+- **Step 3:** **View Today's Appointments:** Quickly see all appointments for the current day.
+
+### 2.3. Appointment Management
+- **Step 1:** Access the “Appointment Management” section.
+- **Step 2:** **View Appointments:** Display all appointments that were booked by clients.
+- **Step 3:** **CRUD Operations:**
+  - **Update:** Mark appointments as confirmed, reschedule, or cancel based on client changes.
+  - **Logical Operations:** Automatically validate appointment timings against the staff’s availability.
+- **Step 4:** **Notifications:** Trigger notifications (e.g., via SMS/email) for appointment changes if configured.
+
+### 2.4. Profile Management
+- **Step 1:** Access “Profile Settings.”
+- **Step 2:** **View/Update Profile:** Update personal details and password.
+- **Step 3:** Save changes.
+
+### 2.5. Settings Operations
+- **Step 1:** Navigate to the “Settings” section.
+- **Step 2:** **Update Preferences:** Configure personal settings (notification preferences, calendar settings, etc.).
+- **Step 3:** Save configuration changes.
+
+---
+
+## 3. Client Module User Flow
+
+### 3.1. Browsing and Viewing Services
+- **Step 1:** The client opens the client portal.
+- **Step 2:** **View Staff Availability:** Display a list of all staff members along with their availability status for booking.
+- **Step 3:** **View Services:** List available services with details (description, price, media images/videos).
+
+### 3.2. Booking Process
+- **Step 1:** Select a desired service and staff member from the available list.
+- **Step 2:** **Choose Appointment Slot:** The client picks a time slot based on staff availability (calendar view).
+- **Step 3:** **Enter Personal Details:** The client fills in necessary details (name, contact info, etc.) if not already registered.
+- **Step 4:** **Confirm Booking:** Submit the appointment request.
+- **Step 5:** **SMS/Email Notification:** The system triggers an SMS or email notification confirming the appointment details.
+- **Step 6:** **Booking Summary:** Display a confirmation screen with appointment details and options to view, reschedule, or cancel.
+
+---
+
+## Overall Flow Considerations
+
+- **Validation & Exception Handling:**  
+  Each module implements robust validation (e.g., ensuring valid time slots, non-conflicting appointments) and exception handling via a centralized error handler. Any validation errors result in clear error messages displayed to the user.
+
+- **Audit and Logging:**  
+  All critical actions (CRUD operations, logins, changes) are recorded by the UserLog Management system to maintain an audit trail. This allows the admin to review actions performed by staff.
+
+- **Notification System:**  
+  The system integrates with SMS/email services. After a booking is made or an appointment is updated/cancelled, notifications are automatically sent to the involved parties.
+
+- **Role-Based Access:**  
+  - The Admin module has access to all operations.
+  - The Staff module is restricted to operations that affect their own schedule, appointments, and profile.
+  - The Client module provides read-only access to staff and service details with booking privileges.
+
+- **Integration Points:**  
+  - **Media Management:** Ensures that images and videos for services are stored and retrievable.
+  - **Calendar & Scheduling:** Provides a unified view of appointments across all staff, ensuring no conflicts.
+  - **Settings:** Offers global and personal configuration options that can be extended as the application scales.
+
+---
+
+This detailed user flow serves as a blueprint for how the system should behave from the perspective of each user role. It lays out the sequential steps, validations, and business logic that must be implemented to ensure a robust, user-friendly appointment system across Admin, Staff, and Client modules.
