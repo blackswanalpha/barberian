@@ -1,8 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Count, Sum, Avg
+from django.db.models import Count, Sum, Avg, Q
+from django.db import transaction
 from django.http import JsonResponse
 from django.urls import reverse
 from datetime import datetime, timedelta, time
@@ -23,6 +24,119 @@ from apps.appointments.models import Appointment
 from apps.payments.models import Payment, Invoice
 from apps.reviews.models import Review
 from apps.staff.models import Schedule, StaffSettings
+from apps.notifications.models import Notification
+
+@login_required
+def admin_approve_appointment(request, appointment_id):
+    """
+    View for approving a single appointment.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    # Approve the appointment
+    approved_count = approve_appointments(request, [appointment_id])
+
+    if approved_count > 0:
+        messages.success(request, "Appointment has been approved and staff assigned.")
+    else:
+        messages.error(request, "Failed to approve appointment. It may have already been processed.")
+
+    # Redirect back to the pending appointments page
+    return redirect('admin_panel:pending_appointments')
+
+def approve_appointments(request, appointment_ids):
+    """
+    Helper function to approve multiple appointments.
+    Returns the number of successfully approved appointments.
+    """
+    approved_count = 0
+
+    # Get all staff members
+    staff_members = User.objects.filter(role='staff', is_active=True)
+
+    for appointment_id in appointment_ids:
+        try:
+            with transaction.atomic():
+                # Get the appointment
+                appointment = Appointment.objects.get(id=appointment_id, status='pending_review')
+
+                # Get the day of the week for the appointment
+                day_of_week = appointment.start_time.weekday()
+
+                # Find an available staff member
+                assigned_staff = None
+
+                for staff in staff_members:
+                    try:
+                        # Check if the staff member is working on this day
+                        schedule = Schedule.objects.get(staff=staff, day_of_week=day_of_week, is_working=True)
+
+                        # Check if the appointment is within the staff's working hours
+                        staff_start = timezone.make_aware(datetime.combine(appointment.start_time.date(), schedule.start_time))
+                        staff_end = timezone.make_aware(datetime.combine(appointment.start_time.date(), schedule.end_time))
+
+                        if appointment.start_time >= staff_start and appointment.end_time <= staff_end:
+                            # Check if the staff member has any overlapping appointments
+                            overlapping_appointments = Appointment.objects.filter(
+                                staff=staff,
+                                start_time__lt=appointment.end_time,
+                                end_time__gt=appointment.start_time,
+                                status__in=['pending', 'confirmed']
+                            )
+
+                            if not overlapping_appointments.exists():
+                                assigned_staff = staff
+                                break
+                    except Schedule.DoesNotExist:
+                        # Staff member is not working on this day
+                        continue
+
+                # If no staff is available, assign to the first staff member
+                if not assigned_staff and staff_members.exists():
+                    assigned_staff = staff_members.first()
+
+                # Update the appointment
+                if assigned_staff:
+                    appointment.staff = assigned_staff
+                    appointment.status = 'confirmed'
+                    appointment.save()
+
+                    # Create notifications
+                    Notification.objects.create(
+                        user=appointment.client,
+                        type='appointment',
+                        title='Appointment Confirmed',
+                        message=f"Your appointment for {appointment.service.name} has been confirmed for {appointment.start_time.strftime('%B %d, %Y')} at {appointment.start_time.strftime('%I:%M %p')} with {appointment.staff.get_full_name()}.",
+                        related_appointment=appointment
+                    )
+
+                    Notification.objects.create(
+                        user=appointment.staff,
+                        type='appointment',
+                        title='New Appointment Assigned',
+                        message=f"You have been assigned a new appointment for {appointment.service.name} with {appointment.client.get_full_name()} on {appointment.start_time.strftime('%B %d, %Y')} at {appointment.start_time.strftime('%I:%M %p')}.",
+                        related_appointment=appointment
+                    )
+
+                    # Send email notifications
+                    from apps.notifications.email_utils import send_appointment_update, send_staff_new_appointment
+                    changes = {'status': 'Confirmed', 'staff': assigned_staff.get_full_name()}
+                    send_appointment_update(appointment, changes)
+                    send_staff_new_appointment(appointment)
+
+                    approved_count += 1
+        except Appointment.DoesNotExist:
+            # Appointment not found or not in pending_review status
+            continue
+        except Exception as e:
+            # Log the error
+            print(f"Error approving appointment {appointment_id}: {str(e)}")
+            continue
+
+    return approved_count
 
 @login_required
 def admin_dashboard(request):
@@ -41,6 +155,7 @@ def admin_dashboard(request):
     total_appointments = Appointment.objects.count()
     today_appointments = Appointment.objects.filter(start_time__date=today).order_by('start_time')
     pending_appointments = Appointment.objects.filter(status='pending').count()
+    pending_review_appointments = Appointment.objects.filter(status='pending_review').count()
 
     # User statistics
     total_clients = User.objects.filter(role='client').count()
@@ -67,6 +182,7 @@ def admin_dashboard(request):
         'total_appointments': total_appointments,
         'today_appointments': today_appointments,
         'pending_appointments': pending_appointments,
+        'pending_review_appointments': pending_review_appointments,
         'total_clients': total_clients,
         'total_staff': total_staff,
         'total_services': total_services,
@@ -77,6 +193,7 @@ def admin_dashboard(request):
         'recent_users': recent_users,
         'client_count': total_clients,
         'appointment_count': total_appointments,
+        'pending_count': pending_review_appointments,  # Add this for the sidebar badge
     })
 
 @login_required
@@ -640,21 +757,342 @@ def admin_appointment_update(request, appointment_id):
     # Get the appointment
     appointment = get_object_or_404(Appointment, id=appointment_id)
 
-    # Get the new status
+    if request.method == 'POST':
+        # Get form data
+        service_id = request.POST.get('service_id')
+        staff_id = request.POST.get('staff_id')
+        date_str = request.POST.get('date')
+        time_str = request.POST.get('time')
+        notes = request.POST.get('notes', '')
+        status = request.POST.get('status')
+        notify_client = request.POST.get('notify_client') == 'on'
+
+        # Track changes for notification
+        changes = {}
+
+        try:
+            # Update service if changed
+            if service_id:
+                service_id_int = int(service_id)
+                if service_id_int != appointment.service.id:
+                    old_service = appointment.service.name
+                    service = Service.objects.get(id=service_id)
+                    appointment.service = service
+                    changes['service'] = f"from {old_service} to {service.name}"
+
+            # Update staff if changed
+            if staff_id:
+                staff_id_int = int(staff_id)
+                current_staff_id = appointment.staff.id if appointment.staff else None
+                if staff_id_int != current_staff_id:
+                    old_staff = appointment.staff.get_full_name() if appointment.staff else "Not assigned"
+                    staff = User.objects.get(id=staff_id, role='staff')
+                    appointment.staff = staff
+                    changes['staff'] = f"from {old_staff} to {staff.get_full_name()}"
+
+            # Update date and time if changed
+            if date_str and time_str:
+                date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+                time_obj = datetime.strptime(time_str, '%H:%M').time()
+                new_start = timezone.make_aware(datetime.combine(date_obj, time_obj))
+
+                if new_start != appointment.start_time:
+                    old_datetime = appointment.start_time.strftime('%B %d, %Y at %I:%M %p')
+                    appointment.start_time = new_start
+                    appointment.end_time = new_start + timedelta(minutes=appointment.service.duration)
+                    changes['datetime'] = f"from {old_datetime} to {new_start.strftime('%B %d, %Y at %I:%M %p')}"
+
+            # Update notes if changed
+            if notes != appointment.notes:
+                appointment.notes = notes
+                changes['notes'] = "updated"
+
+            # Update status if changed
+            if status and status != appointment.status:
+                old_status = appointment.status.title()
+                appointment.status = status
+                changes['status'] = f"from {old_status} to {status.title()}"
+
+            # Save the appointment
+            appointment.save()
+
+            # Log the update
+            UserLog.objects.create(
+                user=request.user,
+                action='update',
+                entity_type='appointment',
+                entity_id=appointment.id,
+                details=f"Updated appointment: {', '.join([f'{k} {v}' for k, v in changes.items()])}"
+            )
+
+            # Notify client if requested
+            if notify_client and changes:
+                # Create notification
+                Notification.objects.create(
+                    user=appointment.client,
+                    type='appointment',
+                    title='Appointment Updated',
+                    message=f"Your appointment for {appointment.service.name} has been updated. New details: {appointment.start_time.strftime('%B %d, %Y')} at {appointment.start_time.strftime('%I:%M %p')} with {appointment.staff.get_full_name() if appointment.staff else 'TBD'}.",
+                    related_appointment=appointment
+                )
+
+                # Send email notification
+                # This would be implemented with an email notification system
+
+            # Show success message
+            messages.success(request, "Appointment updated successfully.")
+
+            # Redirect to appointment detail
+            return redirect('admin_panel:appointment_detail', appointment_id=appointment.id)
+
+        except User.DoesNotExist:
+            messages.error(request, "Staff member not found.")
+        except Service.DoesNotExist:
+            messages.error(request, "Service not found.")
+        except Exception as e:
+            messages.error(request, f"Error updating appointment: {str(e)}")
+
+        # If there was an error, redirect back to the edit page
+        return redirect('admin_panel:appointment_edit', appointment_id=appointment.id)
+
+    # Simple status update (from detail page)
     new_status = request.POST.get('status')
     if new_status in ['pending', 'confirmed', 'cancelled', 'completed', 'no_show']:
         # Update the appointment status
+        old_status = appointment.status.title()
         appointment.status = new_status
         appointment.save()
 
+        # Log the change
+        UserLog.objects.create(
+            user=request.user,
+            action='update',
+            entity_type='appointment',
+            entity_id=appointment.id,
+            details=f"Updated status from {old_status} to {new_status.title()}"
+        )
+
         # Show a success message
         messages.success(request, f"The appointment has been marked as {new_status}.")
-    else:
-        # Show an error message
-        messages.error(request, "Invalid status.")
 
     # Redirect to the appointment detail page
     return redirect('admin_panel:appointment_detail', appointment_id=appointment.id)
+
+@login_required
+def admin_appointment_edit(request, appointment_id):
+    """
+    View for editing an appointment.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    # Get the appointment
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    # Get all services and staff members
+    services = Service.objects.filter(is_active=True)
+    staff_members = User.objects.filter(role='staff', is_active=True)
+
+    return render(request, 'admin_panel/appointment_edit_modern.html', {
+        'title': 'Edit Appointment',
+        'appointment': appointment,
+        'services': services,
+        'staff_members': staff_members,
+    })
+
+@login_required
+def admin_appointment_delete(request, appointment_id):
+    """
+    View for deleting an appointment.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    # Get the appointment
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if request.method == 'POST':
+        # Log the deletion
+        UserLog.objects.create(
+            user=request.user,
+            action='delete',
+            entity_type='appointment',
+            entity_id=appointment.id,
+            details=f"Deleted appointment for {appointment.client.get_full_name() if appointment.client else 'Unknown Client'} on {appointment.start_time.strftime('%Y-%m-%d %H:%M')}"
+        )
+
+        # Delete the appointment
+        appointment.delete()
+
+        # Show a success message
+        messages.success(request, "Appointment deleted successfully.")
+
+        # Redirect to the appointments list
+        return redirect('admin_panel:appointments')
+
+    # If not POST, render the confirmation page
+    return render(request, 'admin_panel/appointment_delete.html', {
+        'title': 'Delete Appointment',
+        'appointment': appointment,
+    })
+
+@login_required
+def admin_pending_appointments(request):
+    """
+    View for managing pending appointments.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    # Get all pending appointments
+    appointments = Appointment.objects.filter(status='pending').order_by('-start_time')
+
+    # Filter by date if provided
+    date = request.GET.get('date')
+    if date:
+        try:
+            date_obj = datetime.strptime(date, '%Y-%m-%d').date()
+            appointments = appointments.filter(start_time__date=date_obj)
+        except ValueError:
+            pass
+
+    # Filter by service if provided
+    service_id = request.GET.get('service')
+    if service_id:
+        appointments = appointments.filter(service_id=service_id)
+
+    # Filter by client if provided
+    client_id = request.GET.get('client')
+    if client_id:
+        appointments = appointments.filter(client_id=client_id)
+
+    return render(request, 'admin_panel/pending_appointments.html', {
+        'title': 'Pending Appointments',
+        'appointments': appointments,
+        'staff_members': User.objects.filter(role='staff'),
+        'services': Service.objects.all(),
+        'clients': User.objects.filter(role='client'),
+    })
+
+@login_required
+def admin_review_appointment(request, appointment_id):
+    """
+    View for reviewing a pending appointment.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    # Get the appointment
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    if request.method == 'POST':
+        # Update the appointment
+        status = request.POST.get('status')
+        staff_id = request.POST.get('staff_id')
+        notes = request.POST.get('notes', '')
+
+        if status and staff_id:
+            # Update appointment
+            appointment.status = status
+            appointment.staff_id = staff_id
+            appointment.notes = notes
+            appointment.save()
+
+            # Log the change
+            UserLog.objects.create(
+                user=request.user,
+                action='update',
+                entity_type='appointment',
+                entity_id=appointment.id,
+                details=f"Reviewed appointment: {status}"
+            )
+
+            # Send notification to client
+            # This would be implemented with a notification system
+            messages.success(request, "Appointment updated successfully.")
+            return redirect('admin_panel:pending_appointments_modern')
+        else:
+            messages.error(request, "Please provide all required information.")
+
+    # Get all staff members
+    staff_members = User.objects.filter(role='staff')
+
+    return render(request, 'admin_panel/appointment_review.html', {
+        'title': 'Review Appointment',
+        'appointment': appointment,
+        'staff_members': staff_members,
+    })
+
+@login_required
+def admin_bulk_assign_staff(request):
+    """
+    View for bulk assigning staff to pending appointments.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    if request.method == 'POST':
+        staff_id = request.POST.get('staff_id')
+        service_id = request.POST.get('service_id')
+        date_filter = request.POST.get('date_filter')
+
+        if not staff_id:
+            messages.error(request, "Please select a staff member.")
+            return redirect('admin_panel:pending_appointments_modern')
+
+        # Build the query
+        query = {'status': 'pending'}
+
+        if service_id:
+            query['service_id'] = service_id
+
+        if date_filter:
+            today = timezone.now().date()
+
+            if date_filter == 'today':
+                query['start_time__date'] = today
+            elif date_filter == 'tomorrow':
+                query['start_time__date'] = today + timedelta(days=1)
+            elif date_filter == 'this-week':
+                # Get the start and end of the current week
+                start_of_week = today - timedelta(days=today.weekday())
+                end_of_week = start_of_week + timedelta(days=6)
+                query['start_time__date__gte'] = start_of_week
+                query['start_time__date__lte'] = end_of_week
+
+        # Update appointments
+        appointments = Appointment.objects.filter(**query)
+        count = appointments.count()
+
+        if count > 0:
+            appointments.update(staff_id=staff_id, status='confirmed')
+
+            # Log the bulk update
+            UserLog.objects.create(
+                user=request.user,
+                action='update',
+                entity_type='bulk_appointments',
+                entity_id=0,
+                details=f"Bulk assigned {count} appointments to staff ID {staff_id}"
+            )
+
+            messages.success(request, f"{count} appointments have been assigned to staff and confirmed.")
+        else:
+            messages.info(request, "No appointments matched your criteria.")
+
+        return redirect('admin_panel:pending_appointments_modern')
+
+    return redirect('admin_panel:pending_appointments_modern')
 
 @login_required
 def admin_reports(request):
@@ -741,63 +1179,62 @@ def admin_report_detail(request, report_id):
         )['total'] or 0
 
         # Get revenue by service
-        revenue_by_service = Appointment.objects.filter(status='completed').values(
+        revenue_by_service = []
+        service_data = Appointment.objects.filter(status='completed').values(
             'service__name'
         ).annotate(
             total=Sum('service__price')
         ).order_by('-total')
 
+        for item in service_data:
+            revenue_by_service.append({
+                'service__name': item['service__name'],
+                'total': float(item['total']) if item['total'] else 0
+            })
+
         # Get revenue by staff
-        revenue_by_staff = Appointment.objects.filter(status='completed').values(
+        revenue_by_staff = []
+        staff_data = Appointment.objects.filter(status='completed').values(
             'staff__first_name', 'staff__last_name'
         ).annotate(
             total=Sum('service__price')
         ).order_by('-total')
 
-        # Convert QuerySets to lists to avoid serialization issues
-        revenue_by_service_list = [
-            {'service__name': item['service__name'], 'total': float(item['total'])}
-            for item in revenue_by_service
-        ]
-
-        revenue_by_staff_list = [
-            {
+        for item in staff_data:
+            revenue_by_staff.append({
                 'staff__first_name': item['staff__first_name'],
                 'staff__last_name': item['staff__last_name'],
-                'total': float(item['total'])
-            }
-            for item in revenue_by_staff
-        ]
+                'total': float(item['total']) if item['total'] else 0
+            })
 
         data = {
             'total_revenue': float(total_revenue),
-            'revenue_by_service': revenue_by_service_list,
-            'revenue_by_staff': revenue_by_staff_list,
+            'revenue_by_service': revenue_by_service,
+            'revenue_by_staff': revenue_by_staff,
         }
 
     elif report.type == 'staff_performance':
         # Get staff performance statistics
-        staff_performance = Appointment.objects.values(
+        staff_performance_data = Appointment.objects.values(
             'staff__first_name', 'staff__last_name'
         ).annotate(
             total_appointments=Count('id'),
-            completed_appointments=Count('id', filter={'status': 'completed'}),
-            cancelled_appointments=Count('id', filter={'status': 'cancelled'}),
-            no_show_appointments=Count('id', filter={'status': 'no_show'}),
+            completed_appointments=Count('id', filter=Q(status='completed')),
+            cancelled_appointments=Count('id', filter=Q(status='cancelled')),
+            no_show_appointments=Count('id', filter=Q(status='no_show')),
         ).order_by('-total_appointments')
 
         # Convert QuerySet to list to avoid serialization issues
-        staff_performance_list = [
-            {
+        staff_performance_list = []
+        for item in staff_performance_data:
+            staff_performance_list.append({
                 'staff__first_name': item['staff__first_name'],
                 'staff__last_name': item['staff__last_name'],
                 'total_appointments': item['total_appointments'],
                 'completed_appointments': item['completed_appointments'],
                 'cancelled_appointments': item['cancelled_appointments'],
                 'no_show_appointments': item['no_show_appointments']
-            }
-            for item in staff_performance
-        ]
+            })
 
         data = {
             'staff_performance': staff_performance_list,
@@ -805,27 +1242,26 @@ def admin_report_detail(request, report_id):
 
     elif report.type == 'client_activity':
         # Get client activity statistics
-        client_activity = Appointment.objects.values(
+        client_activity_data = Appointment.objects.values(
             'client__first_name', 'client__last_name'
         ).annotate(
             total_appointments=Count('id'),
-            completed_appointments=Count('id', filter={'status': 'completed'}),
-            cancelled_appointments=Count('id', filter={'status': 'cancelled'}),
-            no_show_appointments=Count('id', filter={'status': 'no_show'}),
+            completed_appointments=Count('id', filter=Q(status='completed')),
+            cancelled_appointments=Count('id', filter=Q(status='cancelled')),
+            no_show_appointments=Count('id', filter=Q(status='no_show')),
         ).order_by('-total_appointments')
 
         # Convert QuerySet to list to avoid serialization issues
-        client_activity_list = [
-            {
+        client_activity_list = []
+        for item in client_activity_data:
+            client_activity_list.append({
                 'client__first_name': item['client__first_name'],
                 'client__last_name': item['client__last_name'],
                 'total_appointments': item['total_appointments'],
                 'completed_appointments': item['completed_appointments'],
                 'cancelled_appointments': item['cancelled_appointments'],
                 'no_show_appointments': item['no_show_appointments']
-            }
-            for item in client_activity
-        ]
+            })
 
         data = {
             'client_activity': client_activity_list,
@@ -833,26 +1269,25 @@ def admin_report_detail(request, report_id):
 
     elif report.type == 'services':
         # Get service statistics
-        service_statistics = Appointment.objects.values(
+        service_statistics_data = Appointment.objects.values(
             'service__name'
         ).annotate(
             total_appointments=Count('id'),
-            completed_appointments=Count('id', filter={'status': 'completed'}),
-            cancelled_appointments=Count('id', filter={'status': 'cancelled'}),
-            no_show_appointments=Count('id', filter={'status': 'no_show'}),
+            completed_appointments=Count('id', filter=Q(status='completed')),
+            cancelled_appointments=Count('id', filter=Q(status='cancelled')),
+            no_show_appointments=Count('id', filter=Q(status='no_show')),
         ).order_by('-total_appointments')
 
         # Convert QuerySet to list to avoid serialization issues
-        service_statistics_list = [
-            {
+        service_statistics_list = []
+        for item in service_statistics_data:
+            service_statistics_list.append({
                 'service__name': item['service__name'],
                 'total_appointments': item['total_appointments'],
                 'completed_appointments': item['completed_appointments'],
                 'cancelled_appointments': item['cancelled_appointments'],
                 'no_show_appointments': item['no_show_appointments']
-            }
-            for item in service_statistics
-        ]
+            })
 
         data = {
             'service_statistics': service_statistics_list,
@@ -1461,9 +1896,126 @@ def admin_appointment_create(request):
         messages.error(request, "You don't have permission to access this page.")
         return redirect('client_portal:home')
 
-    # Placeholder for appointment creation
-    # This would be implemented with a form for creating appointments
-    return redirect('admin_panel:appointments')
+    if request.method == 'POST':
+        # Get form data
+        client_id = request.POST.get('client_id')
+        service_id = request.POST.get('service_id')
+        staff_id = request.POST.get('staff_id')
+        date_str = request.POST.get('date')
+        time_str = request.POST.get('time')
+        notes = request.POST.get('notes', '')
+        status = request.POST.get('status', 'pending')
+
+        # Check if we're creating a new client
+        first_name = request.POST.get('first_name')
+        last_name = request.POST.get('last_name')
+        email = request.POST.get('email')
+        phone = request.POST.get('phone')
+
+        # Create new client if needed
+        if first_name and last_name and email:
+            # Generate a random password
+            password = User.objects.make_random_password()
+
+            # Create the user
+            client = User.objects.create_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                phone_number=phone,
+                role='client'
+            )
+
+            # Send welcome email with password
+            # This would be implemented with an email notification system
+
+            client_id = client.id
+
+        # Validate required fields
+        if not (client_id and service_id and staff_id and date_str and time_str):
+            messages.error(request, "Please fill in all required fields.")
+            return redirect('admin_panel:appointment_create')
+
+        try:
+            # Get related objects
+            client = User.objects.get(id=client_id, role='client')
+            service = Service.objects.get(id=service_id)
+            staff = User.objects.get(id=staff_id, role='staff')
+
+            # Parse date and time
+            date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+            time_obj = datetime.strptime(time_str, '%H:%M').time()
+            start_time = timezone.make_aware(datetime.combine(date_obj, time_obj))
+
+            # Calculate end time
+            end_time = start_time + timedelta(minutes=service.duration)
+
+            # Create the appointment
+            appointment = Appointment.objects.create(
+                client=client,
+                service=service,
+                staff=staff,
+                start_time=start_time,
+                end_time=end_time,
+                status=status,
+                notes=notes
+            )
+
+            # Log the creation
+            UserLog.objects.create(
+                user=request.user,
+                action='create',
+                entity_type='appointment',
+                entity_id=appointment.id,
+                details=f"Created appointment for {client.get_full_name()} on {start_time.strftime('%Y-%m-%d %H:%M')}"
+            )
+
+            # Create notifications
+            Notification.objects.create(
+                user=client,
+                type='appointment',
+                title='New Appointment',
+                message=f"Your appointment for {service.name} has been scheduled for {start_time.strftime('%B %d, %Y')} at {start_time.strftime('%I:%M %p')} with {staff.get_full_name()}.",
+                related_appointment=appointment
+            )
+
+            Notification.objects.create(
+                user=staff,
+                type='appointment',
+                title='New Appointment Assigned',
+                message=f"You have been assigned a new appointment for {service.name} with {client.get_full_name()} on {start_time.strftime('%B %d, %Y')} at {start_time.strftime('%I:%M %p')}.",
+                related_appointment=appointment
+            )
+
+            # Show success message
+            messages.success(request, "Appointment created successfully.")
+
+            # Redirect to appointment detail
+            return redirect('admin_panel:appointment_detail', appointment_id=appointment.id)
+
+        except User.DoesNotExist:
+            messages.error(request, "Client or staff member not found.")
+        except Service.DoesNotExist:
+            messages.error(request, "Service not found.")
+        except Exception as e:
+            messages.error(request, f"Error creating appointment: {str(e)}")
+
+    # Get all clients, services, and staff members
+    clients = User.objects.filter(role='client')
+    services = Service.objects.filter(is_active=True)
+    staff_members = User.objects.filter(role='staff', is_active=True)
+
+    # Get today's date
+    today = timezone.now().date()
+
+    return render(request, 'admin_panel/appointment_create_modern.html', {
+        'title': 'Create Appointment',
+        'clients': clients,
+        'services': services,
+        'staff_members': staff_members,
+        'today': today,
+    })
 
 @login_required
 def admin_appointment_reschedule(request):
@@ -1846,7 +2398,8 @@ def admin_day_view(request, year, month, day):
         for hour in range(opening_hour, closing_hour):
             for minute in [0, 30]:
                 slot_time = time(hour, minute)
-                slot_datetime = datetime.combine(date, slot_time)
+                # Make sure slot_datetime is timezone-aware
+                slot_datetime = timezone.make_aware(datetime.combine(date, slot_time))
 
                 # Check if slot is available
                 is_available = True
@@ -2334,3 +2887,273 @@ def admin_media_edit_save(request, media_id):
     except Exception as e:
         messages.error(request, f"Error updating image: {str(e)}")
         return redirect('admin_panel:media_edit', media_id=media_id)
+
+@login_required
+def admin_pending_appointments(request):
+    """
+    View for admins to see all pending appointment requests.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    # Handle bulk approve action
+    if request.method == 'POST' and 'bulk_approve' in request.POST:
+        appointment_ids = request.POST.getlist('appointment_ids')
+        date_filter = request.POST.get('date_filter')
+
+        if appointment_ids:
+            # Approve selected appointments
+            approved_count = approve_appointments(request, appointment_ids)
+            messages.success(request, f"{approved_count} appointments have been approved and staff assigned.")
+        elif date_filter:
+            # Approve all appointments for a specific date
+            try:
+                filter_date = datetime.strptime(date_filter, '%Y-%m-%d').date()
+                appointments_to_approve = Appointment.objects.filter(
+                    status='pending_review',
+                    start_time__date=filter_date
+                )
+                appointment_ids = list(appointments_to_approve.values_list('id', flat=True))
+                approved_count = approve_appointments(request, appointment_ids)
+                messages.success(request, f"{approved_count} appointments for {filter_date.strftime('%B %d, %Y')} have been approved.")
+            except ValueError:
+                messages.error(request, "Invalid date format.")
+        else:
+            messages.error(request, "No appointments selected for approval.")
+
+        return redirect('admin_panel:pending_appointments')
+
+    # Get all pending review appointments
+    pending_appointments = Appointment.objects.filter(
+        status='pending_review'
+    ).order_by('start_time')
+
+    # Get today's date for highlighting
+    today = timezone.localtime().date()
+    tomorrow = today + timedelta(days=1)
+
+    # Get today's pending count
+    today_count = pending_appointments.filter(start_time__date=today).count()
+
+    # Get oldest request date
+    oldest_request = None
+    if pending_appointments.exists():
+        oldest_request = pending_appointments.first().start_time.date()
+
+    # Get all services for filtering
+    services = Service.objects.all().order_by('name')
+
+    # Get all staff members for assignment
+    staff_members = User.objects.filter(role='staff', is_active=True)
+
+    # Group appointments by date for easier viewing
+    appointments_by_date = {}
+    for appointment in pending_appointments:
+        date = appointment.start_time.date()
+        if date not in appointments_by_date:
+            appointments_by_date[date] = []
+        appointments_by_date[date].append(appointment)
+
+    # Sort dates
+    sorted_dates = sorted(appointments_by_date.keys())
+
+    return render(request, 'admin_panel/appointments/pending_list_tailwind.html', {
+        'appointments': pending_appointments,
+        'appointments_by_date': appointments_by_date,
+        'sorted_dates': sorted_dates,
+        'title': 'Pending Appointment Requests',
+        'today': today,
+        'tomorrow': tomorrow,
+        'today_count': today_count,
+        'oldest_request': oldest_request,
+        'services': services,
+        'staff_members': staff_members,
+    })
+
+@login_required
+def admin_review_appointment(request, appointment_id):
+    """
+    View for admins to review and assign staff to an appointment request.
+    """
+    # Check if the user is an admin
+    if request.user.role != 'admin':
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('client_portal:home')
+
+    appointment = get_object_or_404(Appointment, id=appointment_id)
+
+    # Only allow reviewing pending_review appointments
+    if appointment.status != 'pending_review':
+        messages.error(request, "This appointment is not pending review.")
+        return redirect('admin_panel:appointments')
+
+    # Get today's date for highlighting
+    today = timezone.localtime().date()
+    tomorrow = today + timedelta(days=1)
+
+    # Get all active staff members
+    staff_members = User.objects.filter(role='staff', is_active=True)
+
+    # Get the day of the week for the appointment
+    day_of_week = appointment.start_time.weekday()
+
+    # Filter staff members who are working on this day
+    available_staff = []
+    all_staff = list(staff_members)
+
+    for staff in staff_members:
+        try:
+            # Check if the staff member is working on this day
+            schedule = Schedule.objects.get(staff=staff, day_of_week=day_of_week, is_working=True)
+
+            # Check if the appointment is within the staff's working hours
+            staff_start = timezone.make_aware(datetime.combine(appointment.start_time.date(), schedule.start_time))
+            staff_end = timezone.make_aware(datetime.combine(appointment.start_time.date(), schedule.end_time))
+
+            if appointment.start_time >= staff_start and appointment.end_time <= staff_end:
+                # Check if the staff member has any overlapping appointments
+                overlapping_appointments = Appointment.objects.filter(
+                    staff=staff,
+                    start_time__lt=appointment.end_time,
+                    end_time__gt=appointment.start_time,
+                    status__in=['pending', 'confirmed']
+                )
+
+                if not overlapping_appointments.exists():
+                    available_staff.append(staff)
+        except Schedule.DoesNotExist:
+            # Staff member is not working on this day
+            continue
+
+    # Add appointment counts for each staff member
+    for staff in all_staff:
+        staff.appointments_today = Appointment.objects.filter(
+            staff=staff,
+            start_time__date=appointment.start_time.date()
+        ).count()
+
+    # Get appointments for the day to show in the calendar
+    day_appointments = Appointment.objects.filter(
+        start_time__date=appointment.start_time.date()
+    ).exclude(id=appointment_id).order_by('start_time')
+
+    # Format appointments for the timeline
+    formatted_appointments = []
+    for appt in day_appointments:
+        # Calculate position in the timeline (assuming 8am-8pm, 12 hours)
+        start_hour = appt.start_time.hour
+        start_minute = appt.start_time.minute
+        duration = appt.service.duration
+
+        # Calculate top position (1 hour = 64px)
+        top = (start_hour - 8) * 64 + (start_minute / 60) * 64
+        height = (duration / 60) * 64
+
+        # Assign a color based on status
+        if appt.status == 'confirmed':
+            color = 'green'
+        elif appt.status == 'completed':
+            color = 'blue'
+        elif appt.status == 'cancelled':
+            color = 'red'
+        else:
+            color = 'gray'
+
+        formatted_appointments.append({
+            'id': appt.id,
+            'client': appt.client,
+            'service': appt.service,
+            'start_time': appt.start_time,
+            'top': top,
+            'height': height,
+            'color': color
+        })
+
+    # Calculate position for the current appointment
+    appointment_hour = appointment.start_time.hour
+    appointment_minute = appointment.start_time.minute
+    appointment_duration = appointment.service.duration
+    appointment_top = (appointment_hour - 8) * 64 + (appointment_minute / 60) * 64
+    appointment_height = (appointment_duration / 60) * 64
+
+    # Generate hours for the timeline (8am-8pm)
+    hours = range(8, 21)
+
+    if request.method == 'POST':
+        staff_id = request.POST.get('staff_id')
+        new_time = request.POST.get('new_time')
+
+        changes = {}
+
+        # Assign staff if provided
+        if staff_id:
+            staff = get_object_or_404(User, id=staff_id, role='staff')
+            appointment.staff = staff
+            changes['staff'] = staff.get_full_name()
+
+        # Update time if provided
+        if new_time:
+            try:
+                # Parse the time string (format: HH:MM)
+                hour, minute = map(int, new_time.split(':'))
+                time_obj = datetime.strptime(f"{hour:02d}:{minute:02d}", "%H:%M").time()
+
+                # Create new datetime objects
+                new_start = timezone.make_aware(datetime.combine(appointment.start_time.date(), time_obj))
+                new_end = new_start + timedelta(minutes=appointment.service.duration)
+
+                # Update the appointment times
+                old_time = appointment.start_time.strftime('%I:%M %p')
+                appointment.start_time = new_start
+                appointment.end_time = new_end
+                changes['time'] = f"from {old_time} to {new_start.strftime('%I:%M %p')}"
+            except (ValueError, TypeError, IndexError):
+                messages.error(request, "Invalid time format.")
+                return redirect('admin_panel:review_appointment', appointment_id=appointment.id)
+
+        # Update status to confirmed
+        appointment.status = 'confirmed'
+        changes['status'] = 'Confirmed'
+
+        # Save the appointment
+        appointment.save()
+
+        # Create notifications
+        Notification.objects.create(
+            user=appointment.client,
+            type='appointment',
+            title='Appointment Confirmed',
+            message=f"Your appointment for {appointment.service.name} has been confirmed for {appointment.start_time.strftime('%B %d, %Y')} at {appointment.start_time.strftime('%I:%M %p')} with {appointment.staff.get_full_name()}.",
+            related_appointment=appointment
+        )
+
+        Notification.objects.create(
+            user=appointment.staff,
+            type='appointment',
+            title='New Appointment Assigned',
+            message=f"You have been assigned a new appointment for {appointment.service.name} with {appointment.client.get_full_name()} on {appointment.start_time.strftime('%B %d, %Y')} at {appointment.start_time.strftime('%I:%M %p')}.",
+            related_appointment=appointment
+        )
+
+        # Send email notifications
+        from apps.notifications.email_utils import send_appointment_update, send_staff_new_appointment
+        send_appointment_update(appointment, changes)
+        send_staff_new_appointment(appointment)
+
+        messages.success(request, "Appointment has been confirmed and staff assigned.")
+        return redirect('admin_panel:pending_appointments')
+
+    return render(request, 'admin_panel/appointments/review_tailwind.html', {
+        'appointment': appointment,
+        'available_staff': available_staff,
+        'all_staff': all_staff,
+        'title': 'Review Appointment Request',
+        'today': today,
+        'tomorrow': tomorrow,
+        'day_appointments': formatted_appointments,
+        'appointment_top': appointment_top,
+        'appointment_height': appointment_height,
+        'hours': hours,
+    })

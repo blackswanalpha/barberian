@@ -2,6 +2,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 from django.db.models import JSONField
+from django.utils.text import slugify
 
 class Report(models.Model):
     """
@@ -115,3 +116,38 @@ class UserLog(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} - {self.get_action_display()} - {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+
+class EmailTemplate(models.Model):
+    """
+    Model to store email templates.
+    """
+    name = models.CharField(_('Name'), max_length=100)
+    slug = models.SlugField(_('Slug'), max_length=100, unique=True, blank=True)
+    subject = models.CharField(_('Subject'), max_length=200)
+    message = models.TextField(_('Message'))
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='email_templates',
+        verbose_name=_('Created by')
+    )
+    created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
+    updated_at = models.DateTimeField(_('Updated at'), auto_now=True)
+
+    class Meta:
+        verbose_name = _('Email Template')
+        verbose_name_plural = _('Email Templates')
+        ordering = ['name']
+        indexes = [
+            models.Index(fields=['name']),
+            models.Index(fields=['slug']),
+        ]
+
+    def __str__(self):
+        return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            self.slug = slugify(self.name)
+        super().save(*args, **kwargs)

@@ -1,0 +1,248 @@
+{% extends 'admin_panel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Form Showcase | Barberian Admin{% endblock %}
+
+{% block page_title %}Form Showcase{% endblock %}
+
+{% block admin_content %}
+<!-- Breadcrumb -->
+<nav class="flex mb-5" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'admin_panel:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-500">
+                <span class="material-icons-outlined mr-2" style="font-size: 16px;">dashboard</span>
+                Dashboard
+            </a>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <span class="ml-1 text-sm font-medium text-gray-500">Form Showcase</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div class="flex items-center">
+        <span class="material-icons-outlined text-primary-400 mr-3">design_services</span>
+        <h2 class="text-2xl font-bold text-gray-800">Redesigned Forms Showcase</h2>
+    </div>
+</div>
+
+<!-- Form Cards Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <!-- Service Form Card -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+        <div class="h-3 bg-gradient-to-r from-primary-400 to-primary-500"></div>
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="rounded-full bg-primary-100 p-3 mr-4">
+                    <span class="material-icons-outlined text-primary-400">content_cut</span>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Service Forms</h3>
+                    <p class="text-sm text-gray-500">Create and edit service offerings</p>
+                </div>
+            </div>
+            <div class="space-y-3 mt-6">
+                <a href="{% url 'admin_panel:service_create_redesigned' %}" class="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                    Create Service
+                </a>
+                <a href="{% url 'admin_panel:services' %}" class="block w-full text-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                    View All Services
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Staff Form Card -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+        <div class="h-3 bg-gradient-to-r from-blue-400 to-blue-500"></div>
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="rounded-full bg-blue-100 p-3 mr-4">
+                    <span class="material-icons-outlined text-blue-500">badge</span>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Staff Forms</h3>
+                    <p class="text-sm text-gray-500">Manage your team members</p>
+                </div>
+            </div>
+            <div class="space-y-3 mt-6">
+                <a href="{% url 'admin_panel:staff_create_redesigned' %}" class="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                    Create Staff Member
+                </a>
+                <a href="{% url 'admin_panel:staff' %}" class="block w-full text-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-400 transition-colors duration-200">
+                    View All Staff
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Category Form Card -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+        <div class="h-3 bg-gradient-to-r from-purple-400 to-purple-500"></div>
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="rounded-full bg-purple-100 p-3 mr-4">
+                    <span class="material-icons-outlined text-purple-500">category</span>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-800">Category Forms</h3>
+                    <p class="text-sm text-gray-500">Organize your services</p>
+                </div>
+            </div>
+            <div class="space-y-3 mt-6">
+                <a href="{% url 'admin_panel:category_create_redesigned' %}" class="block w-full text-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-purple-500 hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200">
+                    Create Category
+                </a>
+                <a href="{% url 'admin_panel:categories' %}" class="block w-full text-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-400 transition-colors duration-200">
+                    View All Categories
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Form Design Features -->
+<div class="mt-12">
+    <h3 class="text-xl font-bold text-gray-800 mb-6">Form Design Features</h3>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <!-- Material Design Inputs -->
+        <div class="bg-white rounded-xl shadow-card p-6 transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+            <div class="flex items-center mb-4">
+                <div class="rounded-full bg-green-100 p-3 mr-4">
+                    <span class="material-icons-outlined text-green-500">input</span>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-800">Material Design Inputs</h4>
+            </div>
+            <p class="text-gray-600 mb-4">Modern, clean input fields with floating labels and focus animations.</p>
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div class="material-input-group">
+                    <div class="relative">
+                        <input type="text" id="demo-input" class="block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-primary-500 pl-10 peer placeholder-transparent" placeholder="Demo Input">
+                        <label for="demo-input" class="absolute text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Demo Input</label>
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">edit</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toggle Switches -->
+        <div class="bg-white rounded-xl shadow-card p-6 transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+            <div class="flex items-center mb-4">
+                <div class="rounded-full bg-amber-100 p-3 mr-4">
+                    <span class="material-icons-outlined text-amber-500">toggle_on</span>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-800">Toggle Switches</h4>
+            </div>
+            <p class="text-gray-600 mb-4">Modern toggle switches for boolean options with smooth animations.</p>
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center justify-between py-2">
+                    <label class="text-sm font-medium text-gray-700">Demo Toggle</label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" id="demo-toggle" class="sr-only">
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- File Uploads -->
+        <div class="bg-white rounded-xl shadow-card p-6 transform transition-all duration-300 hover:shadow-card-hover hover:-translate-y-1">
+            <div class="flex items-center mb-4">
+                <div class="rounded-full bg-rose-100 p-3 mr-4">
+                    <span class="material-icons-outlined text-rose-500">upload_file</span>
+                </div>
+                <h4 class="text-lg font-semibold text-gray-800">File Uploads</h4>
+            </div>
+            <p class="text-gray-600 mb-4">Stylish file upload controls with image previews and custom buttons.</p>
+            <div class="mt-4 p-4 bg-gray-50 rounded-lg">
+                <div class="flex items-center space-x-4">
+                    <div class="h-16 w-16 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                        <span class="material-icons-outlined text-gray-400 text-2xl">image</span>
+                    </div>
+                    <div>
+                        <label for="demo-file" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 cursor-pointer">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">upload</span>
+                            Upload File
+                        </label>
+                        <input type="file" id="demo-file" class="sr-only">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_css %}
+<style>
+    /* Material Design Inspired Input */
+    .material-input-group {
+        @apply relative mb-6;
+    }
+    
+    .material-input-group input[type="text"],
+    .material-input-group input[type="number"],
+    .material-input-group input[type="email"],
+    .material-input-group input[type="password"] {
+        @apply block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-primary-500 pl-10;
+    }
+    
+    /* Toggle Switch */
+    .toggle-switch {
+        @apply relative inline-flex items-center cursor-pointer;
+    }
+    
+    .toggle-switch input {
+        @apply sr-only;
+    }
+    
+    .toggle-slider {
+        @apply w-11 h-6 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out;
+    }
+    
+    .toggle-slider:after {
+        content: "";
+        @apply absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        @apply bg-primary-500;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:after {
+        @apply transform translate-x-5;
+    }
+    
+    .toggle-switch input:focus + .toggle-slider {
+        @apply ring-2 ring-offset-2 ring-primary-400;
+    }
+</style>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle switch functionality
+        const toggleSwitch = document.getElementById('demo-toggle');
+        if (toggleSwitch) {
+            toggleSwitch.addEventListener('change', function() {
+                const slider = this.parentElement.querySelector('.toggle-slider');
+                if (this.checked) {
+                    slider.classList.add('bg-primary-500');
+                } else {
+                    slider.classList.remove('bg-primary-500');
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

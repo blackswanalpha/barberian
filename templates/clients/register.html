@@ -1,114 +1,412 @@
-{% extends 'base.html' %}
+{% extends 'client_portal/base.html' %}
 
 {% block title %}{{ title }} | Barberian{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Material Design Shadows */
+    .shadow-material-1 {
+        box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+    }
+
+    .shadow-material-2 {
+        box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    }
+
+    /* Gold Gradient */
+    .bg-gradient-gold {
+        background: linear-gradient(135deg, #D4AF37 0%, #F2D57E 50%, #D4AF37 100%);
+    }
+
+    /* Form Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-animate {
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    .form-animate-1 { animation-delay: 0.1s; }
+    .form-animate-2 { animation-delay: 0.2s; }
+    .form-animate-3 { animation-delay: 0.3s; }
+    .form-animate-4 { animation-delay: 0.4s; }
+    .form-animate-5 { animation-delay: 0.5s; }
+    .form-animate-6 { animation-delay: 0.6s; }
+
+    /* Form Focus Effects */
+    .form-input {
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+
+    .form-input:focus {
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.25);
+    }
+
+    /* Password Toggle */
+    .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #6B7280;
+        transition: color 0.3s ease;
+    }
+
+    .password-toggle:hover {
+        color: #D4AF37;
+    }
+
+    /* Password Strength Indicator */
+    .password-strength {
+        height: 5px;
+        border-radius: 5px;
+        margin-top: 8px;
+        transition: all 0.3s ease;
+    }
+
+    .strength-weak {
+        background: linear-gradient(90deg, #ff4d4d 0%, #ff4d4d 100%);
+        width: 30%;
+    }
+
+    .strength-medium {
+        background: linear-gradient(90deg, #ffa64d 0%, #ffa64d 100%);
+        width: 60%;
+    }
+
+    .strength-strong {
+        background: linear-gradient(90deg, #4CAF50 0%, #4CAF50 100%);
+        width: 100%;
+    }
+
+    /* Password Requirements List */
+    .password-requirements {
+        margin-top: 12px;
+    }
+
+    .password-requirements li {
+        margin-bottom: 6px;
+        font-size: 0.875rem;
+        color: #6B7280;
+        transition: all 0.3s ease;
+    }
+
+    .password-requirements li.met {
+        color: #4CAF50;
+    }
+
+    .password-requirements li.met::before {
+        content: '✓ ';
+        color: #4CAF50;
+    }
+
+    .password-requirements li:not(.met)::before {
+        content: '○ ';
+    }
+
+    /* Decorative Elements */
+    .register-decoration {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #D4AF37 0%, #F2D57E 100%);
+        opacity: 0.1;
+        z-index: -1;
+    }
+
+    .register-decoration-1 {
+        width: 300px;
+        height: 300px;
+        top: -150px;
+        right: -150px;
+    }
+
+    .register-decoration-2 {
+        width: 200px;
+        height: 200px;
+        bottom: -100px;
+        left: -100px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h1 class="card-title h3 mb-0">Register</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-4xl mx-auto">
+        <!-- Register Card -->
+        <div class="bg-white rounded-xl shadow-material-2 overflow-hidden relative">
+            <!-- Decorative Elements -->
+            <div class="register-decoration register-decoration-1"></div>
+            <div class="register-decoration register-decoration-2"></div>
+
+            <!-- Card Header -->
+            <div class="bg-gray-900 p-6 text-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-gradient-to-r from-gray-900 to-gray-800"></div>
+                <div class="relative z-10">
+                    <div class="w-20 h-20 mx-auto bg-gradient-gold rounded-full flex items-center justify-center mb-4 shadow-lg">
+                        <i class="material-icons text-dark text-3xl">person_add</i>
+                    </div>
+                    <h1 class="text-2xl font-bold text-white mb-1">Create Your Account</h1>
+                    <p class="text-gray-300">Join Barberian for premium grooming services</p>
+                </div>
             </div>
-            <div class="card-body">
+
+            <!-- Card Body -->
+            <div class="p-6">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
-                            {{ message }}
+                        <div class="mb-6 p-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            <div class="flex items-center">
+                                <i class="material-icons mr-3 {% if message.tags == 'success' %}text-green-500{% elif message.tags == 'error' %}text-red-500{% else %}text-blue-500{% endif %}">
+                                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+                                </i>
+                                <p>{{ message }}</p>
+                            </div>
                         </div>
                     {% endfor %}
                 {% endif %}
-                
-                <form method="post">
+
+                <form method="post" class="space-y-6">
                     {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.first_name.id_for_label }}" class="form-label">{{ form.first_name.label }}</label>
-                            {{ form.first_name }}
+
+                    <!-- Name Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="form-animate form-animate-1">
+                            <label for="{{ form.first_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.first_name.label }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="material-icons text-gray-400">person</i>
+                                </div>
+                                <input type="text" name="{{ form.first_name.html_name }}" id="{{ form.first_name.id_for_label }}" value="{{ form.first_name.value|default:'' }}" class="form-input w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none" required>
+                            </div>
                             {% if form.first_name.errors %}
-                                <div class="invalid-feedback d-block">
+                                <div class="mt-2 text-sm text-red-600">
                                     {{ form.first_name.errors }}
                                 </div>
                             {% endif %}
                         </div>
-                        <div class="col-md-6 mb-3">
-                            <label for="{{ form.last_name.id_for_label }}" class="form-label">{{ form.last_name.label }}</label>
-                            {{ form.last_name }}
+
+                        <div class="form-animate form-animate-1">
+                            <label for="{{ form.last_name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.last_name.label }}</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="material-icons text-gray-400">person</i>
+                                </div>
+                                <input type="text" name="{{ form.last_name.html_name }}" id="{{ form.last_name.id_for_label }}" value="{{ form.last_name.value|default:'' }}" class="form-input w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none" required>
+                            </div>
                             {% if form.last_name.errors %}
-                                <div class="invalid-feedback d-block">
+                                <div class="mt-2 text-sm text-red-600">
                                     {{ form.last_name.errors }}
                                 </div>
                             {% endif %}
                         </div>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.email.id_for_label }}" class="form-label">{{ form.email.label }}</label>
-                        {{ form.email }}
+
+                    <!-- Email Field -->
+                    <div class="form-animate form-animate-2">
+                        <label for="{{ form.email.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.email.label }}</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400">email</i>
+                            </div>
+                            <input type="email" name="{{ form.email.html_name }}" id="{{ form.email.id_for_label }}" value="{{ form.email.value|default:'' }}" class="form-input w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none" required>
+                        </div>
                         {% if form.email.errors %}
-                            <div class="invalid-feedback d-block">
+                            <div class="mt-2 text-sm text-red-600">
                                 {{ form.email.errors }}
                             </div>
                         {% endif %}
-                        <div class="form-text">We'll never share your email with anyone else.</div>
+                        <p class="mt-1 text-xs text-gray-500">We'll never share your email with anyone else.</p>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.phone_number.id_for_label }}" class="form-label">{{ form.phone_number.label }}</label>
-                        {{ form.phone_number }}
+
+                    <!-- Phone Number Field -->
+                    <div class="form-animate form-animate-3">
+                        <label for="{{ form.phone_number.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.phone_number.label }}</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400">phone</i>
+                            </div>
+                            <input type="tel" name="{{ form.phone_number.html_name }}" id="{{ form.phone_number.id_for_label }}" value="{{ form.phone_number.value|default:'' }}" class="form-input w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none" required>
+                        </div>
                         {% if form.phone_number.errors %}
-                            <div class="invalid-feedback d-block">
+                            <div class="mt-2 text-sm text-red-600">
                                 {{ form.phone_number.errors }}
                             </div>
                         {% endif %}
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password1.id_for_label }}" class="form-label">{{ form.password1.label }}</label>
-                        {{ form.password1 }}
+
+                    <!-- Password Field -->
+                    <div class="form-animate form-animate-4">
+                        <label for="{{ form.password1.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.password1.label }}</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400">lock</i>
+                            </div>
+                            <input type="password" name="{{ form.password1.html_name }}" id="{{ form.password1.id_for_label }}" class="form-input w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:outline-none" required>
+                            <i class="material-icons password-toggle toggle-password1">visibility_off</i>
+                        </div>
+                        <div class="password-strength"></div>
                         {% if form.password1.errors %}
-                            <div class="invalid-feedback d-block">
+                            <div class="mt-2 text-sm text-red-600">
                                 {{ form.password1.errors }}
                             </div>
                         {% endif %}
-                        <div class="form-text">
-                            <ul>
-                                <li>Your password can't be too similar to your other personal information.</li>
-                                <li>Your password must contain at least 8 characters.</li>
-                                <li>Your password can't be a commonly used password.</li>
-                                <li>Your password can't be entirely numeric.</li>
-                            </ul>
-                        </div>
+                        <ul class="password-requirements mt-2 text-xs space-y-1 text-gray-500">
+                            <li>Your password can't be too similar to your other personal information.</li>
+                            <li>Your password must contain at least 8 characters.</li>
+                            <li>Your password can't be a commonly used password.</li>
+                            <li>Your password can't be entirely numeric.</li>
+                        </ul>
                     </div>
-                    
-                    <div class="mb-3">
-                        <label for="{{ form.password2.id_for_label }}" class="form-label">{{ form.password2.label }}</label>
-                        {{ form.password2 }}
+
+                    <!-- Confirm Password Field -->
+                    <div class="form-animate form-animate-5">
+                        <label for="{{ form.password2.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">{{ form.password2.label }}</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="material-icons text-gray-400">lock</i>
+                            </div>
+                            <input type="password" name="{{ form.password2.html_name }}" id="{{ form.password2.id_for_label }}" class="form-input w-full pl-10 pr-10 py-2 rounded-lg border border-gray-300 focus:outline-none" required>
+                            <i class="material-icons password-toggle toggle-password2">visibility_off</i>
+                        </div>
                         {% if form.password2.errors %}
-                            <div class="invalid-feedback d-block">
+                            <div class="mt-2 text-sm text-red-600">
                                 {{ form.password2.errors }}
                             </div>
                         {% endif %}
-                        <div class="form-text">Enter the same password as before, for verification.</div>
+                        <p class="mt-1 text-xs text-gray-500">Enter the same password as before, for verification.</p>
                     </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="terms" required>
-                        <label class="form-check-label" for="terms">I agree to the <a href="#">Terms and Conditions</a></label>
+
+                    <!-- Terms and Conditions -->
+                    <div class="form-animate form-animate-6">
+                        <div class="flex items-start">
+                            <div class="flex items-center h-5">
+                                <input id="terms" name="terms" type="checkbox" class="h-4 w-4 text-primary focus:ring-primary border-gray-300 rounded" required>
+                            </div>
+                            <div class="ml-3 text-sm">
+                                <label for="terms" class="font-medium text-gray-700">I agree to the <a href="#" class="text-primary hover:text-primary-dark">Terms and Conditions</a></label>
+                                <p class="text-gray-500">By creating an account, you agree to our terms of service and privacy policy.</p>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div class="d-grid gap-2">
-                        <button type="submit" class="btn btn-primary">Register</button>
+
+                    <!-- Submit Button -->
+                    <div class="form-animate form-animate-6">
+                        <button type="submit" class="w-full py-3 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105 flex items-center justify-center">
+                            <i class="material-icons mr-2">how_to_reg</i>
+                            Create Account
+                        </button>
                     </div>
                 </form>
-                
-                <div class="mt-3 text-center">
-                    <p>
-                        Already have an account? <a href="{% url 'login' %}">Login</a>
+
+                <!-- Login Link -->
+                <div class="form-animate form-animate-6 mt-6 text-center">
+                    <p class="text-sm text-gray-600">
+                        Already have an account?
+                        <a href="{% url 'login' %}" class="font-medium text-primary hover:text-primary-dark">
+                            Sign in
+                        </a>
                     </p>
                 </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Password toggle functionality
+        const togglePasswordVisibility = (inputSelector, iconSelector) => {
+            const input = document.querySelector(inputSelector);
+            const icon = document.querySelector(iconSelector);
+
+            if (input && icon) {
+                icon.addEventListener('click', function() {
+                    const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                    input.setAttribute('type', type);
+
+                    // Toggle icon
+                    if (type === 'password') {
+                        icon.textContent = 'visibility_off';
+                    } else {
+                        icon.textContent = 'visibility';
+                    }
+                });
+            }
+        };
+
+        togglePasswordVisibility('#id_password1', '.toggle-password1');
+        togglePasswordVisibility('#id_password2', '.toggle-password2');
+
+        // Password strength meter
+        const passwordInput = document.querySelector('#id_password1');
+        const strengthIndicator = document.querySelector('.password-strength');
+        const requirements = document.querySelectorAll('.password-requirements li');
+
+        if (passwordInput && strengthIndicator) {
+            passwordInput.addEventListener('input', function() {
+                const password = this.value;
+                let strength = 0;
+
+                // Check password length
+                if (password.length >= 8) {
+                    strength += 1;
+                    if (requirements.length > 1) requirements[1].classList.add('met');
+                } else {
+                    if (requirements.length > 1) requirements[1].classList.remove('met');
+                }
+
+                // Check for uppercase letters
+                if (/[A-Z]/.test(password)) {
+                    strength += 1;
+                }
+
+                // Check for lowercase letters
+                if (/[a-z]/.test(password)) {
+                    strength += 1;
+                }
+
+                // Check for numbers
+                if (/[0-9]/.test(password)) {
+                    strength += 1;
+                    if (requirements.length > 3) requirements[3].classList.add('met');
+                } else {
+                    if (requirements.length > 3) requirements[3].classList.remove('met');
+                }
+
+                // Update strength indicator
+                strengthIndicator.className = 'password-strength';
+                if (password.length === 0) {
+                    strengthIndicator.style.width = '0';
+                } else if (strength < 2) {
+                    strengthIndicator.classList.add('strength-weak');
+                } else if (strength < 4) {
+                    strengthIndicator.classList.add('strength-medium');
+                } else {
+                    strengthIndicator.classList.add('strength-strong');
+                }
+            });
+        }
+
+        // Check if passwords match
+        const confirmPasswordInput = document.querySelector('#id_password2');
+
+        if (passwordInput && confirmPasswordInput) {
+            confirmPasswordInput.addEventListener('input', function() {
+                if (this.value === passwordInput.value) {
+                    this.style.borderColor = '#4CAF50';
+                } else {
+                    this.style.borderColor = '#ff4d4d';
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

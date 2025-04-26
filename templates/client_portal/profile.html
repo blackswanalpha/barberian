@@ -1,166 +1,406 @@
-{% extends 'base.html' %}
+{% extends 'client_portal/base.html' %}
 
 {% block title %}{{ title }} | Barberian{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Profile Card Animations */
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-card {
+        animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    .profile-card-1 { animation-delay: 0.1s; }
+    .profile-card-2 { animation-delay: 0.2s; }
+    .profile-card-3 { animation-delay: 0.3s; }
+
+    /* Material Design Shadows */
+    .shadow-material-1 {
+        box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+    }
+
+    .shadow-material-2 {
+        box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    }
+
+    /* Gold Gradient */
+    .bg-gradient-gold {
+        background: linear-gradient(135deg, #D4AF37 0%, #F2D57E 50%, #D4AF37 100%);
+    }
+
+    /* Hover Effects */
+    .hover-lift {
+        transition: all 0.3s ease;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-12 mb-4">
-        <h1>My Profile</h1>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Page Header -->
+    <div class="mb-8" data-aos="fade-down">
+        <h1 class="text-3xl md:text-4xl font-serif font-bold gradient-text mb-2">My Profile</h1>
+        <p class="text-gray-600">Manage your personal information and view your appointments</p>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-body text-center">
-                {% if user.profile_image %}
-                    <img src="{{ user.profile_image.url }}" alt="{{ user.get_full_name }}" class="rounded-circle img-fluid mb-3" style="max-width: 150px;">
-                {% else %}
-                    <div class="rounded-circle bg-light d-inline-flex align-items-center justify-content-center mb-3" style="width: 150px; height: 150px;">
-                        <i class="bi bi-person-circle fs-1"></i>
-                    </div>
-                {% endif %}
-                <h2 class="card-title">{{ user.get_full_name }}</h2>
-                <p class="text-muted">{{ user.email }}</p>
-                <p class="text-muted">
-                    <i class="bi bi-telephone me-2"></i>
-                    {% if user.phone_number %}
-                        {{ user.phone_number }}
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Left Column - Profile Info -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Profile Card -->
+            <div class="bg-white rounded-xl shadow-material-1 overflow-hidden profile-card profile-card-1">
+                <div class="bg-gradient-to-r from-gray-900 to-gray-800 p-6 text-center">
+                    {% if user.profile_image %}
+                        <img src="{{ user.profile_image.url }}" alt="{{ user.get_full_name }}" class="w-32 h-32 rounded-full object-cover border-4 border-white mx-auto shadow-lg">
                     {% else %}
-                        No phone number
+                        <div class="w-32 h-32 rounded-full bg-gradient-gold flex items-center justify-center text-dark font-bold text-4xl mx-auto shadow-lg">
+                            {{ user.first_name|first }}{{ user.last_name|first }}
+                        </div>
                     {% endif %}
-                </p>
-                <a href="{% url 'client_portal:edit_profile' %}" class="btn btn-primary">Edit Profile</a>
+                    <h2 class="text-2xl font-bold text-white mt-4">{{ user.get_full_name }}</h2>
+                    <p class="text-gray-300">Client</p>
+                </div>
+
+                <div class="p-6">
+                    <div class="space-y-4">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="material-icons text-blue-600">email</i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Email</p>
+                                <p class="font-medium">{{ user.email }}</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                <i class="material-icons text-green-600">phone</i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Phone</p>
+                                <p class="font-medium">
+                                    {% if user.phone_number %}
+                                        {{ user.phone_number }}
+                                    {% else %}
+                                        <span class="text-gray-400">No phone number</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                <i class="material-icons text-purple-600">event</i>
+                            </div>
+                            <div>
+                                <p class="text-xs text-gray-500">Member Since</p>
+                                <p class="font-medium">{{ user.date_joined|date:"F d, Y" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <a href="{% url 'client_portal:edit_profile' %}" class="block w-full py-3 px-4 bg-gradient-gold text-center text-dark font-bold rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                            <i class="material-icons align-middle mr-1" style="font-size: 1.1rem;">edit</i>
+                            Edit Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Account Settings Card -->
+            <div class="bg-white rounded-xl shadow-material-1 overflow-hidden profile-card profile-card-2">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <i class="material-icons text-primary mr-2">settings</i>
+                        <h2 class="text-xl font-bold text-gray-900">Account Settings</h2>
+                    </div>
+                </div>
+
+                <div class="divide-y divide-gray-100">
+                    <a href="{% url 'client_portal:change_password' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3">
+                                <i class="material-icons text-red-600">lock</i>
+                            </div>
+                            <span class="font-medium">Change Password</span>
+                        </div>
+                        <i class="material-icons text-gray-400">chevron_right</i>
+                    </a>
+
+                    <a href="#" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3">
+                                <i class="material-icons text-blue-600">notifications</i>
+                            </div>
+                            <span class="font-medium">Notification Preferences</span>
+                        </div>
+                        <i class="material-icons text-gray-400">chevron_right</i>
+                    </a>
+
+                    <a href="#" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3">
+                                <i class="material-icons text-green-600">security</i>
+                            </div>
+                            <span class="font-medium">Privacy Settings</span>
+                        </div>
+                        <i class="material-icons text-gray-400">chevron_right</i>
+                    </a>
+
+                    <a href="{% url 'appointments:calendar' %}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors duration-200">
+                        <div class="flex items-center">
+                            <div class="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3">
+                                <i class="material-icons text-purple-600">calendar_month</i>
+                            </div>
+                            <span class="font-medium">View Calendar</span>
+                        </div>
+                        <i class="material-icons text-gray-400">chevron_right</i>
+                    </a>
+                </div>
             </div>
         </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title h5 mb-0">Account Settings</h3>
-            </div>
-            <div class="list-group list-group-flush">
-                <a href="{% url 'client_portal:change_password' %}" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <span>Change Password</span>
-                    <i class="bi bi-chevron-right"></i>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <span>Notification Preferences</span>
-                    <i class="bi bi-chevron-right"></i>
-                </a>
-                <a href="#" class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                    <span>Privacy Settings</span>
-                    <i class="bi bi-chevron-right"></i>
-                </a>
-            </div>
-        </div>
-    </div>
+        <!-- Right Column - Appointments & Services -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Upcoming Appointments Card -->
+            <div class="bg-white rounded-xl shadow-material-1 overflow-hidden profile-card profile-card-3">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="material-icons text-primary mr-2">event_upcoming</i>
+                            <h2 class="text-xl font-bold text-gray-900">Upcoming Appointments</h2>
+                        </div>
+                        <a href="{% url 'appointments:booking_service' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105">
+                            <i class="material-icons mr-1 text-sm">add</i>
+                            Book New
+                        </a>
+                    </div>
+                </div>
 
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title h5 mb-0">Upcoming Appointments</h3>
-            </div>
-            <div class="card-body">
-                {% if user.client_appointments.exists %}
-                    <div class="list-group">
-                        {% for appointment in user.client_appointments.all %}
-                            {% if appointment.is_upcoming %}
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h5 class="mb-1">{{ appointment.service.name }}</h5>
-                                        <small class="text-muted">{{ appointment.start_time|date:"M d, Y" }}</small>
-                                    </div>
-                                    <p class="mb-1">
-                                        <strong>Time:</strong> {{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}<br>
-                                        <strong>Barber:</strong> {{ appointment.staff.get_full_name }}<br>
-                                        <strong>Status:</strong> <span class="badge bg-{% if appointment.status == 'confirmed' %}success{% elif appointment.status == 'pending' %}warning{% else %}secondary{% endif %}">{{ appointment.status|title }}</span>
-                                    </p>
-                                    <div class="mt-2">
-                                        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
-                                        <a href="{% url 'appointments:appointment_cancel' appointment.id %}" class="btn btn-sm btn-outline-danger">Cancel</a>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        You don't have any upcoming appointments.
-                        <a href="{% url 'appointments:booking_service' %}" class="alert-link">Book an appointment now</a>.
-                    </div>
-                {% endif %}
-            </div>
-        </div>
+                <div class="p-6">
+                    {% if user.client_appointments.exists %}
+                        <div class="space-y-4">
+                            {% for appointment in user.client_appointments.all %}
+                                {% if appointment.is_upcoming %}
+                                    <div class="bg-white rounded-lg border border-gray-200 hover-lift overflow-hidden">
+                                        <div class="p-4">
+                                            <div class="flex justify-between items-start">
+                                                <div>
+                                                    <h3 class="font-bold text-lg text-gray-900">{{ appointment.service.name }}</h3>
+                                                    <div class="flex items-center mt-1 text-sm text-gray-500">
+                                                        <i class="material-icons text-gray-400 mr-1 text-sm">event</i>
+                                                        <span>{{ appointment.start_time|date:"l, F d, Y" }}</span>
+                                                    </div>
+                                                    <div class="flex items-center mt-1 text-sm text-gray-500">
+                                                        <i class="material-icons text-gray-400 mr-1 text-sm">schedule</i>
+                                                        <span>{{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</span>
+                                                    </div>
+                                                    <div class="flex items-center mt-1 text-sm text-gray-500">
+                                                        <i class="material-icons text-gray-400 mr-1 text-sm">person</i>
+                                                        <span>{{ appointment.staff.get_full_name }}</span>
+                                                    </div>
+                                                </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title h5 mb-0">Appointment History</h3>
-            </div>
-            <div class="card-body">
-                {% if user.client_appointments.exists %}
-                    <div class="list-group">
-                        {% for appointment in user.client_appointments.all %}
-                            {% if appointment.is_past %}
-                                <div class="list-group-item">
-                                    <div class="d-flex w-100 justify-content-between">
-                                        <h5 class="mb-1">{{ appointment.service.name }}</h5>
-                                        <small class="text-muted">{{ appointment.start_time|date:"M d, Y" }}</small>
-                                    </div>
-                                    <p class="mb-1">
-                                        <strong>Time:</strong> {{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}<br>
-                                        <strong>Barber:</strong> {{ appointment.staff.get_full_name }}<br>
-                                        <strong>Status:</strong> <span class="badge bg-{% if appointment.status == 'completed' %}success{% elif appointment.status == 'cancelled' %}danger{% elif appointment.status == 'no_show' %}warning{% else %}secondary{% endif %}">{{ appointment.status|title }}</span>
-                                    </p>
-                                    <div class="mt-2">
-                                        <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="btn btn-sm btn-outline-primary">View Details</a>
-                                        <a href="{% url 'appointments:booking_service' %}" class="btn btn-sm btn-outline-success">Book Again</a>
-                                    </div>
-                                </div>
-                            {% endif %}
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        You don't have any past appointments.
-                    </div>
-                {% endif %}
-            </div>
-        </div>
+                                                <div class="flex flex-col items-end">
+                                                    <span class="px-3 py-1 rounded-full text-xs font-medium
+                                                        {% if appointment.status == 'confirmed' %}
+                                                            bg-green-100 text-green-800
+                                                        {% elif appointment.status == 'pending' %}
+                                                            bg-yellow-100 text-yellow-800
+                                                        {% else %}
+                                                            bg-gray-100 text-gray-800
+                                                        {% endif %}
+                                                    ">
+                                                        {{ appointment.status|title }}
+                                                    </span>
+                                                    <span class="mt-2 text-lg font-bold text-primary">KSh {{ appointment.service.price }}</span>
+                                                </div>
+                                            </div>
 
-        <div class="card mb-4">
-            <div class="card-header">
-                <h3 class="card-title h5 mb-0">Preferred Services</h3>
+                                            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+                                                <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200">
+                                                    <i class="material-icons mr-1 text-sm">visibility</i>
+                                                    View Details
+                                                </a>
+                                                <a href="{% url 'appointments:appointment_cancel' appointment.id %}" class="inline-flex items-center px-3 py-1.5 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                                                    <i class="material-icons mr-1 text-sm">cancel</i>
+                                                    Cancel
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="flex flex-col items-center justify-center py-12 text-center">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="material-icons text-gray-400 text-4xl">event_busy</i>
+                            </div>
+                            <h3 class="text-xl font-medium text-gray-900 mb-2">No Upcoming Appointments</h3>
+                            <p class="text-gray-500 mb-6 max-w-md">You don't have any upcoming appointments scheduled. Book your first appointment to get started.</p>
+                            <a href="{% url 'appointments:booking_service' %}" class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105">
+                                <i class="material-icons mr-2">add</i>
+                                Book Your First Appointment
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
-            <div class="card-body">
-                {% if user.preferred_services.exists %}
-                    <div class="row">
-                        {% for preferred in user.preferred_services.all %}
-                            <div class="col-md-6 mb-3">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <h5 class="card-title">{{ preferred.service.name }}</h5>
-                                        <p class="card-text">{{ preferred.service.description|truncatewords:10 }}</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="badge bg-primary">${{ preferred.service.price }}</span>
-                                            <a href="{% url 'client_portal:service_detail' preferred.service.id %}" class="btn btn-sm btn-outline-primary">View</a>
+
+            <!-- Appointment History Card -->
+            <div class="bg-white rounded-xl shadow-material-1 overflow-hidden profile-card profile-card-3" style="animation-delay: 0.4s;">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <div class="flex items-center">
+                        <i class="material-icons text-primary mr-2">history</i>
+                        <h2 class="text-xl font-bold text-gray-900">Appointment History</h2>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    {% if user.client_appointments.exists %}
+                        <div class="space-y-4">
+                            {% for appointment in user.client_appointments.all %}
+                                {% if appointment.is_past %}
+                                    <div class="bg-white rounded-lg border border-gray-200 hover-lift overflow-hidden">
+                                        <div class="p-4">
+                                            <div class="flex justify-between items-start">
+                                                <div>
+                                                    <h3 class="font-bold text-lg text-gray-900">{{ appointment.service.name }}</h3>
+                                                    <div class="flex items-center mt-1 text-sm text-gray-500">
+                                                        <i class="material-icons text-gray-400 mr-1 text-sm">event</i>
+                                                        <span>{{ appointment.start_time|date:"l, F d, Y" }}</span>
+                                                    </div>
+                                                    <div class="flex items-center mt-1 text-sm text-gray-500">
+                                                        <i class="material-icons text-gray-400 mr-1 text-sm">schedule</i>
+                                                        <span>{{ appointment.start_time|time:"g:i A" }} - {{ appointment.end_time|time:"g:i A" }}</span>
+                                                    </div>
+                                                    <div class="flex items-center mt-1 text-sm text-gray-500">
+                                                        <i class="material-icons text-gray-400 mr-1 text-sm">person</i>
+                                                        <span>{{ appointment.staff.get_full_name }}</span>
+                                                    </div>
+                                                </div>
+
+                                                <div class="flex flex-col items-end">
+                                                    <span class="px-3 py-1 rounded-full text-xs font-medium
+                                                        {% if appointment.status == 'completed' %}
+                                                            bg-blue-100 text-blue-800
+                                                        {% elif appointment.status == 'cancelled' %}
+                                                            bg-red-100 text-red-800
+                                                        {% elif appointment.status == 'no_show' %}
+                                                            bg-yellow-100 text-yellow-800
+                                                        {% else %}
+                                                            bg-gray-100 text-gray-800
+                                                        {% endif %}
+                                                    ">
+                                                        {{ appointment.status|title }}
+                                                    </span>
+                                                    <span class="mt-2 text-lg font-bold text-primary">KSh {{ appointment.service.price }}</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-gray-100">
+                                                <a href="{% url 'appointments:appointment_detail' appointment.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200">
+                                                    <i class="material-icons mr-1 text-sm">visibility</i>
+                                                    View Details
+                                                </a>
+                                                <a href="{% url 'appointments:booking_service' %}" class="inline-flex items-center px-3 py-1.5 border border-green-300 rounded-md shadow-sm text-sm font-medium text-green-700 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                                                    <i class="material-icons mr-1 text-sm">refresh</i>
+                                                    Book Again
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="flex flex-col items-center justify-center py-12 text-center">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="material-icons text-gray-400 text-4xl">history</i>
+                            </div>
+                            <h3 class="text-xl font-medium text-gray-900 mb-2">No Appointment History</h3>
+                            <p class="text-gray-500 max-w-md">You don't have any past appointments. Your appointment history will appear here after your first appointment.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Preferred Services Card -->
+            <div class="bg-white rounded-xl shadow-material-1 overflow-hidden profile-card profile-card-3" style="animation-delay: 0.5s;">
+                <div class="bg-gray-50 p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <i class="material-icons text-primary mr-2">favorite</i>
+                            <h2 class="text-xl font-bold text-gray-900">Preferred Services</h2>
+                        </div>
+                        <a href="{% url 'client_portal:services' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105">
+                            <i class="material-icons mr-1 text-sm">search</i>
+                            Browse Services
+                        </a>
+                    </div>
+                </div>
+
+                <div class="p-6">
+                    {% if user.preferred_services.exists %}
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {% for preferred in user.preferred_services.all %}
+                                <div class="bg-white rounded-lg border border-gray-200 hover-lift overflow-hidden">
+                                    <div class="p-4">
+                                        <h3 class="font-bold text-lg text-gray-900 mb-2">{{ preferred.service.name }}</h3>
+                                        <p class="text-gray-600 text-sm mb-4 line-clamp-2">{{ preferred.service.description|truncatewords:15 }}</p>
+                                        <div class="flex justify-between items-center">
+                                            <span class="px-3 py-1 rounded-full text-xs font-medium bg-gradient-gold text-dark">KSh {{ preferred.service.price }}</span>
+                                            <a href="{% url 'client_portal:service_detail' preferred.service.id %}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-colors duration-200">
+                                                <i class="material-icons mr-1 text-sm">visibility</i>
+                                                View Details
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="flex flex-col items-center justify-center py-12 text-center">
+                            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <i class="material-icons text-gray-400 text-4xl">favorite_border</i>
                             </div>
-                        {% endfor %}
-                    </div>
-                {% else %}
-                    <div class="alert alert-info">
-                        You don't have any preferred services yet.
-                        <a href="{% url 'client_portal:services' %}" class="alert-link">Browse our services</a> and add some to your favorites.
-                    </div>
-                {% endif %}
+                            <h3 class="text-xl font-medium text-gray-900 mb-2">No Preferred Services</h3>
+                            <p class="text-gray-500 mb-6 max-w-md">You haven't added any services to your favorites yet. Browse our services and add some to your favorites.</p>
+                            <a href="{% url 'client_portal:services' %}" class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105">
+                                <i class="material-icons mr-2">search</i>
+                                Browse Our Services
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block page_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize animations
+        const profileCards = document.querySelectorAll('.profile-card');
+        profileCards.forEach(card => {
+            card.style.opacity = '0';
+            setTimeout(() => {
+                card.style.opacity = '1';
+            }, 100);
+        });
+    });
+</script>
 {% endblock %}

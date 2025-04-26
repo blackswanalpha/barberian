@@ -1,0 +1,253 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+
+{% block title %}Create Holiday | Barberian Admin{% endblock %}
+
+{% block page_title %}Create Holiday{% endblock %}
+
+{% block admin_content %}
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800 flex items-center">
+            <span class="material-icons-outlined mr-3 text-primary-400" style="font-size: 28px;">event_busy</span>
+            Add New Holiday
+        </h2>
+        <p class="mt-1 text-sm text-gray-500 ml-1">Create a new holiday or business closure date</p>
+    </div>
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'admin_panel:holidays' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-full shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-all duration-200 transform hover:scale-105">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+            Back to Holidays
+        </a>
+    </div>
+</div>
+
+<!-- Holiday Form Card -->
+<div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 max-w-2xl mx-auto">
+    <div class="bg-gradient-to-r from-primary-400/10 to-primary-400/5 px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center">
+            <span class="material-icons-outlined text-primary-400 mr-3" style="font-size: 24px;">calendar_month</span>
+            <h3 class="text-lg font-medium text-gray-800">Holiday Information</h3>
+        </div>
+    </div>
+    <div class="p-6">
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-4 mb-4 rounded-xl shadow-sm {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %} animate-fade-in">
+                        <div class="flex items-center">
+                            <span class="material-icons-outlined mr-2" style="font-size: 20px;">
+                                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+                            </span>
+                            <p>{{ message }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+
+            <!-- Holiday Information -->
+            <div class="space-y-6">
+                <!-- Holiday Name -->
+                <div class="relative">
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-400 sm:text-sm">
+                                <span class="material-icons-outlined" style="font-size: 18px;">event_note</span>
+                            </span>
+                        </div>
+                        <input type="text" name="{{ form.name.html_name }}" id="{{ form.name.id_for_label }}"
+                            class="pl-10 focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-lg transition-all duration-200"
+                            placeholder="e.g., Christmas Day, Staff Training" required>
+                    </div>
+                    {% if form.name.errors %}
+                        <p class="mt-1 text-sm text-red-600 flex items-center">
+                            <span class="material-icons-outlined mr-1" style="font-size: 14px;">error</span>
+                            {{ form.name.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <!-- Holiday Date -->
+                <div class="relative">
+                    <label for="{{ form.date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <div class="mt-1 relative rounded-md shadow-sm">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-400 sm:text-sm">
+                                <span class="material-icons-outlined" style="font-size: 18px;">calendar_today</span>
+                            </span>
+                        </div>
+                        <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}"
+                            class="pl-10 focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-lg transition-all duration-200"
+                            required>
+                    </div>
+                    {% if form.date.errors %}
+                        <p class="mt-1 text-sm text-red-600 flex items-center">
+                            <span class="material-icons-outlined mr-1" style="font-size: 14px;">error</span>
+                            {{ form.date.errors.0 }}
+                        </p>
+                    {% endif %}
+                </div>
+
+                <!-- Is Recurring -->
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-gradient-to-r from-purple-50 to-purple-100/30 px-6 py-3 border-b border-gray-100">
+                        <div class="flex items-center">
+                            <span class="material-icons-outlined text-purple-500 mr-2" style="font-size: 20px;">repeat</span>
+                            <h3 class="text-md font-medium text-gray-800">Recurring Settings</h3>
+                        </div>
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center">
+                            <div class="relative inline-block w-10 mr-2 align-middle select-none">
+                                <input type="checkbox" name="{{ form.is_recurring.html_name }}" id="{{ form.is_recurring.id_for_label }}"
+                                    class="sr-only">
+                                <label for="{{ form.is_recurring.id_for_label }}" class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label>
+                            </div>
+                            <label for="{{ form.is_recurring.id_for_label }}" class="text-sm text-gray-700 ml-2">
+                                Recurring Holiday (Repeats Every Year)
+                            </label>
+                        </div>
+                        {% if form.is_recurring.errors %}
+                            <p class="mt-1 text-sm text-red-600 flex items-center">
+                                <span class="material-icons-outlined mr-1" style="font-size: 14px;">error</span>
+                                {{ form.is_recurring.errors.0 }}
+                            </p>
+                        {% endif %}
+                        <p class="mt-2 text-xs text-gray-500 flex items-center">
+                            <span class="material-icons-outlined mr-1" style="font-size: 14px;">info</span>
+                            Check this box for holidays that occur on the same date every year, like Christmas or New Year's Day.
+                        </p>
+                    </div>
+                </div>
+
+                <style>
+                    .toggle-label {
+                        transition: background-color 0.2s ease;
+                    }
+                    .toggle-label:after {
+                        content: "";
+                        position: absolute;
+                        top: 0.15rem;
+                        left: 0.2rem;
+                        width: 1.2rem;
+                        height: 1.2rem;
+                        background-color: white;
+                        border-radius: 50%;
+                        transition: transform 0.2s ease;
+                    }
+                    input:checked + .toggle-label {
+                        background-color: #D4AF37;
+                    }
+                    input:checked + .toggle-label:after {
+                        transform: translateX(100%);
+                    }
+                </style>
+            </div>
+
+            <!-- Holiday Effects -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-gradient-to-r from-amber-50 to-amber-100/30 px-6 py-3 border-b border-gray-100">
+                    <div class="flex items-center">
+                        <span class="material-icons-outlined text-amber-500 mr-2" style="font-size: 20px;">info</span>
+                        <h3 class="text-md font-medium text-gray-800">What Happens on Holidays?</h3>
+                    </div>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                            <span class="material-icons-outlined text-red-500 mr-2 mt-0.5" style="font-size: 18px;">store</span>
+                            <p class="text-sm text-gray-600">The business will be marked as closed on this date</p>
+                        </div>
+                        <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                            <span class="material-icons-outlined text-red-500 mr-2 mt-0.5" style="font-size: 18px;">event_busy</span>
+                            <p class="text-sm text-gray-600">No appointments can be booked on this date</p>
+                        </div>
+                        <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                            <span class="material-icons-outlined text-amber-500 mr-2 mt-0.5" style="font-size: 18px;">update</span>
+                            <p class="text-sm text-gray-600">Existing appointments on this date will need to be rescheduled</p>
+                        </div>
+                        <div class="flex items-start p-3 bg-gray-50 rounded-lg">
+                            <span class="material-icons-outlined text-green-500 mr-2 mt-0.5" style="font-size: 18px;">schedule</span>
+                            <p class="text-sm text-gray-600">Staff schedules will be automatically adjusted</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-6 flex flex-col sm:flex-row sm:justify-between sm:items-center space-y-4 sm:space-y-0">
+                    <div>
+                        <h3 class="text-md font-medium text-gray-800 mb-1">Ready to create this holiday?</h3>
+                        <p class="text-sm text-gray-500">All required fields must be filled in.</p>
+                    </div>
+                    <div class="flex space-x-3">
+                        <a href="{% url 'admin_panel:holidays' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-all duration-200 transform hover:scale-105">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">cancel</span>
+                            Cancel
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-6 py-2 border border-transparent shadow-sm text-sm font-medium rounded-full text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-all duration-200 transform hover:scale-105">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">event_available</span>
+                            Create Holiday
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Holiday Calendar Preview -->
+<div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100 max-w-2xl mx-auto mt-6">
+    <div class="bg-gradient-to-r from-primary-400/10 to-primary-400/5 px-6 py-4 border-b border-gray-100">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-primary-400 mr-3" style="font-size: 24px;">date_range</span>
+                <h3 class="text-lg font-medium text-gray-800">Upcoming Holidays</h3>
+            </div>
+            <span class="bg-primary-100 text-primary-800 text-xs font-medium px-2.5 py-0.5 rounded-full">{{ upcoming_holidays|length }} upcoming</span>
+        </div>
+    </div>
+    <div class="p-6">
+        <div class="space-y-3">
+            {% for holiday in upcoming_holidays %}
+            <div class="flex items-center p-4 bg-gray-50 rounded-lg border border-gray-100 hover:shadow-md transition-all duration-200 transform hover:scale-[1.01]">
+                <div class="w-12 h-12 rounded-full bg-gradient-to-br from-red-400 to-red-500 flex items-center justify-center text-white shadow-sm">
+                    <span class="material-icons-outlined" style="font-size: 20px;">event_busy</span>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-800">{{ holiday.name }}</p>
+                    <div class="flex items-center mt-1">
+                        <span class="material-icons-outlined text-gray-400 mr-1" style="font-size: 14px;">calendar_today</span>
+                        <p class="text-xs text-gray-500">{{ holiday.date|date:"F j, Y" }}</p>
+                        {% if holiday.is_recurring %}
+                        <span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            <span class="material-icons-outlined mr-0.5" style="font-size: 10px;">repeat</span>
+                            Recurring
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="ml-auto">
+                    <a href="{% url 'admin_panel:holiday_edit' holiday.id %}" class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-white border border-gray-200 text-primary-400 hover:text-primary-500 hover:border-primary-300 transition-all duration-200">
+                        <span class="material-icons-outlined" style="font-size: 16px;">edit</span>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                <span class="material-icons-outlined text-gray-300 text-5xl mb-3">event_available</span>
+                <p class="text-gray-500 mb-2">No upcoming holidays scheduled</p>
+                <p class="text-xs text-gray-400">Holidays you create will appear here</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

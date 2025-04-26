@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load custom_filters %}
 
 {% block title %}{{ title }} | Barberian{% endblock %}
 
@@ -52,7 +53,7 @@
                 {% endif %}
             </div>
         </div>
-        
+
         <div class="card">
             <div class="card-header">
                 <h5 class="card-title mb-0">Report Results</h5>
@@ -109,7 +110,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6">
                             <canvas id="appointmentStatusChart"></canvas>
@@ -124,12 +125,12 @@
                             <div class="card bg-success text-white">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Total Revenue</h5>
-                                    <h2 class="mb-0">${{ data.total_revenue }}</h2>
+                                    <h2 class="mb-0">KSh {{ data.total_revenue }}</h2>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-4">
                             <h5>Revenue by Service</h5>
@@ -145,7 +146,7 @@
                                         {% for item in data.revenue_by_service %}
                                             <tr>
                                                 <td>{{ item.service__name }}</td>
-                                                <td>${{ item.total }}</td>
+                                                <td>KSh {{ item.total }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -167,7 +168,7 @@
                                         {% for item in data.revenue_by_staff %}
                                             <tr>
                                                 <td>{{ item.staff__first_name }} {{ item.staff__last_name }}</td>
-                                                <td>${{ item.total }}</td>
+                                                <td>KSh {{ item.total }}</td>
                                             </tr>
                                         {% endfor %}
                                     </tbody>
@@ -309,12 +310,12 @@
         document.getElementById('printReport').addEventListener('click', function() {
             window.print();
         });
-        
+
         // Export CSV
         document.getElementById('exportCSV').addEventListener('click', function() {
             alert('CSV export functionality will be implemented.');
         });
-        
+
         {% if report.type == 'appointments' %}
             // Appointment Status Chart
             var statusCtx = document.getElementById('appointmentStatusChart').getContext('2d');
@@ -352,7 +353,7 @@
                     }
                 }
             });
-            
+
             // Appointment Trend Chart (placeholder)
             var trendCtx = document.getElementById('appointmentTrendChart').getContext('2d');
             var trendChart = new Chart(trendCtx, {
@@ -388,7 +389,7 @@
                         {% endfor %}
                     ],
                     datasets: [{
-                        label: 'Revenue ($)',
+                        label: 'Revenue (KSh)',
                         data: [
                             {% for item in data.revenue_by_service %}
                                 {{ item.total }},
@@ -407,7 +408,7 @@
                     }
                 }
             });
-            
+
             // Revenue by Staff Chart
             var staffCtx = document.getElementById('revenueByStaffChart').getContext('2d');
             var staffChart = new Chart(staffCtx, {
@@ -419,7 +420,7 @@
                         {% endfor %}
                     ],
                     datasets: [{
-                        label: 'Revenue ($)',
+                        label: 'Revenue (KSh)',
                         data: [
                             {% for item in data.revenue_by_staff %}
                                 {{ item.total }},

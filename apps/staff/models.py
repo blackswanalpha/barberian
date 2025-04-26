@@ -1,6 +1,7 @@
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
+from apps.services.models import Service
 
 class StaffSettings(models.Model):
     """
@@ -39,6 +40,12 @@ class StaffSettings(models.Model):
         max_length=10,
         choices=CALENDAR_VIEW_PREFERENCES,
         default='week'
+    )
+    services = models.ManyToManyField(
+        Service,
+        verbose_name=_('Services'),
+        related_name='staff_settings',
+        blank=True
     )
     created_at = models.DateTimeField(_('Created at'), auto_now_add=True)
     updated_at = models.DateTimeField(_('Updated at'), auto_now=True)

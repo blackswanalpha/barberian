@@ -22,6 +22,10 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('admin_panel/', include('apps.admin_panel.urls')),
+    path('admin_panel/', include('apps.admin_panel.urls_redesigned')),  # Include redesigned URLs
+    path('admin_panel/', include('apps.admin_panel.urls_updated')),  # Include updated URLs
+    path('admin_panel/', include('apps.admin_panel.urls_modern')),  # Include modern UI URLs
+    path('', include('apps.admin_panel.urls_redirect')),  # Include redirect URLs
     path('accounts/', include('django.contrib.auth.urls')),
     path('clients/', include('apps.clients.urls')),
     path('staff/', include('apps.staff.urls')),

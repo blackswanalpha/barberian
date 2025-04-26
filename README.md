@@ -89,6 +89,33 @@ The project follows a monolithic Django structure with apps organized in folders
    - Staff: john@barberian.com / staff1234
    - Client: client1@example.com / client1234
 
+## Deployment
+
+For detailed deployment instructions to HostPinnacle, see [DEPLOYMENT.md](DEPLOYMENT.md).
+
+### Quick Deployment Steps
+
+1. Ensure your project has the necessary files:
+   - `requirements.txt`
+   - `Procfile`
+   - `runtime.txt`
+   - `.env.example` (rename to `.env` on the server)
+
+2. Set up environment variables on the server:
+   - Database configuration
+   - Email settings
+   - Secret key
+   - Debug mode (set to False)
+   - Allowed hosts
+
+3. Deploy to HostPinnacle:
+   - Connect your GitHub repository
+   - Deploy the branch
+   - Run migrations
+   - Create a superuser
+
+4. Access your deployed application at your HostPinnacle URL
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.

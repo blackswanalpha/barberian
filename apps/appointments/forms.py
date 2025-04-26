@@ -1,12 +1,11 @@
 from django import forms
 from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from datetime import datetime, timedelta, time
+from datetime import datetime, timedelta
 
 from .models import Appointment
 from apps.services.models import Service
 from apps.core.models import User
-from apps.staff.models import Schedule
 
 class ServiceSelectionForm(forms.Form):
     """
@@ -29,11 +28,11 @@ class StaffSelectionForm(forms.Form):
         widget=forms.Select(attrs={'class': 'form-select'}),
         label=_("Staff Member")
     )
-    
+
     def __init__(self, *args, **kwargs):
         service_id = kwargs.pop('service_id', None)
         super().__init__(*args, **kwargs)
-        
+
         if service_id:
             # Filter staff members who can provide the selected service
             # In a real application, you might have a many-to-many relationship between staff and services
@@ -49,28 +48,28 @@ class DateSelectionForm(forms.Form):
         label=_("Date"),
         initial=timezone.now().date()
     )
-    
+
     def __init__(self, *args, **kwargs):
-        staff_id = kwargs.pop('staff_id', None)
+        service_id = kwargs.pop('service_id', None)
         super().__init__(*args, **kwargs)
-        
+
         # Set minimum date to today
         self.fields['date'].widget.attrs['min'] = timezone.now().date().isoformat()
-        
+
         # Set maximum date to 30 days from now
         max_date = (timezone.now() + timedelta(days=30)).date().isoformat()
         self.fields['date'].widget.attrs['max'] = max_date
-    
+
     def clean_date(self):
         date = self.cleaned_data['date']
         today = timezone.now().date()
-        
+
         if date < today:
             raise forms.ValidationError(_("You cannot book an appointment in the past."))
-        
+
         if date > today + timedelta(days=30):
             raise forms.ValidationError(_("You cannot book an appointment more than 30 days in advance."))
-        
+
         return date
 
 class TimeSelectionForm(forms.Form):
@@ -79,80 +78,72 @@ class TimeSelectionForm(forms.Form):
     """
     time = forms.ChoiceField(
         choices=[],
-        widget=forms.Select(attrs={'class': 'form-select'}),
-        label=_("Time")
+        widget=forms.RadioSelect(attrs={'class': 'form-check-input'}),
+        label=_("Select Your Preferred Time")
     )
-    
+
     def __init__(self, *args, **kwargs):
-        staff_id = kwargs.pop('staff_id', None)
         service_id = kwargs.pop('service_id', None)
         date = kwargs.pop('date', None)
         super().__init__(*args, **kwargs)
-        
-        if staff_id and service_id and date:
-            # Get the staff member's schedule for the selected date
-            staff = User.objects.get(id=staff_id)
-            service = Service.objects.get(id=service_id)
-            
-            # Get the day of the week (0 = Monday, 6 = Sunday)
-            day_of_week = date.weekday()
-            
-            # Get the staff member's schedule for this day
+
+        if service_id and date:
             try:
-                schedule = Schedule.objects.get(staff=staff, day_of_week=day_of_week, is_working=True)
-                
-                # Generate time slots based on the schedule and service duration
-                time_slots = self._generate_time_slots(schedule.start_time, schedule.end_time, service.duration)
-                
-                # Filter out time slots that are already booked
-                available_slots = self._filter_available_slots(staff, date, time_slots, service.duration)
-                
-                self.fields['time'].choices = [(slot.strftime('%H:%M'), slot.strftime('%I:%M %p')) for slot in available_slots]
-            except Schedule.DoesNotExist:
-                # Staff member is not working on this day
+                # Get the service
+                service = Service.objects.get(id=service_id)
+
+                # Generate time slots from 9 AM to 8 PM at 15-minute intervals
+                time_slots = []
+                current_date = date
+
+                # Check if the date is today
+                is_today = current_date == timezone.localtime().date()
+                current_hour = timezone.localtime().hour if is_today else 0
+
+                # Business hours (9 AM to 8 PM)
+                start_hour = max(9, current_hour + 1) if is_today else 9
+                end_hour = 20  # 8 PM
+
+                for hour in range(start_hour, end_hour):
+                    for minute in [0, 15, 30, 45]:
+                        # Skip times in the past if it's today
+                        if is_today and hour == current_hour + 1 and minute < timezone.localtime().minute:
+                            continue
+
+                        time_obj = datetime.strptime(f"{hour:02d}:{minute:02d}", "%H:%M").time()
+                        time_slots.append(time_obj)
+
+                # Store the time slots as a dictionary for easy lookup
+                self.time_slots_dict = {slot.strftime('%H:%M'): slot for slot in time_slots}
+
+                # Set the choices for the time field
+                self.fields['time'].choices = [(slot.strftime('%H:%M'), slot.strftime('%I:%M %p')) for slot in time_slots]
+
+                print(f"Generated {len(time_slots)} time slots for booking")
+
+            except Exception as e:
+                # Log any errors
+                print(f"Error generating time slots: {str(e)}")
                 self.fields['time'].choices = []
-    
-    def _generate_time_slots(self, start_time, end_time, duration):
+                self.time_slots_dict = {}
+
+    def clean_time(self):
         """
-        Generate time slots based on the schedule and service duration.
+        Clean the time field and convert it to a string in the format 'HH:MM'.
         """
-        slots = []
-        current_time = datetime.combine(timezone.now().date(), start_time)
-        end_datetime = datetime.combine(timezone.now().date(), end_time)
-        
-        # Subtract service duration to ensure the appointment ends before the schedule end time
-        end_datetime = end_datetime - timedelta(minutes=duration)
-        
-        # Generate slots at 15-minute intervals
-        while current_time <= end_datetime:
-            slots.append(current_time.time())
-            current_time += timedelta(minutes=15)
-        
-        return slots
-    
-    def _filter_available_slots(self, staff, date, time_slots, duration):
-        """
-        Filter out time slots that are already booked.
-        """
-        available_slots = []
-        
-        for slot in time_slots:
-            # Convert the time slot to a datetime
-            start_datetime = datetime.combine(date, slot)
-            end_datetime = start_datetime + timedelta(minutes=duration)
-            
-            # Check if there are any overlapping appointments
-            overlapping_appointments = Appointment.objects.filter(
-                staff=staff,
-                start_time__lt=end_datetime,
-                end_time__gt=start_datetime,
-                status__in=['pending', 'confirmed']
-            )
-            
-            if not overlapping_appointments.exists():
-                available_slots.append(slot)
-        
-        return available_slots
+        time_str = self.cleaned_data['time']
+
+        # Validate that the time is in the correct format
+        try:
+            # Parse the time string to ensure it's valid
+            hour, minute = map(int, time_str.split(':'))
+            if hour < 0 or hour > 23 or minute < 0 or minute > 59:
+                raise forms.ValidationError(_("Invalid time format. Please select a valid time."))
+
+            # Return the time string in the format 'HH:MM'
+            return time_str
+        except ValueError:
+            raise forms.ValidationError(_("Invalid time format. Please select a valid time."))
 
 class ConfirmationForm(forms.ModelForm):
     """

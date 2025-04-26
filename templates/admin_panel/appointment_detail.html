@@ -138,10 +138,17 @@
 
             <!-- Card Footer -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center space-y-3 sm:space-y-0">
-                <a href="{% url 'admin_panel:appointments' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full sm:w-auto justify-center">
-                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
-                    Back to Appointments
-                </a>
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 w-full sm:w-auto">
+                    <a href="{% url 'admin_panel:appointments' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full sm:w-auto justify-center">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+                        Back to Appointments
+                    </a>
+
+                    <a href="{% url 'admin_panel:appointment_edit' appointment.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full sm:w-auto justify-center">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">edit</span>
+                        Edit Appointment
+                    </a>
+                </div>
 
                 {% if appointment.is_upcoming %}
                 <div class="relative" x-data="{ open: false }">
@@ -217,7 +224,11 @@
             <div class="px-6 py-4 border-b border-gray-100">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-semibold">
-                        {{ appointment.client.get_full_name|slice:":1" }}
+                        {% if appointment.client %}
+                            {{ appointment.client.get_full_name|slice:":1" }}
+                        {% else %}
+                            <span class="material-icons-outlined" style="font-size: 18px;">person_off</span>
+                        {% endif %}
                     </div>
                     <div class="ml-4">
                         <h3 class="text-lg font-semibold text-gray-800">Client Information</h3>
@@ -226,6 +237,7 @@
                 </div>
             </div>
             <div class="p-6">
+                {% if appointment.client %}
                 <h4 class="font-medium text-gray-900 mb-3">{{ appointment.client.get_full_name }}</h4>
 
                 <div class="space-y-2 mb-4">
@@ -266,12 +278,27 @@
                         </div>
                     </div>
                 </div>
+                {% else %}
+                <div class="flex items-center justify-center py-6 text-center">
+                    <div class="text-gray-500">
+                        <span class="material-icons-outlined text-gray-300 block mx-auto mb-2" style="font-size: 36px;">person_off</span>
+                        <p class="text-sm">No client assigned</p>
+                    </div>
+                </div>
+                {% endif %}
 
                 <div class="mt-5">
+                    {% if appointment.client and appointment.client.id %}
                     <a href="{% url 'admin_panel:user_edit' appointment.client.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full justify-center">
                         <span class="material-icons-outlined mr-2" style="font-size: 18px;">person</span>
                         View Client Profile
                     </a>
+                    {% else %}
+                    <button disabled class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-100 w-full justify-center cursor-not-allowed">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">person</span>
+                        No Client Assigned
+                    </button>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -281,7 +308,11 @@
             <div class="px-6 py-4 border-b border-gray-100">
                 <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-semibold">
-                        {{ appointment.staff.get_full_name|slice:":1" }}
+                        {% if appointment.staff %}
+                            {{ appointment.staff.get_full_name|slice:":1" }}
+                        {% else %}
+                            <span class="material-icons-outlined" style="font-size: 18px;">person_off</span>
+                        {% endif %}
                     </div>
                     <div class="ml-4">
                         <h3 class="text-lg font-semibold text-gray-800">Staff Information</h3>
@@ -290,6 +321,7 @@
                 </div>
             </div>
             <div class="p-6">
+                {% if appointment.staff %}
                 <h4 class="font-medium text-gray-900 mb-3">{{ appointment.staff.get_full_name }}</h4>
 
                 <div class="space-y-2 mb-4">
@@ -310,12 +342,28 @@
                     </div>
                     {% endif %}
                 </div>
+                {% else %}
+                <div class="flex items-center justify-center py-6 text-center">
+                    <div class="text-gray-500">
+                        <span class="material-icons-outlined text-gray-300 block mx-auto mb-2" style="font-size: 36px;">person_off</span>
+                        <p class="text-sm">No staff member assigned yet</p>
+                    </div>
+                </div>
+                {% endif %}
+                </div>
 
                 <div class="mt-5">
+                    {% if appointment.staff and appointment.staff.id %}
                     <a href="{% url 'admin_panel:user_edit' appointment.staff.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 w-full justify-center">
                         <span class="material-icons-outlined mr-2" style="font-size: 18px;">badge</span>
                         View Staff Profile
                     </a>
+                    {% else %}
+                    <button disabled class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-100 w-full justify-center cursor-not-allowed">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">badge</span>
+                        No Staff Assigned
+                    </button>
+                    {% endif %}
                 </div>
             </div>
         </div>

@@ -1,0 +1,328 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}{{ title }} | Barberian Admin{% endblock %}
+
+{% block page_title %}Pending Appointment Requests{% endblock %}
+
+{% block admin_content %}
+<!-- Breadcrumb -->
+<nav class="flex mb-5" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'admin_panel:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-400">
+                <span class="material-icons-outlined mr-2 text-sm">dashboard</span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <a href="{% url 'admin_panel:appointments' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-400">Appointments</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <span class="ml-1 text-sm font-medium text-gray-500">Pending Requests</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div class="flex items-center">
+        <span class="material-icons-outlined text-primary-400 mr-3">pending_actions</span>
+        <h2 class="text-2xl font-bold text-gray-800">Pending Appointment Requests</h2>
+    </div>
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'admin_panel:calendar' %}" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">calendar_month</span>
+            View Calendar
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <!-- Total Pending Card -->
+    <div class="bg-white rounded-xl shadow-card p-6 border-l-4 border-yellow-500 animate-slideInLeft">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-yellow-100 mr-4">
+                <span class="material-icons-outlined text-yellow-500">pending</span>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Total Pending</p>
+                <p class="text-2xl font-bold text-gray-800">{{ appointments|length }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Today's Requests Card -->
+    <div class="bg-white rounded-xl shadow-card p-6 border-l-4 border-blue-500 animate-slideInLeft" style="animation-delay: 0.1s;">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-blue-100 mr-4">
+                <span class="material-icons-outlined text-blue-500">today</span>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Today's Requests</p>
+                <p class="text-2xl font-bold text-gray-800">{{ today_count }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Oldest Request Card -->
+    <div class="bg-white rounded-xl shadow-card p-6 border-l-4 border-red-500 animate-slideInLeft" style="animation-delay: 0.2s;">
+        <div class="flex items-center">
+            <div class="p-3 rounded-full bg-red-100 mr-4">
+                <span class="material-icons-outlined text-red-500">schedule</span>
+            </div>
+            <div>
+                <p class="text-sm font-medium text-gray-500">Oldest Request</p>
+                <p class="text-2xl font-bold text-gray-800">{{ oldest_request|date:"M d" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Card -->
+<div class="bg-white rounded-xl shadow-card overflow-hidden">
+    <!-- Card Header with Search and Filter -->
+    <div class="px-6 py-4 border-b border-gray-200">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4 md:mb-0">Appointment Requests</h3>
+            
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                <!-- Search Box -->
+                <div class="relative">
+                    <input type="text" id="search-input" placeholder="Search client or service..." class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400">
+                    <span class="material-icons-outlined absolute left-3 top-2.5 text-gray-400">search</span>
+                </div>
+                
+                <!-- Filter Dropdown -->
+                <div class="relative" x-data="{ open: false }">
+                    <button @click="open = !open" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">filter_list</span>
+                        Filter
+                        <span class="material-icons-outlined ml-1" style="font-size: 18px;" x-bind:class="{'transform rotate-180': open}">expand_more</span>
+                    </button>
+                    
+                    <div x-show="open" 
+                         @click.away="open = false"
+                         x-transition:enter="transition ease-out duration-100"
+                         x-transition:enter-start="transform opacity-0 scale-95"
+                         x-transition:enter-end="transform opacity-100 scale-100"
+                         x-transition:leave="transition ease-in duration-75"
+                         x-transition:leave-start="transform opacity-100 scale-100"
+                         x-transition:leave-end="transform opacity-0 scale-95"
+                         class="origin-top-right absolute right-0 mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                        <div class="py-1 px-3">
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                                <select id="date-filter" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md">
+                                    <option value="all">All Dates</option>
+                                    <option value="today">Today</option>
+                                    <option value="tomorrow">Tomorrow</option>
+                                    <option value="week">This Week</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Service</label>
+                                <select id="service-filter" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md">
+                                    <option value="all">All Services</option>
+                                    {% for service in services %}
+                                        <option value="{{ service.id }}">{{ service.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="pt-2 border-t border-gray-200 mt-2">
+                                <button id="apply-filters" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Table Content -->
+    <div class="overflow-x-auto">
+        {% if appointments %}
+            <table class="min-w-full divide-y divide-gray-200" id="appointments-table">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Time</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Duration</th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for appointment in appointments %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-150">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold">
+                                        {{ appointment.client.get_full_name|slice:":1" }}
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="text-sm font-medium text-gray-900">{{ appointment.client.get_full_name }}</div>
+                                        <div class="text-sm text-gray-500">{{ appointment.client.email }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ appointment.service.name }}</div>
+                                <div class="text-sm text-gray-500">{{ appointment.service.category.name }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ appointment.start_time|date:"F d, Y" }}</div>
+                                <div class="text-sm text-gray-500">
+                                    {% if appointment.start_time.date == today %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Today
+                                        </span>
+                                    {% elif appointment.start_time.date == tomorrow %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Tomorrow
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ appointment.start_time|time:"g:i A" }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ appointment.service.duration }} mins</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                    <span class="w-2 h-2 bg-yellow-400 rounded-full mr-1"></span>
+                                    {{ appointment.get_status_display }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <a href="{% url 'admin_panel:review_appointment' appointment.id %}" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                                    <span class="material-icons-outlined mr-1" style="font-size: 16px;">rate_review</span>
+                                    Review
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="flex flex-col items-center justify-center py-12">
+                <span class="material-icons-outlined text-gray-300 text-6xl mb-4">event_busy</span>
+                <h3 class="text-lg font-medium text-gray-900 mb-1">No pending appointment requests</h3>
+                <p class="text-gray-500 mb-4">All appointment requests have been processed.</p>
+                <a href="{% url 'admin_panel:appointments' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 16px;">list</span>
+                    View All Appointments
+                </a>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if appointments and appointments.has_other_pages %}
+        <div class="px-6 py-4 border-t border-gray-200">
+            <nav class="flex items-center justify-between">
+                <div class="hidden sm:block">
+                    <p class="text-sm text-gray-700">
+                        Showing <span class="font-medium">{{ appointments.start_index }}</span> to <span class="font-medium">{{ appointments.end_index }}</span> of <span class="font-medium">{{ appointments.paginator.count }}</span> results
+                    </p>
+                </div>
+                <div class="flex-1 flex justify-between sm:justify-end">
+                    {% if appointments.has_previous %}
+                        <a href="?page={{ appointments.previous_page_number }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Previous
+                        </a>
+                    {% endif %}
+                    {% if appointments.has_next %}
+                        <a href="?page={{ appointments.next_page_number }}" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            Next
+                        </a>
+                    {% endif %}
+                </div>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('search-input');
+        const table = document.getElementById('appointments-table');
+        const rows = table ? table.querySelectorAll('tbody tr') : [];
+        
+        searchInput.addEventListener('keyup', function() {
+            const searchTerm = this.value.toLowerCase();
+            
+            rows.forEach(row => {
+                const clientName = row.querySelector('td:nth-child(1)').textContent.toLowerCase();
+                const serviceName = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+                
+                if (clientName.includes(searchTerm) || serviceName.includes(searchTerm)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+        
+        // Filter functionality
+        const applyFiltersBtn = document.getElementById('apply-filters');
+        const dateFilter = document.getElementById('date-filter');
+        const serviceFilter = document.getElementById('service-filter');
+        
+        applyFiltersBtn.addEventListener('click', function() {
+            const dateValue = dateFilter.value;
+            const serviceValue = serviceFilter.value;
+            
+            rows.forEach(row => {
+                let showRow = true;
+                
+                // Date filtering
+                if (dateValue !== 'all') {
+                    const dateCell = row.querySelector('td:nth-child(3)');
+                    const hasToday = dateCell.textContent.includes('Today');
+                    const hasTomorrow = dateCell.textContent.includes('Tomorrow');
+                    
+                    if (dateValue === 'today' && !hasToday) {
+                        showRow = false;
+                    } else if (dateValue === 'tomorrow' && !hasTomorrow) {
+                        showRow = false;
+                    } else if (dateValue === 'week') {
+                        // This would need server-side implementation for proper week filtering
+                        // For now, we'll show both today and tomorrow
+                        if (!hasToday && !hasTomorrow) {
+                            showRow = false;
+                        }
+                    }
+                }
+                
+                // Service filtering
+                if (serviceValue !== 'all' && showRow) {
+                    const serviceCell = row.querySelector('td:nth-child(2)');
+                    const serviceId = serviceCell.getAttribute('data-service-id');
+                    
+                    if (serviceId !== serviceValue) {
+                        showRow = false;
+                    }
+                }
+                
+                row.style.display = showRow ? '' : 'none';
+            });
+        });
+    });
+</script>
+{% endblock %}

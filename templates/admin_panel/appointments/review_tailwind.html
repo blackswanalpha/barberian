@@ -1,0 +1,386 @@
+{% extends 'admin_panel/admin_base.html' %}
+
+{% block title %}Review Appointment | Barberian Admin{% endblock %}
+
+{% block page_title %}Review Appointment Request{% endblock %}
+
+{% block admin_content %}
+<!-- Breadcrumb -->
+<nav class="flex mb-5" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'admin_panel:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-400">
+                <span class="material-icons-outlined mr-2 text-sm">dashboard</span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <a href="{% url 'admin_panel:appointments' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-400">Appointments</a>
+            </div>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <a href="{% url 'admin_panel:pending_appointments' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-400">Pending Requests</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <span class="ml-1 text-sm font-medium text-gray-500">Review Request</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div class="flex items-center">
+        <span class="material-icons-outlined text-primary-400 mr-3">rate_review</span>
+        <h2 class="text-2xl font-bold text-gray-800">Review Appointment Request</h2>
+    </div>
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'admin_panel:pending_appointments' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+            Back to Pending Requests
+        </a>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Appointment Details Card -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden animate-slideInLeft">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-primary-400 mr-2">event_note</span>
+                <h3 class="text-lg font-semibold text-gray-800">Appointment Details</h3>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <!-- Client Information -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Client Information</h4>
+                <div class="flex items-center mb-4">
+                    <div class="flex-shrink-0 h-12 w-12 rounded-full bg-primary-100 flex items-center justify-center text-primary-600 font-bold text-lg">
+                        {{ appointment.client.get_full_name|slice:":1" }}
+                    </div>
+                    <div class="ml-4">
+                        <h5 class="text-lg font-medium text-gray-900">{{ appointment.client.get_full_name }}</h5>
+                        <div class="flex items-center text-sm text-gray-500">
+                            <span class="material-icons-outlined mr-1" style="font-size: 16px;">email</span>
+                            {{ appointment.client.email }}
+                        </div>
+                        {% if appointment.client.phone_number %}
+                            <div class="flex items-center text-sm text-gray-500">
+                                <span class="material-icons-outlined mr-1" style="font-size: 16px;">phone</span>
+                                {{ appointment.client.phone_number }}
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Information -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Service Information</h4>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-primary-400 flex items-center justify-center text-white">
+                            <span class="material-icons-outlined">content_cut</span>
+                        </div>
+                        <div class="ml-4">
+                            <h5 class="text-lg font-medium text-gray-900">{{ appointment.service.name }}</h5>
+                            <p class="text-sm text-gray-500">{{ appointment.service.category.name }}</p>
+                            <div class="mt-2 flex items-center">
+                                <div class="flex items-center mr-4">
+                                    <span class="material-icons-outlined text-gray-400 mr-1" style="font-size: 16px;">schedule</span>
+                                    <span class="text-sm text-gray-600">{{ appointment.service.duration }} mins</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <span class="material-icons-outlined text-gray-400 mr-1" style="font-size: 16px;">payments</span>
+                                    <span class="text-sm text-gray-600">KSh {{ appointment.service.price }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date & Time Information -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Requested Date & Time</h4>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <span class="material-icons-outlined text-primary-400 mr-2">event</span>
+                            <div>
+                                <p class="text-sm text-gray-500">Date</p>
+                                <p class="text-base font-medium text-gray-900">{{ appointment.start_time|date:"F d, Y" }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {% if appointment.start_time.date == today %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            Today
+                                        </span>
+                                    {% elif appointment.start_time.date == tomorrow %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Tomorrow
+                                        </span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex items-center">
+                            <span class="material-icons-outlined text-primary-400 mr-2">schedule</span>
+                            <div>
+                                <p class="text-sm text-gray-500">Time</p>
+                                <p class="text-base font-medium text-gray-900">{{ appointment.start_time|time:"g:i A" }}</p>
+                                <p class="text-xs text-gray-500">{{ appointment.service.duration }} minute service</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status Information -->
+            <div class="mb-6">
+                <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Status Information</h4>
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        <span class="w-2 h-2 bg-yellow-400 rounded-full mr-2"></span>
+                        {{ appointment.get_status_display }}
+                    </span>
+                    <span class="ml-3 text-sm text-gray-500">Created {{ appointment.created_at|timesince }} ago</span>
+                </div>
+            </div>
+            
+            <!-- Notes (if any) -->
+            {% if appointment.notes %}
+                <div class="mb-6">
+                    <h4 class="text-sm font-medium text-gray-500 uppercase tracking-wider mb-3">Client Notes</h4>
+                    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <span class="material-icons-outlined text-blue-400">comment</span>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-blue-700">{{ appointment.notes }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Assign Staff & Confirm Card -->
+    <div class="bg-white rounded-xl shadow-card overflow-hidden animate-slideInRight">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-primary-400 mr-2">assignment_turned_in</span>
+                <h3 class="text-lg font-semibold text-gray-800">Assign Staff & Confirm</h3>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+                
+                <!-- Staff Selection -->
+                <div>
+                    <label for="staff_id" class="block text-sm font-medium text-gray-700 mb-1">Select Staff Member</label>
+                    <div class="relative">
+                        <select id="staff_id" name="staff_id" class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md" required>
+                            <option value="">-- Select Staff Member --</option>
+                            {% for staff in available_staff %}
+                                <option value="{{ staff.id }}">{{ staff.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <span class="material-icons-outlined absolute right-3 top-2 text-gray-400 pointer-events-none">expand_more</span>
+                    </div>
+                    {% if not available_staff %}
+                        <p class="mt-2 text-sm text-red-600">
+                            <span class="material-icons-outlined align-text-bottom mr-1" style="font-size: 16px;">error</span>
+                            No staff members are available at this time. Consider changing the appointment time.
+                        </p>
+                    {% endif %}
+                </div>
+                
+                <!-- Time Adjustment -->
+                <div>
+                    <label for="new_time" class="block text-sm font-medium text-gray-700 mb-1">Adjust Time (Optional)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="material-icons-outlined text-gray-400">schedule</span>
+                        </div>
+                        <input type="time" id="new_time" name="new_time" value="{{ appointment.start_time|time:'H:i' }}" class="block w-full pl-10 pr-10 py-2 border-gray-300 focus:outline-none focus:ring-primary-400 focus:border-primary-400 sm:text-sm rounded-md">
+                    </div>
+                    <p class="mt-2 text-xs text-gray-500">Leave as is to keep the requested time, or adjust if needed.</p>
+                </div>
+                
+                <!-- Staff Availability -->
+                <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <h4 class="text-sm font-medium text-gray-700 mb-3 flex items-center">
+                        <span class="material-icons-outlined mr-1" style="font-size: 18px;">people</span>
+                        Staff Availability
+                    </h4>
+                    
+                    <div class="space-y-3 max-h-60 overflow-y-auto pr-2">
+                        {% for staff in all_staff %}
+                            <div class="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200 hover:border-primary-300 transition-colors duration-200">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600 font-bold">
+                                        {{ staff.get_full_name|slice:":1" }}
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ staff.get_full_name }}</p>
+                                        <p class="text-xs text-gray-500">
+                                            {% if staff in available_staff %}
+                                                <span class="inline-flex items-center text-green-600">
+                                                    <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                                    Available
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center text-red-600">
+                                                    <span class="w-2 h-2 bg-red-500 rounded-full mr-1"></span>
+                                                    Unavailable
+                                                </span>
+                                            {% endif %}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="text-right text-xs text-gray-500">
+                                    {% if staff.appointments_today %}
+                                        <p>{{ staff.appointments_today }} appointments today</p>
+                                    {% else %}
+                                        <p>No appointments today</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- Information Alert -->
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <span class="material-icons-outlined text-blue-400">info</span>
+                        </div>
+                        <div class="ml-3">
+                            <h3 class="text-sm font-medium text-blue-800">Confirming this appointment will:</h3>
+                            <div class="mt-2 text-sm text-blue-700">
+                                <ul class="list-disc pl-5 space-y-1">
+                                    <li>Assign the selected staff member</li>
+                                    <li>Update the appointment status to "Confirmed"</li>
+                                    <li>Send email notifications to the client and staff</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row sm:justify-between space-y-3 sm:space-y-0">
+                    <button type="button" class="inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">close</span>
+                        Reject Request
+                    </button>
+                    
+                    <button type="submit" class="inline-flex justify-center items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500" {% if not available_staff %}disabled{% endif %}>
+                        <span class="material-icons-outlined mr-2" style="font-size: 18px;">check_circle</span>
+                        Confirm Appointment
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Calendar View Card -->
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-card overflow-hidden animate-slideInLeft" style="animation-delay: 0.2s;">
+        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="material-icons-outlined text-primary-400 mr-2">calendar_month</span>
+                    <h3 class="text-lg font-semibold text-gray-800">Day Schedule</h3>
+                </div>
+                <a href="{% url 'admin_panel:day_view' appointment.start_time.year appointment.start_time.month appointment.start_time.day %}" class="text-sm text-primary-400 hover:text-primary-500 flex items-center">
+                    <span>View Full Day</span>
+                    <span class="material-icons-outlined ml-1" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+        </div>
+        
+        <div class="p-6">
+            <div class="flex items-center justify-center mb-4">
+                <h4 class="text-lg font-medium text-gray-900">{{ appointment.start_time|date:"F d, Y" }}</h4>
+            </div>
+            
+            <div class="relative min-h-[200px]">
+                <!-- Time Indicators -->
+                <div class="absolute left-0 top-0 bottom-0 w-16 flex flex-col border-r border-gray-200">
+                    {% for hour in hours %}
+                        <div class="flex-1 border-t border-gray-200 relative">
+                            <span class="absolute -top-3 left-0 text-xs text-gray-500">{{ hour }}:00</span>
+                        </div>
+                    {% endfor %}
+                </div>
+                
+                <!-- Appointments Timeline -->
+                <div class="ml-16 relative">
+                    {% for hour in hours %}
+                        <div class="h-16 border-t border-gray-200"></div>
+                    {% endfor %}
+                    
+                    <!-- Current Appointment Indicator -->
+                    <div class="absolute left-0 right-0 bg-yellow-100 border-l-4 border-yellow-400 opacity-50" style="top: {{ appointment_top }}px; height: {{ appointment_height }}px;"></div>
+                    
+                    <!-- Existing Appointments -->
+                    {% for existing in day_appointments %}
+                        <div class="absolute left-0 right-0 bg-{{ existing.color }}-100 border-l-4 border-{{ existing.color }}-400 rounded-r-lg px-2 py-1" style="top: {{ existing.top }}px; height: {{ existing.height }}px;">
+                            <p class="text-xs font-medium text-{{ existing.color }}-800 truncate">{{ existing.start_time|time:"g:i A" }} - {{ existing.client.get_full_name }}</p>
+                            <p class="text-xs text-{{ existing.color }}-600 truncate">{{ existing.service.name }}</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Staff selection highlighting
+        const staffSelect = document.getElementById('staff_id');
+        const staffCards = document.querySelectorAll('.staff-card');
+        
+        staffSelect.addEventListener('change', function() {
+            const selectedId = this.value;
+            
+            staffCards.forEach(card => {
+                const cardId = card.getAttribute('data-staff-id');
+                
+                if (cardId === selectedId) {
+                    card.classList.add('ring-2', 'ring-primary-400');
+                } else {
+                    card.classList.remove('ring-2', 'ring-primary-400');
+                }
+            });
+        });
+        
+        // Disable submit button if no staff available
+        const confirmBtn = document.querySelector('button[type="submit"]');
+        if (confirmBtn && confirmBtn.hasAttribute('disabled')) {
+            confirmBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            confirmBtn.classList.remove('hover:bg-primary-500');
+        }
+    });
+</script>
+{% endblock %}

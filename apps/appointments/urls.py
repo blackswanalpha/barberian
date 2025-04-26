@@ -6,9 +6,7 @@ app_name = 'appointments'
 urlpatterns = [
     # Appointment Booking URLs
     path('booking/service/', views.booking_service, name='booking_service'),
-    path('booking/staff/', views.booking_staff, name='booking_staff'),
     path('booking/date/', views.booking_date, name='booking_date'),
-    path('booking/time/', views.booking_time, name='booking_time'),
     path('booking/confirm/', views.booking_confirm, name='booking_confirm'),
 
     # Calendar Views

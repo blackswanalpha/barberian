@@ -85,21 +85,63 @@
     <style>
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+            width: 6px;
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
+            border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb {
             background: #d4af37;
-            border-radius: 4px;
+            border-radius: 10px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
             background: #c49a29;
+        }
+
+        /* Scrollbar for Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #d4af37 #f1f1f1;
+        }
+
+        /* Horizontal Scrolling */
+        .scroll-x {
+            overflow-x: auto;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            padding-bottom: 5px; /* Space for scrollbar */
+        }
+
+        /* Minimized Sidebar */
+        .sidebar-minimized {
+            width: 70px !important;
+        }
+
+        .sidebar-minimized .sidebar-text {
+            display: none;
+        }
+
+        .sidebar-minimized .sidebar-icon {
+            margin-right: 0 !important;
+        }
+
+        .sidebar-minimized .sidebar-link {
+            justify-content: center;
+        }
+
+        .sidebar-minimized .sidebar-header-text {
+            display: none;
+        }
+
+        .content-sidebar-minimized {
+            margin-left: 70px !important;
         }
 
         /* Transitions */
@@ -116,35 +158,6 @@
 
         .sidebar-link.active .sidebar-icon {
             color: #d4af37;
-        }
-
-        /* Tooltip */
-        .tooltip {
-            position: relative;
-        }
-
-        .tooltip .tooltip-text {
-            visibility: hidden;
-            width: 120px;
-            background-color: #1e1e1e;
-            color: #fff;
-            text-align: center;
-            border-radius: 6px;
-            padding: 5px;
-            position: absolute;
-            z-index: 1;
-            left: 100%;
-            margin-left: 10px;
-            opacity: 0;
-            transition: opacity 0.3s;
-            font-size: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-
-        .tooltip:hover .tooltip-text {
-            visibility: visible;
-            opacity: 1;
         }
 
         /* Animations */
@@ -175,230 +188,260 @@
             animation: slideInRight 0.3s ease-in-out;
         }
 
-        /* Material Design Shadows */
-        .shadow-md-1 {
-            box-shadow: 0 2px 4px -1px rgba(0,0,0,0.2), 0 4px 5px 0 rgba(0,0,0,0.14), 0 1px 10px 0 rgba(0,0,0,0.12);
+        /* Glass Morphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
         }
 
-        .shadow-md-2 {
-            box-shadow: 0 3px 5px -1px rgba(0,0,0,0.2), 0 6px 10px 0 rgba(0,0,0,0.14), 0 1px 18px 0 rgba(0,0,0,0.12);
+        /* Modern Card */
+        .modern-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
         }
 
-        .shadow-md-3 {
-            box-shadow: 0 5px 5px -3px rgba(0,0,0,0.2), 0 8px 10px 1px rgba(0,0,0,0.14), 0 3px 14px 2px rgba(0,0,0,0.12);
+        .modern-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
         }
 
-        /* Material Design Ripple Effect */
-        .ripple {
-            position: relative;
-            overflow: hidden;
-            transform: translate3d(0, 0, 0);
+        /* Gradient Backgrounds */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #d4af37 0%, #c49a29 100%);
         }
 
-        .ripple:after {
-            content: "";
-            display: block;
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
-            background-repeat: no-repeat;
-            background-position: 50%;
-            transform: scale(10, 10);
-            opacity: 0;
-            transition: transform .5s, opacity 1s;
+        .bg-gradient-secondary {
+            background: linear-gradient(135deg, #1e1e1e 0%, #3d3d3d 100%);
         }
 
-        .ripple:active:after {
-            transform: scale(0, 0);
-            opacity: .3;
-            transition: 0s;
+        /* Responsive Sidebar */
+        @media (max-width: 1024px) {
+            .sidebar-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-closed {
+                transform: translateX(-100%);
+            }
+
+            .content-sidebar-open {
+                margin-left: 0;
+            }
+
+            .content-sidebar-closed {
+                margin-left: 0;
+            }
         }
 
-        /* Material Design Form Elements */
-        .form-control-material {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-
-        .form-control-material input,
-        .form-control-material textarea,
-        .form-control-material select {
-            width: 100%;
-            padding: 0.75rem 0.75rem 0.75rem 0;
-            font-size: 1rem;
-            border: none;
-            border-bottom: 2px solid #e5e7eb;
-            background-color: transparent;
-            transition: border-color 0.3s;
-            outline: none;
-        }
-
-        .form-control-material label {
-            position: absolute;
-            top: 0.75rem;
-            left: 0;
-            transition: all 0.3s;
-            color: #6b7280;
-            pointer-events: none;
-        }
-
-        .form-control-material input:focus,
-        .form-control-material textarea:focus,
-        .form-control-material select:focus {
-            border-color: #d4af37;
-        }
-
-        .form-control-material input:focus + label,
-        .form-control-material textarea:focus + label,
-        .form-control-material select:focus + label,
-        .form-control-material input:not(:placeholder-shown) + label,
-        .form-control-material textarea:not(:placeholder-shown) + label,
-        .form-control-material select:not([value=""]) + label {
-            top: -0.5rem;
-            font-size: 0.75rem;
-            color: #d4af37;
+        /* Scrollable Content */
+        .scrollable-content {
+            height: calc(100vh - 64px); /* 64px is header height */
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
         }
     </style>
 
     {% block admin_css %}{% endblock %}
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-100 font-sans">
     <div class="flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside id="sidebar" class="bg-white shadow-sidebar w-64 h-full fixed left-0 top-0 z-30 transition-all duration-300 ease-in-out">
+        <aside id="sidebar" class="bg-white shadow-lg w-64 h-full fixed left-0 top-0 z-30 transition-all duration-300 ease-in-out transform lg:translate-x-0 sidebar-closed lg:sidebar-open">
             <!-- Logo -->
-            <div class="flex items-center justify-center h-16 border-b border-gray-200">
+            <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
                 <a href="{% url 'admin_panel:dashboard' %}" class="flex items-center">
-                    <img src="/static/images/logo-gold.png" alt="Barberian" class="h-8">
-                    <span class="ml-2 text-xl font-semibold text-gray-800">Admin</span>
+                    <img src="/static/images/barbs.jpg" alt="Barberian" class="h-8">
+                    <span class="ml-2 text-xl font-semibold text-gray-800 sidebar-header-text">Admin</span>
                 </a>
+                <div class="flex items-center">
+                    <button id="minimize-sidebar" class="hidden lg:block text-gray-500 hover:text-primary-400 focus:outline-none mr-2">
+                        <span class="material-icons-round">menu_open</span>
+                    </button>
+                    <button id="close-sidebar" class="lg:hidden text-gray-500 hover:text-primary-400 focus:outline-none">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
             </div>
 
             <!-- Sidebar Menu -->
-            <nav class="mt-4 px-4 pb-4 h-[calc(100%-4rem)] overflow-y-auto">
-                <ul>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:dashboard' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">dashboard</span>
-                            <span>Dashboard</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:appointments' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'appointment' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">event</span>
-                            <span>Appointments</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:calendar' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">calendar_month</span>
-                            <span>Calendar</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:users' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">people</span>
-                            <span>Users</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:staff' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'staff' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">badge</span>
-                            <span>Staff</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:services' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'service' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">content_cut</span>
-                            <span>Services</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:categories' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'categor' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">category</span>
-                            <span>Categories</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:media' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'media' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">photo_library</span>
-                            <span>Media</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:reports' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">bar_chart</span>
-                            <span>Reports</span>
-                        </a>
-                    </li>
+            <div class="h-[calc(100%-4rem)] flex flex-col">
+                <nav class="flex-1 px-4 py-4 overflow-y-auto">
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="{% url 'admin_panel:dashboard' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">dashboard</span>
+                                <span class="sidebar-text">Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:appointments' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'appointment' in request.resolver_match.url_name and 'pending' not in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">event</span>
+                                <span class="sidebar-text">Appointments</span>
+                            </a>
+                        </li>
+                        <!-- <li>
+                            <a href="{% url 'admin_panel:pending_appointments_modern' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'pending' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">pending_actions</span>
+                                <span class="sidebar-text">Pending Requests</span>
+                                {% with pending_count=pending_count|default:0 %}
+                                    {% if pending_count > 0 %}
+                                        <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ pending_count }}</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </a>
+                        </li> -->
+                        <li>
+                            <a href="{% url 'admin_panel:calendar' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">calendar_month</span>
+                                <span class="sidebar-text">Calendar</span>
+                            </a>
+                        </li>
 
-                    <li class="mt-6 mb-2">
-                        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Settings</h3>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:business_settings' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'business_settings' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">settings</span>
-                            <span>Business Settings</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:business_hours' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'business_hours' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">schedule</span>
-                            <span>Business Hours</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:holidays' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if 'holiday' in request.resolver_match.url_name %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">event_busy</span>
-                            <span>Holidays</span>
-                        </a>
-                    </li>
-                    <li class="mb-1">
-                        <a href="{% url 'admin_panel:logs' %}" class="sidebar-link flex items-center py-2 px-4 rounded-lg text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'logs' %}active{% endif %}">
-                            <span class="material-icons-outlined sidebar-icon mr-3">receipt_long</span>
-                            <span>Activity Logs</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+                        <li class="pt-4">
+                            <div class="px-4 py-2">
+                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</h3>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:users' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">people</span>
+                                <span class="sidebar-text">Users</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:staff' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'staff' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">badge</span>
+                                <span class="sidebar-text">Staff</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:services' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'service' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">content_cut</span>
+                                <span class="sidebar-text">Services</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:categories' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'categor' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">category</span>
+                                <span class="sidebar-text">Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:media' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'media' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">photo_library</span>
+                                <span class="sidebar-text">Media</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:email_dashboard' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'email' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">email</span>
+                                <span>Email</span>
+                            </a>
+                        </li>
+
+
+                        <li class="pt-4">
+                            <div class="px-4 py-2">
+                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Analytics</h3>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:reports' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">bar_chart</span>
+                                <span class="sidebar-text">Reports</span>
+                            </a>
+                        </li>
+
+                        <li class="pt-4">
+                            <div class="px-4 py-2">
+                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider sidebar-text">Settings</h3>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:business_settings' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'business_settings' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">settings</span>
+                                <span class="sidebar-text">Business Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:business_hours' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'business_hours' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">schedule</span>
+                                <span class="sidebar-text">Business Hours</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:holidays' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'holiday' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">event_busy</span>
+                                <span class="sidebar-text">Holidays</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:logs' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'logs' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">receipt_long</span>
+                                <span class="sidebar-text">Activity Logs</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- User Info at Bottom -->
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-primary-400 flex items-center justify-center text-white">
+                            {{ user.get_full_name|slice:":1" }}
+                        </div>
+                        <div class="ml-3 sidebar-text">
+                            <p class="text-sm font-medium text-gray-800">{{ user.get_full_name }}</p>
+                            <p class="text-xs text-gray-500">{{ user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </aside>
 
         <!-- Main Content -->
-        <div id="main-content" class="flex-1 ml-64 transition-all duration-300 ease-in-out">
+        <div id="main-content" class="flex-1 ml-0 lg:ml-64 transition-all duration-300 ease-in-out">
             <!-- Top Navigation -->
-            <header class="bg-white shadow-nav h-16 flex items-center justify-between px-6 sticky top-0 z-20">
-                <!-- Left Side - Toggle Button -->
+            <header class="bg-white shadow-md h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-20">
+                <!-- Left Side - Toggle Button & Page Title -->
                 <div class="flex items-center">
-                    <button id="sidebar-toggle" class="text-gray-600 hover:text-primary-400 focus:outline-none">
+                    <button id="sidebar-toggle" class="text-gray-600 hover:text-primary-400 focus:outline-none mr-3">
                         <span class="material-icons-round">menu</span>
                     </button>
-                    <div class="ml-4">
-                        <h1 class="text-xl font-semibold text-gray-800">{% block page_title %}Admin Dashboard{% endblock %}</h1>
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-800 hidden sm:block">{% block page_title %}Admin Dashboard{% endblock %}</h1>
                     </div>
                 </div>
 
-                <!-- Right Side - User Menu -->
-                <div class="flex items-center space-x-4">
+                <!-- Right Side - Actions & User Menu -->
+                <div class="flex items-center space-x-3">
+                    <!-- Quick Actions -->
+                    <div class="hidden md:flex items-center space-x-2">
+                        <a href="{% url 'admin_panel:appointment_create' %}" class="bg-primary-400 hover:bg-primary-500 text-white px-3 py-1.5 rounded-lg text-sm flex items-center transition-colors duration-200">
+                            <span class="material-icons-outlined text-sm mr-1">add</span>
+                            New Appointment
+                        </a>
+                    </div>
+
                     <!-- Notifications -->
                     <div class="relative">
-                        <button class="text-gray-600 hover:text-primary-400 focus:outline-none">
+                        <button class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-400 focus:outline-none">
                             <span class="material-icons-outlined">notifications</span>
-                            <span class="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full"></span>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
                         </button>
                     </div>
 
                     <!-- User Menu -->
                     <div class="relative" x-data="{ open: false }">
-                        <button @click="open = !open" class="flex items-center space-x-2 focus:outline-none">
+                        <button @click="open = !open" class="flex items-center focus:outline-none">
                             <div class="w-8 h-8 rounded-full bg-primary-400 flex items-center justify-center text-white">
                                 {{ user.get_full_name|slice:":1" }}
                             </div>
-                            <span class="text-sm font-medium text-gray-700">{{ user.get_full_name }}</span>
-                            <span class="material-icons-outlined text-gray-500" x-bind:class="{'transform rotate-180': open}">arrow_drop_down</span>
                         </button>
 
                         <!-- Dropdown Menu -->
@@ -410,7 +453,7 @@
                              x-transition:leave="transition ease-in duration-75"
                              x-transition:leave-start="transform opacity-100 scale-100"
                              x-transition:leave-end="transform opacity-0 scale-95"
-                             class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-md py-1 z-50">
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-50">
                             <a href="{% url 'client_portal:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 <span class="material-icons-outlined text-gray-500 mr-2 align-middle" style="font-size: 18px;">person</span>
                                 My Profile
@@ -429,25 +472,30 @@
                 </div>
             </header>
 
-            <!-- Page Content -->
-            <div class="p-6 animate-fadeIn">
-                {% if messages %}
-                    <div class="mb-6">
-                        {% for message in messages %}
-                            <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
-                                <span class="material-icons-outlined mr-3">
-                                    {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
-                                </span>
-                                <span>{{ message }}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endif %}
+            <!-- Page Content - Scrollable -->
+            <div class="scrollable-content">
+                <div class="p-4 lg:p-6 animate-fadeIn">
+                    {% if messages %}
+                        <div class="mb-6">
+                            {% for message in messages %}
+                                <div class="p-4 mb-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                                    <span class="material-icons-outlined mr-3">
+                                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                                    </span>
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
 
-                {% block admin_content %}{% endblock %}
+                    {% block admin_content %}{% endblock %}
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="closeSidebar()"></div>
 
     <!-- JavaScript Libraries -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -457,66 +505,103 @@
     <!-- Custom Admin JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar Toggle
+            // Sidebar Toggle for Mobile
             const sidebarToggle = document.getElementById('sidebar-toggle');
+            const minimizeSidebar = document.getElementById('minimize-sidebar');
             const sidebar = document.getElementById('sidebar');
             const mainContent = document.getElementById('main-content');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const closeSidebarBtn = document.getElementById('close-sidebar');
+
+            // Check if sidebar state is stored in localStorage
+            const sidebarMinimized = localStorage.getItem('sidebarMinimized') === 'true';
+
+            // Apply initial state based on localStorage
+            if (sidebarMinimized && window.innerWidth >= 1024) {
+                minimizeSidebarFunc();
+            }
+
+            function openSidebar() {
+                sidebar.classList.remove('sidebar-closed');
+                sidebar.classList.add('sidebar-open');
+                sidebarOverlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('sidebar-open');
+                sidebar.classList.add('sidebar-closed');
+                sidebarOverlay.classList.add('hidden');
+                document.body.style.overflow = ''; // Allow scrolling
+            }
+
+            function minimizeSidebarFunc() {
+                if (sidebar.classList.contains('sidebar-minimized')) {
+                    // Expand sidebar
+                    sidebar.classList.remove('sidebar-minimized');
+                    mainContent.classList.remove('content-sidebar-minimized');
+                    mainContent.classList.add('ml-64');
+                    minimizeSidebar.innerHTML = '<span class="material-icons-round">menu_open</span>';
+                    localStorage.setItem('sidebarMinimized', 'false');
+                } else {
+                    // Minimize sidebar
+                    sidebar.classList.add('sidebar-minimized');
+                    mainContent.classList.add('content-sidebar-minimized');
+                    mainContent.classList.remove('ml-64');
+                    minimizeSidebar.innerHTML = '<span class="material-icons-round">menu</span>';
+                    localStorage.setItem('sidebarMinimized', 'true');
+                }
+            }
+
+            // Make closeSidebar function available globally
+            window.closeSidebar = closeSidebar;
 
             sidebarToggle.addEventListener('click', function() {
-                if (sidebar.classList.contains('w-64')) {
-                    // Collapse sidebar
-                    sidebar.classList.remove('w-64');
-                    sidebar.classList.add('w-20');
-                    mainContent.classList.remove('ml-64');
-                    mainContent.classList.add('ml-20');
+                if (sidebar.classList.contains('sidebar-closed')) {
+                    openSidebar();
+                } else if (window.innerWidth < 1024) { // Only close on mobile
+                    closeSidebar();
+                }
+            });
 
-                    // Hide text in sidebar links
-                    document.querySelectorAll('.sidebar-link span:not(.material-icons-outlined)').forEach(function(el) {
-                        el.classList.add('hidden');
-                    });
+            // Add event listener for minimize button
+            if (minimizeSidebar) {
+                minimizeSidebar.addEventListener('click', minimizeSidebarFunc);
+            }
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', closeSidebar);
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.remove('sidebar-closed');
+                    sidebar.classList.add('sidebar-open');
+                    sidebarOverlay.classList.add('hidden');
+                    if (!sidebar.classList.contains('sidebar-minimized')) {
+                        mainContent.classList.add('ml-64');
+                    }
                 } else {
-                    // Expand sidebar
-                    sidebar.classList.remove('w-20');
-                    sidebar.classList.add('w-64');
-                    mainContent.classList.remove('ml-20');
+                    sidebar.classList.remove('sidebar-open');
+                    sidebar.classList.add('sidebar-closed');
+                    mainContent.classList.remove('ml-64');
+                    mainContent.classList.remove('content-sidebar-minimized');
+                }
+            });
+
+            // Initialize based on screen size
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('sidebar-closed');
+                sidebar.classList.add('sidebar-open');
+                if (!sidebar.classList.contains('sidebar-minimized')) {
                     mainContent.classList.add('ml-64');
-
-                    // Show text in sidebar links
-                    document.querySelectorAll('.sidebar-link span:not(.material-icons-outlined)').forEach(function(el) {
-                        el.classList.remove('hidden');
-                    });
                 }
-            });
-
-            // Alpine.js handles the user dropdown now
-
-            // Material Design Form Elements
-            document.querySelectorAll('.form-control-material input, .form-control-material textarea, .form-control-material select').forEach(function(element) {
-                // Check if the input has a value on page load
-                if (element.value !== '') {
-                    const label = element.nextElementSibling;
-                    if (label && label.tagName === 'LABEL') {
-                        label.classList.add('active');
-                    }
-                }
-
-                // Add event listeners
-                element.addEventListener('focus', function() {
-                    const label = this.nextElementSibling;
-                    if (label && label.tagName === 'LABEL') {
-                        label.classList.add('active');
-                    }
-                });
-
-                element.addEventListener('blur', function() {
-                    if (this.value === '') {
-                        const label = this.nextElementSibling;
-                        if (label && label.tagName === 'LABEL') {
-                            label.classList.remove('active');
-                        }
-                    }
-                });
-            });
+            } else {
+                sidebar.classList.remove('sidebar-open');
+                sidebar.classList.add('sidebar-closed');
+                mainContent.classList.remove('ml-64');
+            }
         });
     </script>
 

@@ -1,0 +1,477 @@
+{% extends 'admin_panel/admin_base.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Barberian Admin{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block admin_content %}
+<!-- Breadcrumb -->
+<nav class="flex mb-5 overflow-x-auto whitespace-nowrap pb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-1 md:space-x-3">
+        <li class="inline-flex items-center">
+            <a href="{% url 'admin_panel:dashboard' %}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-primary-500">
+                <span class="material-icons-outlined mr-2" style="font-size: 16px;">dashboard</span>
+                Dashboard
+            </a>
+        </li>
+        <li>
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <a href="{% url 'admin_panel:staff' %}" class="ml-1 text-sm font-medium text-gray-700 hover:text-primary-500">Staff</a>
+            </div>
+        </li>
+        <li aria-current="page">
+            <div class="flex items-center">
+                <span class="material-icons-outlined text-gray-400 mx-1" style="font-size: 16px;">chevron_right</span>
+                <span class="ml-1 text-sm font-medium text-gray-500">{{ title }}</span>
+            </div>
+        </li>
+    </ol>
+</nav>
+
+<!-- Staff Form -->
+<div class="bg-white rounded-xl shadow-md overflow-hidden max-w-4xl mx-auto transform transition-all duration-300 hover:shadow-xl">
+    <!-- Card Header with Gradient -->
+    <div class="relative">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-500 opacity-90"></div>
+        <div class="relative px-6 py-5">
+            <div class="flex flex-col sm:flex-row sm:items-center">
+                <span class="material-icons-outlined text-white mr-3 text-3xl mb-2 sm:mb-0">badge</span>
+                <div>
+                    <h3 class="text-xl font-bold text-white">{{ title }}</h3>
+                    <p class="text-white text-opacity-80 mt-1 text-sm">
+                        {% if staff %}Update existing{% else %}Add a new{% endif %} staff member to your team
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="p-6 pb-0">
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center animate-fadeIn">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Form Content -->
+    <div class="p-4 sm:p-6 max-h-[80vh] overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+        <form method="post" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Personal Information Section -->
+            <div class="form-field">
+                <div class="form-section-title">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <span class="material-icons-outlined mr-2 text-primary-500">person</span>
+                        Personal Information
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">Basic information about the staff member</p>
+                </div>
+            </div>
+
+            <!-- Profile Image -->
+            <div class="form-field">
+                <label for="{{ form.profile_image.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-3">Profile Image</label>
+                <div class="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-5">
+                    <div class="relative group">
+                        <div class="h-24 w-24 rounded-full overflow-hidden bg-gray-100 flex items-center justify-center border-2 border-primary-100 image-preview">
+                            {% if staff and staff.profile_image %}
+                                <img src="{{ staff.profile_image.url }}" alt="{{ staff.get_full_name }}" class="h-full w-full object-cover">
+                            {% else %}
+                                <span class="material-icons-outlined text-gray-400 text-4xl">person</span>
+                            {% endif %}
+                        </div>
+                        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity duration-200">
+                            <span class="material-icons-outlined text-white">add_a_photo</span>
+                        </div>
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <label for="{{ form.profile_image.id_for_label }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 cursor-pointer transition-colors duration-200">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">upload</span>
+                            Upload Photo
+                        </label>
+                        {{ form.profile_image }}
+                        <p class="mt-1 text-xs text-gray-500 file-name">
+                            {% if staff and staff.profile_image %}{{ staff.profile_image.name }}{% else %}No file chosen{% endif %}
+                        </p>
+                        <p class="mt-2 text-xs text-gray-500">Recommended: Square image, at least 300x300px</p>
+                    </div>
+                </div>
+                {% if form.profile_image.errors %}
+                <div class="error-message mt-2">
+                    <span class="material-icons-outlined">error</span>
+                    {{ form.profile_image.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Name Fields -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                <!-- First Name -->
+                <div class="form-field">
+                    <div class="modern-input-group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">person</span>
+                            </div>
+                            {{ form.first_name }}
+                            <label for="{{ form.first_name.id_for_label }}" class="modern-label">First Name</label>
+                        </div>
+                        {% if form.first_name.errors %}
+                        <div class="error-message">
+                            <span class="material-icons-outlined">error</span>
+                            {{ form.first_name.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Last Name -->
+                <div class="form-field">
+                    <div class="modern-input-group">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">person</span>
+                            </div>
+                            {{ form.last_name }}
+                            <label for="{{ form.last_name.id_for_label }}" class="modern-label">Last Name</label>
+                        </div>
+                        {% if form.last_name.errors %}
+                        <div class="error-message">
+                            <span class="material-icons-outlined">error</span>
+                            {{ form.last_name.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="form-field">
+                <div class="form-section-title">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <span class="material-icons-outlined mr-2 text-primary-500">contact_mail</span>
+                        Contact Information
+                    </h3>
+                </div>
+            </div>
+
+            <!-- Email -->
+            <div class="form-field">
+                <div class="modern-input-group">
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                            <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">email</span>
+                        </div>
+                        {{ form.email }}
+                        <label for="{{ form.email.id_for_label }}" class="modern-label">Email Address</label>
+                    </div>
+                    {% if form.email.errors %}
+                    <div class="error-message">
+                        <span class="material-icons-outlined">error</span>
+                        {{ form.email.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Professional Information Section -->
+            <div class="form-field">
+                <div class="form-section-title">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <span class="material-icons-outlined mr-2 text-primary-500">work</span>
+                        Professional Information
+                    </h3>
+                    <p class="mt-1 text-sm text-gray-500">Information visible to clients</p>
+                </div>
+            </div>
+
+            <!-- Bio -->
+            <div class="form-field">
+                <div class="modern-input-group">
+                    <label for="{{ form.bio.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Bio</label>
+                    <div class="relative rounded-md shadow-sm">
+                        {{ form.bio }}
+                    </div>
+                    {% if form.bio.errors %}
+                    <div class="error-message">
+                        <span class="material-icons-outlined">error</span>
+                        {{ form.bio.errors }}
+                    </div>
+                    {% endif %}
+                    <p class="help-text">A brief description about the staff member that will be visible to clients</p>
+                </div>
+            </div>
+
+            <!-- Settings Section -->
+            <div class="form-field">
+                <div class="form-section-title">
+                    <h3 class="text-lg font-medium text-gray-900 flex items-center">
+                        <span class="material-icons-outlined mr-2 text-primary-500">settings</span>
+                        Settings
+                    </h3>
+                </div>
+            </div>
+
+            <!-- Active Status -->
+            <div class="form-field">
+                <div class="flex items-center justify-between py-2">
+                    <label for="{{ form.is_active.id_for_label }}" class="text-sm font-medium text-gray-700">Active Status</label>
+                    <div class="toggle-switch">
+                        {{ form.is_active }}
+                        <span class="toggle-slider"></span>
+                    </div>
+                </div>
+                <p class="help-text">If turned off, this staff member will not be able to log in</p>
+                {% if form.is_active.errors %}
+                <div class="error-message">
+                    <span class="material-icons-outlined">error</span>
+                    {{ form.is_active.errors }}
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Form Actions -->
+            <div class="pt-5 border-t border-gray-200 flex flex-col sm:flex-row justify-between space-y-3 sm:space-y-0">
+                <a href="{% url 'admin_panel:staff' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-full text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center justify-center px-5 py-2 border border-transparent text-sm font-medium rounded-full shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-105">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">save</span>
+                    Save Staff
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_css %}
+<style>
+    /* Scrollbar Styling */
+    .scrollbar-thin {
+        scrollbar-width: thin;
+    }
+    
+    .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 9999px;
+    }
+    
+    .scrollbar-track-transparent::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+    
+    ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+        background-color: #d1d5db;
+        border-radius: 9999px;
+    }
+    
+    ::-webkit-scrollbar-track {
+        background-color: transparent;
+    }
+    
+    /* Base Input Styling */
+    .form-input {
+        @apply w-full rounded-md border-gray-300 shadow-sm transition-all duration-200;
+        @apply focus:ring-2 focus:ring-primary-400 focus:border-primary-400;
+    }
+    
+    /* Modern Input Group */
+    .modern-input-group {
+        @apply relative mb-6;
+    }
+    
+    .modern-input-group input[type="text"],
+    .modern-input-group input[type="number"],
+    .modern-input-group input[type="email"],
+    .modern-input-group input[type="password"] {
+        @apply block py-3 px-4 w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 appearance-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 pl-10 transition-all duration-200;
+    }
+    
+    .modern-input-group textarea {
+        @apply block p-4 w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-2 focus:ring-primary-400 focus:border-primary-400 min-h-[120px] transition-all duration-200;
+    }
+    
+    .modern-input-group select {
+        @apply block py-3 px-4 w-full text-gray-900 bg-gray-50 rounded-lg border border-gray-300 appearance-none focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400 pl-10 transition-all duration-200;
+    }
+    
+    .modern-label {
+        @apply absolute text-sm text-gray-500 duration-300 transform -translate-y-4 scale-75 top-2 z-10 origin-[0] bg-gray-50 px-2 peer-focus:px-2 peer-focus:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:top-1/2 peer-focus:top-2 peer-focus:scale-75 peer-focus:-translate-y-4 left-9 rounded-md;
+    }
+    
+    /* Toggle Switch */
+    .toggle-switch {
+        @apply relative inline-flex items-center cursor-pointer;
+    }
+    
+    .toggle-switch input {
+        @apply sr-only;
+    }
+    
+    .toggle-slider {
+        @apply w-12 h-6 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out;
+    }
+    
+    .toggle-slider:after {
+        content: "";
+        @apply absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out shadow-md;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        @apply bg-primary-500;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:after {
+        @apply transform translate-x-6;
+    }
+    
+    .toggle-switch input:focus + .toggle-slider {
+        @apply ring-2 ring-offset-2 ring-primary-400;
+    }
+    
+    /* Form Field Animation */
+    .form-field {
+        @apply transform transition-all duration-300 opacity-0 translate-y-4;
+        animation: fadeInUp 0.5s forwards;
+        animation-delay: calc(var(--animation-order, 0) * 0.1s);
+    }
+    
+    @keyframes fadeInUp {
+        to {
+            @apply opacity-100 translate-y-0;
+        }
+    }
+    
+    /* Form Section Title */
+    .form-section-title {
+        @apply mb-4 pb-2 border-b border-gray-100;
+    }
+    
+    /* Help Text */
+    .help-text {
+        @apply mt-1 text-xs text-gray-500;
+    }
+    
+    /* Error Message */
+    .error-message {
+        @apply mt-1 text-xs text-red-500 flex items-center;
+    }
+    
+    .error-message .material-icons-outlined {
+        @apply text-xs mr-1;
+    }
+    
+    /* Hide file input visually but keep it accessible */
+    input[type="file"] {
+        @apply sr-only;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 640px) {
+        .form-section-title h3 {
+            @apply text-base;
+        }
+        
+        .modern-input-group input[type="text"],
+        .modern-input-group input[type="number"],
+        .modern-input-group input[type="email"],
+        .modern-input-group input[type="password"],
+        .modern-input-group select {
+            @apply py-2.5;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation delay to form fields
+        const formFields = document.querySelectorAll('.form-field');
+        formFields.forEach((field, index) => {
+            field.style.setProperty('--animation-order', index);
+        });
+        
+        // Toggle switch functionality
+        const toggleSwitch = document.querySelector('.toggle-switch input[type="checkbox"]');
+        if (toggleSwitch) {
+            // Set initial state based on Django form field
+            if (toggleSwitch.checked) {
+                toggleSwitch.parentElement.querySelector('.toggle-slider').classList.add('bg-primary-500');
+            }
+            
+            toggleSwitch.addEventListener('change', function() {
+                const slider = this.parentElement.querySelector('.toggle-slider');
+                if (this.checked) {
+                    slider.classList.add('bg-primary-500');
+                } else {
+                    slider.classList.remove('bg-primary-500');
+                }
+            });
+        }
+        
+        // Preview uploaded image
+        const fileInput = document.getElementById('{{ form.profile_image.id_for_label }}');
+        if (fileInput) {
+            fileInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        // Find the image preview container
+                        const previewContainer = document.querySelector('.image-preview');
+                        if (previewContainer) {
+                            // Clear the container
+                            previewContainer.innerHTML = '';
+                            
+                            // Create image element
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'h-full w-full object-cover';
+                            img.alt = 'Profile Preview';
+                            
+                            // Add to container
+                            previewContainer.appendChild(img);
+                        }
+                        
+                        // Update file name display
+                        const fileNameDisplay = document.querySelector('.file-name');
+                        if (fileNameDisplay) {
+                            fileNameDisplay.textContent = file.name;
+                        }
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        
+        // Add smooth scrolling to form sections
+        const sectionTitles = document.querySelectorAll('.form-section-title');
+        sectionTitles.forEach(title => {
+            title.addEventListener('click', function() {
+                const nextSection = this.nextElementSibling;
+                if (nextSection) {
+                    nextSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

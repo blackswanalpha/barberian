@@ -1,0 +1,919 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Barberian{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: '#D4AF37',
+              secondary: '#1E1E1E',
+              dark: '#0F0F0F',
+              light: '#F5F5F5',
+              accent: '#8B4513',
+            },
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            animation: {
+              'fade-in': 'fadeIn 0.5s ease-in-out',
+              'slide-up': 'slideUp 0.5s ease-in-out',
+              'slide-down': 'slideDown 0.5s ease-in-out',
+              'slide-left': 'slideLeft 0.5s ease-in-out',
+              'slide-right': 'slideRight 0.5s ease-in-out',
+              'scale-in': 'scaleIn 0.5s ease-in-out',
+              'scale-out': 'scaleOut 0.5s ease-in-out',
+              'bounce-in': 'bounceIn 0.5s ease-in-out',
+              'spin-slow': 'spin 3s linear infinite',
+              'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+              'float': 'float 6s ease-in-out infinite',
+              'shimmer': 'shimmer 2s linear infinite',
+              'ripple': 'ripple 1s cubic-bezier(0, 0, 0.2, 1) infinite',
+            },
+            keyframes: {
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { transform: 'translateY(20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              slideDown: {
+                '0%': { transform: 'translateY(-20px)', opacity: '0' },
+                '100%': { transform: 'translateY(0)', opacity: '1' },
+              },
+              slideLeft: {
+                '0%': { transform: 'translateX(20px)', opacity: '0' },
+                '100%': { transform: 'translateX(0)', opacity: '1' },
+              },
+              slideRight: {
+                '0%': { transform: 'translateX(-20px)', opacity: '0' },
+                '100%': { transform: 'translateX(0)', opacity: '1' },
+              },
+              scaleIn: {
+                '0%': { transform: 'scale(0.9)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              scaleOut: {
+                '0%': { transform: 'scale(1.1)', opacity: '0' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              bounceIn: {
+                '0%': { transform: 'scale(0.3)', opacity: '0' },
+                '40%': { transform: 'scale(1.1)', opacity: '1' },
+                '80%': { transform: 'scale(0.9)', opacity: '1' },
+                '100%': { transform: 'scale(1)', opacity: '1' },
+              },
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-10px)' },
+              },
+              shimmer: {
+                '0%': { backgroundPosition: '-200% 0' },
+                '100%': { backgroundPosition: '200% 0' },
+              },
+              ripple: {
+                '0%': { transform: 'scale(0)', opacity: '1' },
+                '100%': { transform: 'scale(4)', opacity: '0' },
+              },
+            },
+            boxShadow: {
+              'material-1': '0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)',
+              'material-2': '0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)',
+              'material-3': '0 10px 20px rgba(0,0,0,0.19), 0 6px 6px rgba(0,0,0,0.23)',
+              'material-4': '0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22)',
+              'material-5': '0 19px 38px rgba(0,0,0,0.30), 0 15px 12px rgba(0,0,0,0.22)',
+              'gold': '0 4px 20px -2px rgba(212, 175, 55, 0.5)',
+            },
+            backgroundImage: {
+              'gradient-gold': 'linear-gradient(135deg, #D4AF37 0%, #9e8129 100%)',
+              'gradient-dark': 'linear-gradient(135deg, #1E1E1E 0%, #0F0F0F 100%)',
+              'gradient-overlay': 'linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7))',
+            },
+          }
+        }
+      }
+    </script>
+
+    <!-- Material UI -->
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css">
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js" defer></script>
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/dialog.js" defer></script>
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/tabs.js" defer></script>
+
+    <!-- Framer Motion (for animations) -->
+    <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+
+    <!-- AOS Animation Library -->
+    <link rel="stylesheet" href="https://unpkg.com/aos@next/dist/aos.css" />
+
+    <!-- Custom CSS -->
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #D4AF37;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9e8129;
+        }
+
+        /* Page Transition */
+        .page-transition-enter {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .page-transition-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 500ms, transform 500ms;
+        }
+
+        .page-transition-exit {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .page-transition-exit-active {
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 500ms, transform 500ms;
+        }
+
+        /* Material Card Hover Effect */
+        .material-card {
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+        }
+
+        .material-card:hover {
+            box-shadow: 0 14px 28px rgba(0,0,0,0.25), 0 10px 10px rgba(0,0,0,0.22);
+            transform: translateY(-5px);
+        }
+
+        /* Button Hover Effect */
+        .btn-hover-effect {
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .btn-hover-effect:after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: -100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.5s ease;
+        }
+
+        .btn-hover-effect:hover:after {
+            left: 100%;
+        }
+
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #D4AF37 0%, #9e8129 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-fill-color: transparent;
+        }
+
+        /* Navbar Styles */
+        .navbar-fixed {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 50;
+            transition: all 0.3s ease;
+        }
+
+        .navbar-scrolled {
+            background-color: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        /* Mobile Menu Animation */
+        .mobile-menu {
+            transition: transform 0.3s ease, opacity 0.3s ease;
+        }
+
+        .mobile-menu.hidden {
+            transform: translateX(-100%);
+            opacity: 0;
+        }
+
+        .mobile-menu.visible {
+            transform: translateX(0);
+            opacity: 1;
+        }
+
+        /* Dropdown Animation */
+        .dropdown-menu {
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(10px);
+            pointer-events: none;
+            visibility: hidden;
+        }
+
+        .dropdown-menu.show {
+            opacity: 1;
+            transform: translateY(0);
+            pointer-events: auto;
+            visibility: visible;
+        }
+
+        /* Loading Spinner */
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(212, 175, 55, 0.3);
+            border-radius: 50%;
+            border-top-color: #D4AF37;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Material UI Form Elements */
+        .material-input {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .material-input input,
+        .material-input textarea,
+        .material-input select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            background-color: #f8fafc;
+            transition: all 0.3s ease;
+        }
+
+        .material-input input:focus,
+        .material-input textarea:focus,
+        .material-input select:focus {
+            outline: none;
+            border-color: #D4AF37;
+            box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        }
+
+        .material-input label {
+            position: absolute;
+            top: 0.75rem;
+            left: 1rem;
+            color: #64748b;
+            pointer-events: none;
+            transition: all 0.3s ease;
+        }
+
+        .material-input input:focus ~ label,
+        .material-input input:not(:placeholder-shown) ~ label,
+        .material-input textarea:focus ~ label,
+        .material-input textarea:not(:placeholder-shown) ~ label,
+        .material-input select:focus ~ label,
+        .material-input select:not(:placeholder-shown) ~ label {
+            top: -0.5rem;
+            left: 0.75rem;
+            font-size: 0.75rem;
+            padding: 0 0.25rem;
+            background-color: #fff;
+            color: #D4AF37;
+        }
+
+        /* Shimmer Effect */
+        .shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite linear;
+        }
+
+        /* Ripple Effect */
+        .ripple-container {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+        }
+
+        /* Floating Elements */
+        .float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        /* Parallax Effect */
+        .parallax {
+            transition: transform 0.2s ease-out;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="font-sans text-secondary bg-light min-h-screen flex flex-col">
+    <!-- Navbar -->
+    <nav id="navbar" class="navbar-fixed bg-dark text-white py-3 z-50">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center">
+                <!-- Logo -->
+                <a href="{% url 'client_portal:home' %}" class="flex items-center group">
+                    <div class="relative overflow-hidden rounded-full bg-gradient-gold p-0.5 shadow-gold mr-3 transform transition-transform duration-500 group-hover:scale-110">
+                        <img src="{% static 'images/barbs.jpg' %}" alt="Barberian" class="h-10 w-10 rounded-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-gold opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
+                    </div>
+                    <span class="text-2xl font-serif font-bold gradient-text transform transition-transform duration-500 group-hover:scale-105">Barberian</span>
+                </a>
+
+                <!-- Desktop Navigation -->
+                <div class="hidden lg:flex items-center space-x-1">
+                    <a href="{% url 'client_portal:home' %}" class="relative px-4 py-2 rounded-md group overflow-hidden {% if request.resolver_match.url_name == 'home' %}text-primary{% else %}text-white{% endif %}">
+                        <span class="relative z-10 font-medium transition-colors duration-300 group-hover:text-primary">Home</span>
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                        {% if request.resolver_match.url_name == 'home' %}
+                            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'client_portal:about' %}" class="relative px-4 py-2 rounded-md group overflow-hidden {% if request.resolver_match.url_name == 'about' %}text-primary{% else %}text-white{% endif %}">
+                        <span class="relative z-10 font-medium transition-colors duration-300 group-hover:text-primary">About</span>
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                        {% if request.resolver_match.url_name == 'about' %}
+                            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'client_portal:services' %}" class="relative px-4 py-2 rounded-md group overflow-hidden {% if request.resolver_match.url_name == 'services' %}text-primary{% else %}text-white{% endif %}">
+                        <span class="relative z-10 font-medium transition-colors duration-300 group-hover:text-primary">Services</span>
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                        {% if request.resolver_match.url_name == 'services' %}
+                            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
+                        {% endif %}
+                    </a>
+                    <a href="{% url 'client_portal:contact' %}" class="relative px-4 py-2 rounded-md group overflow-hidden {% if request.resolver_match.url_name == 'contact' %}text-primary{% else %}text-white{% endif %}">
+                        <span class="relative z-10 font-medium transition-colors duration-300 group-hover:text-primary">Contact</span>
+                        <span class="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full"></span>
+                        {% if request.resolver_match.url_name == 'contact' %}
+                            <span class="absolute bottom-0 left-0 w-full h-0.5 bg-primary"></span>
+                        {% endif %}
+                    </a>
+                </div>
+
+                <!-- Right Side Buttons -->
+                <div class="hidden lg:flex items-center space-x-4">
+                    {% if user.is_authenticated %}
+                        <div class="relative dropdown">
+                            <button id="user-dropdown-toggle" class="flex items-center space-x-2 px-3 py-2 rounded-md hover:bg-gray-800 transition-colors duration-300">
+                                {% if user.profile_image %}
+                                    <img src="{{ user.profile_image.url }}" alt="{{ user.get_full_name }}" class="w-8 h-8 rounded-full object-cover border-2 border-primary">
+                                {% else %}
+                                    <div class="w-8 h-8 rounded-full bg-gradient-gold flex items-center justify-center text-dark font-bold shadow-gold">
+                                        {{ user.first_name|first }}
+                                    </div>
+                                {% endif %}
+                                <span class="text-white">{{ user.first_name }}</span>
+                                <i class="material-icons text-primary text-sm">arrow_drop_down</i>
+                            </button>
+                            <div id="user-dropdown-menu" class="dropdown-menu absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-material-3 py-2 z-10">
+                                <div class="px-4 py-3 border-b border-gray-100">
+                                    <p class="text-sm text-gray-500">Signed in as</p>
+                                    <p class="text-sm font-medium text-gray-900 truncate">{{ user.email }}</p>
+                                </div>
+                                <a href="{% url 'client_portal:profile' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="material-icons text-gray-400 mr-2 text-sm">person</i>
+                                    My Profile
+                                </a>
+                                <a href="{% url 'appointments:appointment_list' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="material-icons text-gray-400 mr-2 text-sm">event</i>
+                                    My Appointments
+                                </a>
+                                <a href="{% url 'client_portal:edit_profile' %}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                    <i class="material-icons text-gray-400 mr-2 text-sm">edit</i>
+                                    Edit Profile
+                                </a>
+                                {% if user.role == 'admin' %}
+                                <a href="{% url 'admin_panel:dashboard' %}" class="flex items-center px-4 py-2 text-sm text-indigo-600 hover:bg-indigo-50">
+                                    <i class="material-icons text-indigo-500 mr-2 text-sm">admin_panel_settings</i>
+                                    Admin Portal
+                                </a>
+                                {% endif %}
+                                <div class="border-t border-gray-100 my-1"></div>
+                                <a href="{% url 'logout' %}" class="flex items-center px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                    <i class="material-icons text-red-500 mr-2 text-sm">logout</i>
+                                    Logout
+                                </a>
+                            </div>
+                        </div>
+                        <a href="{% url 'appointments:booking_service' %}" class="relative overflow-hidden bg-gradient-gold text-dark font-medium py-2 px-6 rounded-full shadow-gold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center">
+                            <i class="material-icons mr-1">event</i>
+                            <span>Book Now</span>
+                            <div class="absolute inset-0 bg-white opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="relative px-4 py-2 text-white hover:text-primary transition-colors duration-300 flex items-center">
+                            <i class="material-icons mr-1">login</i>
+                            <span>Login</span>
+                        </a>
+                        <a href="{% url 'clients:register' %}" class="relative overflow-hidden bg-transparent border-2 border-primary text-primary font-medium py-2 px-4 rounded-md transition-all duration-300 hover:bg-primary hover:text-dark flex items-center">
+                            <i class="material-icons mr-1">person_add</i>
+                            <span>Register</span>
+                        </a>
+                        <a href="{% url 'appointments:booking_service' %}" class="relative overflow-hidden bg-gradient-gold text-dark font-medium py-2 px-6 rounded-full shadow-gold transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center">
+                            <i class="material-icons mr-1">event</i>
+                            <span>Book Now</span>
+                            <div class="absolute inset-0 bg-white opacity-0 hover:opacity-20 transition-opacity duration-300"></div>
+                        </a>
+                    {% endif %}
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobile-menu-button" class="lg:hidden text-white focus:outline-none p-2 rounded-md hover:bg-gray-800 transition-colors duration-300">
+                    <i class="material-icons text-2xl">menu</i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu hidden lg:hidden bg-dark absolute top-full left-0 right-0 z-50 shadow-material-3">
+            <div class="container mx-auto px-4 py-4">
+                <div class="grid gap-2">
+                    <a href="{% url 'client_portal:home' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300 {% if request.resolver_match.url_name == 'home' %}bg-gray-800 border-l-4 border-primary{% endif %}">
+                        <i class="material-icons mr-3 {% if request.resolver_match.url_name == 'home' %}text-primary{% endif %}">home</i>
+                        <span>Home</span>
+                    </a>
+                    <a href="{% url 'client_portal:about' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300 {% if request.resolver_match.url_name == 'about' %}bg-gray-800 border-l-4 border-primary{% endif %}">
+                        <i class="material-icons mr-3 {% if request.resolver_match.url_name == 'about' %}text-primary{% endif %}">info</i>
+                        <span>About</span>
+                    </a>
+                    <a href="{% url 'client_portal:services' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300 {% if request.resolver_match.url_name == 'services' %}bg-gray-800 border-l-4 border-primary{% endif %}">
+                        <i class="material-icons mr-3 {% if request.resolver_match.url_name == 'services' %}text-primary{% endif %}">content_cut</i>
+                        <span>Services</span>
+                    </a>
+                    <a href="{% url 'client_portal:contact' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300 {% if request.resolver_match.url_name == 'contact' %}bg-gray-800 border-l-4 border-primary{% endif %}">
+                        <i class="material-icons mr-3 {% if request.resolver_match.url_name == 'contact' %}text-primary{% endif %}">contact_support</i>
+                        <span>Contact</span>
+                    </a>
+                </div>
+
+                <div class="border-t border-gray-700 my-4"></div>
+
+                <div class="grid gap-2">
+                    {% if user.is_authenticated %}
+                        <div class="flex items-center p-3 bg-gray-800 rounded-md">
+                            {% if user.profile_image %}
+                                <img src="{{ user.profile_image.url }}" alt="{{ user.get_full_name }}" class="w-10 h-10 rounded-full object-cover border-2 border-primary mr-3">
+                            {% else %}
+                                <div class="w-10 h-10 rounded-full bg-gradient-gold flex items-center justify-center text-dark font-bold shadow-gold mr-3">
+                                    {{ user.first_name|first }}
+                                </div>
+                            {% endif %}
+                            <div>
+                                <p class="text-white font-medium">{{ user.get_full_name }}</p>
+                                <p class="text-gray-400 text-sm">{{ user.email }}</p>
+                            </div>
+                        </div>
+                        <a href="{% url 'client_portal:profile' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300">
+                            <i class="material-icons mr-3">person</i>
+                            <span>My Profile</span>
+                        </a>
+                        <a href="{% url 'appointments:appointment_list' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300">
+                            <i class="material-icons mr-3">event</i>
+                            <span>My Appointments</span>
+                        </a>
+                        <a href="{% url 'client_portal:edit_profile' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300">
+                            <i class="material-icons mr-3">edit</i>
+                            <span>Edit Profile</span>
+                        </a>
+                        {% if user.role == 'admin' %}
+                        <a href="{% url 'admin_panel:dashboard' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300 bg-indigo-900 bg-opacity-30">
+                            <i class="material-icons mr-3 text-indigo-400">admin_panel_settings</i>
+                            <span>Admin Portal</span>
+                        </a>
+                        {% endif %}
+                        <a href="{% url 'logout' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300">
+                            <i class="material-icons mr-3 text-red-500">logout</i>
+                            <span>Logout</span>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300">
+                            <i class="material-icons mr-3">login</i>
+                            <span>Login</span>
+                        </a>
+                        <a href="{% url 'clients:register' %}" class="flex items-center text-white hover:bg-gray-800 rounded-md p-3 transition-colors duration-300">
+                            <i class="material-icons mr-3">person_add</i>
+                            <span>Register</span>
+                        </a>
+                    {% endif %}
+
+                    <div class="mt-4">
+                        <a href="{% url 'appointments:booking_service' %}" class="block w-full bg-gradient-gold text-dark font-medium py-3 px-4 rounded-md text-center transition-all duration-300 shadow-gold">
+                            <i class="material-icons align-middle mr-1">event</i>
+                            Book Your Appointment
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="flex-grow page-transition-enter-active">
+        {% if messages %}
+            <div class="container mx-auto px-4 mt-6">
+                {% for message in messages %}
+                    <div class="bg-{{ message.tags }} text-white p-4 rounded-md shadow-md mb-4 animate-fade-in">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <div class="container mx-auto px-4 py-8">
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gradient-dark text-white pt-16 pb-8 relative overflow-hidden">
+        <!-- Decorative Elements -->
+        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-gold"></div>
+        <div class="absolute -top-20 -left-20 w-40 h-40 rounded-full bg-primary opacity-5"></div>
+        <div class="absolute -bottom-20 -right-20 w-40 h-40 rounded-full bg-primary opacity-5"></div>
+
+        <div class="container mx-auto px-4 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <!-- Logo and About -->
+                <div class="col-span-1 md:col-span-1" data-aos="fade-right" data-aos-duration="1000">
+                    <a href="{% url 'client_portal:home' %}" class="flex items-center mb-6 group">
+                        <div class="relative overflow-hidden rounded-full bg-gradient-gold p-0.5 shadow-gold mr-3 transform transition-transform duration-500 group-hover:scale-110">
+                            <img src="{% static 'images/barbs.jpg' %}" alt="Barberian" class="h-12 w-12 rounded-full object-cover">
+                            <div class="absolute inset-0 bg-gradient-gold opacity-0 group-hover:opacity-20 transition-opacity duration-500"></div>
+                        </div>
+                        <span class="text-3xl font-serif font-bold gradient-text transform transition-transform duration-500 group-hover:scale-105">Barberian</span>
+                    </a>
+                    <p class="text-gray-400 mb-6 leading-relaxed">
+                        Premium barbershop providing exceptional grooming services for the modern gentleman. Experience the art of traditional barbering with a contemporary twist.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-gray-700 transition-all duration-300 transform hover:scale-110">
+                            <i class="bi bi-facebook"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-gray-700 transition-all duration-300 transform hover:scale-110">
+                            <i class="bi bi-instagram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-gray-700 transition-all duration-300 transform hover:scale-110">
+                            <i class="bi bi-twitter"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-gray-400 hover:text-primary hover:bg-gray-700 transition-all duration-300 transform hover:scale-110">
+                            <i class="bi bi-youtube"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Quick Links -->
+                <div class="col-span-1" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="100">
+                    <h3 class="text-xl font-bold mb-6 relative inline-block">
+                        Quick Links
+                        <span class="absolute -bottom-2 left-0 w-12 h-1 bg-primary rounded-full"></span>
+                    </h3>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{% url 'client_portal:home' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <span class="w-0 h-0.5 bg-primary mr-0 group-hover:w-4 group-hover:mr-2 transition-all duration-300"></span>
+                                Home
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'client_portal:about' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <span class="w-0 h-0.5 bg-primary mr-0 group-hover:w-4 group-hover:mr-2 transition-all duration-300"></span>
+                                About Us
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'client_portal:services' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <span class="w-0 h-0.5 bg-primary mr-0 group-hover:w-4 group-hover:mr-2 transition-all duration-300"></span>
+                                Services
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'client_portal:contact' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <span class="w-0 h-0.5 bg-primary mr-0 group-hover:w-4 group-hover:mr-2 transition-all duration-300"></span>
+                                Contact Us
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'appointments:booking_service' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <span class="w-0 h-0.5 bg-primary mr-0 group-hover:w-4 group-hover:mr-2 transition-all duration-300"></span>
+                                Book Appointment
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Services -->
+                <div class="col-span-1" data-aos="fade-up" data-aos-duration="1000" data-aos-delay="200">
+                    <h3 class="text-xl font-bold mb-6 relative inline-block">
+                        Our Services
+                        <span class="absolute -bottom-2 left-0 w-12 h-1 bg-primary rounded-full"></span>
+                    </h3>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="{% url 'client_portal:services' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <i class="material-icons text-primary mr-2 text-sm">content_cut</i>
+                                Haircuts
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'client_portal:services' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <i class="material-icons text-primary mr-2 text-sm">face</i>
+                                Beard Trims
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'client_portal:services' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <i class="material-icons text-primary mr-2 text-sm">spa</i>
+                                Hot Towel Shaves
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'client_portal:services' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <i class="material-icons text-primary mr-2 text-sm">brush</i>
+                                Hair Styling
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'client_portal:services' %}" class="text-gray-400 hover:text-primary transition-colors duration-300 flex items-center group">
+                                <i class="material-icons text-primary mr-2 text-sm">color_lens</i>
+                                Hair Coloring
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Contact Info -->
+                <div class="col-span-1" data-aos="fade-left" data-aos-duration="1000" data-aos-delay="300">
+                    <h3 class="text-xl font-bold mb-6 relative inline-block">
+                        Contact Us
+                        <span class="absolute -bottom-2 left-0 w-12 h-1 bg-primary rounded-full"></span>
+                    </h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start group">
+                            <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-primary mr-3 group-hover:bg-primary group-hover:text-dark transition-all duration-300">
+                                <i class="material-icons">location_on</i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium">Our Location</h4>
+                                <p class="text-gray-400">Soham Business Park, Mombasa Road, Nairobi, Kenya</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start group">
+                            <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-primary mr-3 group-hover:bg-primary group-hover:text-dark transition-all duration-300">
+                                <i class="material-icons">phone</i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium">Phone Number</h4>
+                                <p class="text-gray-400">+254 22465566</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start group">
+                            <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-primary mr-3 group-hover:bg-primary group-hover:text-dark transition-all duration-300">
+                                <i class="material-icons">email</i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium">Email Address</h4>
+                                <p class="text-gray-400">info@barberian.com</p>
+                            </div>
+                        </li>
+                        <li class="flex items-start group">
+                            <div class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center text-primary mr-3 group-hover:bg-primary group-hover:text-dark transition-all duration-300">
+                                <i class="material-icons">schedule</i>
+                            </div>
+                            <div>
+                                <h4 class="text-white font-medium">Working Hours</h4>
+                                <p class="text-gray-400">Mon-Sat: 9:00 AM - 8:00 PM<br>Sunday: 10:00 AM - 4:00 PM</p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Newsletter -->
+            <div class="bg-gray-800 rounded-xl p-6 mb-12" data-aos="fade-up" data-aos-duration="1000">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <div class="md:col-span-1">
+                        <h3 class="text-xl font-bold mb-2">Subscribe to Our Newsletter</h3>
+                        <p class="text-gray-400">Get the latest updates, offers and more.</p>
+                        <p class="text-gray-400">BUILT WITH LOVE FROM:blackswanalpha(github) </p>
+                    </div>
+                    <div class="md:col-span-2">
+                        <form class="flex flex-col sm:flex-row gap-3">
+                            <div class="flex-grow">
+                                <input type="email" placeholder="Enter your email" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent text-white">
+                            </div>
+                            <button type="submit" class="bg-gradient-gold text-dark font-medium py-3 px-6 rounded-md transition-all duration-300 hover:shadow-gold flex items-center justify-center whitespace-nowrap">
+                                <i class="material-icons mr-2">send</i>
+                                Subscribe
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Footer -->
+            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 mb-4 md:mb-0">
+                    &copy; {% now "Y" %} Barberian. All rights reserved.
+                </p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-primary transition-colors duration-300">Cookie Policy</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/aos@next/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize AOS
+            AOS.init({
+                duration: 800,
+                easing: 'ease-in-out',
+                once: false,
+                mirror: true,
+                offset: 50,
+                delay: 100
+            });
+
+            // Mobile Menu Toggle
+            const mobileMenuButton = document.getElementById('mobile-menu-button');
+            const mobileMenu = document.getElementById('mobile-menu');
+
+            if (mobileMenuButton) {
+                mobileMenuButton.addEventListener('click', function() {
+                    mobileMenu.classList.toggle('hidden');
+                    mobileMenu.classList.toggle('visible');
+
+                    // Change icon
+                    const icon = this.querySelector('i');
+                    if (mobileMenu.classList.contains('hidden')) {
+                        icon.textContent = 'menu';
+                    } else {
+                        icon.textContent = 'close';
+                    }
+                });
+            }
+
+            // Navbar Scroll Effect
+            const navbar = document.getElementById('navbar');
+
+            function handleScroll() {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('navbar-scrolled');
+                    navbar.classList.add('py-2');
+                    navbar.classList.remove('py-3');
+                } else {
+                    navbar.classList.remove('navbar-scrolled');
+                    navbar.classList.remove('py-2');
+                    navbar.classList.add('py-3');
+                }
+            }
+
+            // Initial check
+            handleScroll();
+
+            // Add scroll event listener
+            window.addEventListener('scroll', handleScroll);
+
+            // Initialize Material Tailwind components
+            if (typeof ripple !== 'undefined') {
+                ripple.init();
+            }
+
+            // Add ripple effect to buttons
+            const buttons = document.querySelectorAll('button, .btn, .btn-hover-effect');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    const x = e.clientX - e.target.getBoundingClientRect().left;
+                    const y = e.clientY - e.target.getBoundingClientRect().top;
+
+                    const ripple = document.createElement('span');
+                    ripple.classList.add('ripple');
+                    ripple.style.left = `${x}px`;
+                    ripple.style.top = `${y}px`;
+
+                    this.appendChild(ripple);
+
+                    setTimeout(() => {
+                        ripple.remove();
+                    }, 600);
+                });
+            });
+
+            // Parallax effect for decorative elements
+            const parallaxElements = document.querySelectorAll('.parallax');
+
+            document.addEventListener('mousemove', function(e) {
+                const x = e.clientX / window.innerWidth;
+                const y = e.clientY / window.innerHeight;
+
+                parallaxElements.forEach(element => {
+                    const speed = element.getAttribute('data-speed') || 20;
+                    const moveX = (x - 0.5) * speed;
+                    const moveY = (y - 0.5) * speed;
+
+                    element.style.transform = `translate(${moveX}px, ${moveY}px)`;
+                });
+            });
+
+            // Preload images for smoother experience
+            function preloadImages() {
+                const images = document.querySelectorAll('img');
+                images.forEach(img => {
+                    const src = img.getAttribute('src');
+                    if (src) {
+                        const newImg = new Image();
+                        newImg.src = src;
+                    }
+                });
+            }
+
+            preloadImages();
+
+            // User dropdown toggle
+            const userDropdownToggle = document.getElementById('user-dropdown-toggle');
+            const userDropdownMenu = document.getElementById('user-dropdown-menu');
+
+            if (userDropdownToggle && userDropdownMenu) {
+                userDropdownToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userDropdownMenu.classList.toggle('show');
+                });
+
+                // Close dropdown when clicking outside
+                document.addEventListener('click', function(e) {
+                    if (userDropdownMenu.classList.contains('show') && !userDropdownMenu.contains(e.target) && !userDropdownToggle.contains(e.target)) {
+                        userDropdownMenu.classList.remove('show');
+                    }
+                });
+
+                // Prevent dropdown from closing when clicking inside it
+                userDropdownMenu.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+            }
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

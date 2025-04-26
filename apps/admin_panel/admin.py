@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
 
-from .models import Report, ReportExport, UserLog
+from .models import Report, ReportExport, UserLog, EmailTemplate
 
 class ReportExportInline(admin.TabularInline):
     model = ReportExport
@@ -29,3 +29,11 @@ class UserLogAdmin(admin.ModelAdmin):
     search_fields = ('user__email', 'user__first_name', 'user__last_name', 'ip_address')
     ordering = ('-created_at',)
     readonly_fields = ('user', 'action', 'entity_type', 'entity_id', 'details', 'ip_address', 'user_agent', 'created_at')
+
+@admin.register(EmailTemplate)
+class EmailTemplateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'subject', 'created_by', 'created_at')
+    list_filter = ('created_at',)
+    search_fields = ('name', 'subject', 'message', 'created_by__email')
+    ordering = ('name',)
+    prepopulated_fields = {'slug': ('name',)}

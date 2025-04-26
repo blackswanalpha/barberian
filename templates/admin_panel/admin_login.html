@@ -1,0 +1,131 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Login | Barberian</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f9f7ed',
+                100: '#f3efd1',
+                200: '#e9dfa3',
+                300: '#dfc976',
+                400: '#d4af37', // Main primary color
+                500: '#c49a29',
+                600: '#a37a22',
+                700: '#7d5a1f',
+                800: '#5e4420',
+                900: '#47341e',
+                950: '#2a1e10',
+              },
+              secondary: {
+                50: '#f6f6f6',
+                100: '#e7e7e7',
+                200: '#d1d1d1',
+                300: '#b0b0b0',
+                400: '#888888',
+                500: '#6d6d6d',
+                600: '#5d5d5d',
+                700: '#4f4f4f',
+                800: '#454545',
+                900: '#3d3d3d',
+                950: '#1e1e1e', // Main secondary color
+              },
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+          }
+        }
+      }
+    </script>
+
+    <style>
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #d4af37 0%, #c49a29 100%);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg">
+            <div class="text-center">
+                <img src="/static/images/logo-gold.png" alt="Barberian" class="h-16 mx-auto">
+                <h2 class="mt-6 text-3xl font-extrabold text-gray-900 font-serif">Admin Login</h2>
+                <p class="mt-2 text-sm text-gray-600">
+                    Enter your credentials to access the admin panel
+                </p>
+            </div>
+
+            {% if messages %}
+                <div class="mt-4">
+                    {% for message in messages %}
+                        <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                            <span class="material-icons-outlined mr-3">
+                                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                            </span>
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form class="mt-8 space-y-6" method="POST">
+                {% csrf_token %}
+                <div class="rounded-md shadow-sm -space-y-px">
+                    <div>
+                        <label for="email" class="sr-only">Email address</label>
+                        <input id="email" name="email" type="email" autocomplete="email" required class="appearance-none rounded-t-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-400 focus:border-primary-400 focus:z-10 sm:text-sm" placeholder="Email address">
+                    </div>
+                    <div>
+                        <label for="password" class="sr-only">Password</label>
+                        <input id="password" name="password" type="password" autocomplete="current-password" required class="appearance-none rounded-b-md relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-primary-400 focus:border-primary-400 focus:z-10 sm:text-sm" placeholder="Password">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <input id="remember_me" name="remember_me" type="checkbox" class="h-4 w-4 text-primary-400 focus:ring-primary-400 border-gray-300 rounded">
+                        <label for="remember_me" class="ml-2 block text-sm text-gray-900">
+                            Remember me
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                        <span class="absolute left-0 inset-y-0 flex items-center pl-3">
+                            <span class="material-icons-outlined h-5 w-5 text-primary-300 group-hover:text-primary-200" aria-hidden="true">lock</span>
+                        </span>
+                        Sign in
+                    </button>
+                </div>
+            </form>
+
+            <div class="mt-6 text-center">
+                <a href="{% url 'client_portal:home' %}" class="text-sm text-primary-400 hover:text-primary-500">
+                    Return to Client Portal
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

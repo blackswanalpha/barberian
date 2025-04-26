@@ -1,0 +1,149 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+
+{% block title %}Edit Holiday | Barberian Admin{% endblock %}
+
+{% block page_title %}Edit Holiday{% endblock %}
+
+{% block admin_content %}
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Edit Holiday</h2>
+        <p class="mt-1 text-sm text-gray-500">Update holiday or business closure date</p>
+    </div>
+    <div class="mt-4 md:mt-0 flex space-x-2">
+        <a href="{% url 'admin_panel:holidays' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+            Back to Holidays
+        </a>
+        <a href="{% url 'admin_panel:holiday_delete' holiday.id %}" class="inline-flex items-center justify-center px-4 py-2 border border-red-300 rounded-lg shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">delete</span>
+            Delete
+        </a>
+    </div>
+</div>
+
+<!-- Holiday Form Card -->
+<div class="modern-card overflow-hidden max-w-2xl mx-auto">
+    <div class="p-6">
+        {% if messages %}
+            <div class="mb-6">
+                {% for message in messages %}
+                    <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                        <div class="flex items-center">
+                            <span class="material-icons-outlined mr-2" style="font-size: 20px;">
+                                {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+                            </span>
+                            <p>{{ message }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <form method="post" class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Holiday Information -->
+            <div>
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Holiday Information</h3>
+                
+                <!-- Holiday Name -->
+                <div class="mb-4">
+                    <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Holiday Name</label>
+                    <div class="mt-1">
+                        <input type="text" name="{{ form.name.html_name }}" id="{{ form.name.id_for_label }}" 
+                            class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value="{{ form.name.value|default:'' }}" required>
+                        {% if form.name.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Holiday Date -->
+                <div class="mb-4">
+                    <label for="{{ form.date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                    <div class="mt-1">
+                        <input type="date" name="{{ form.date.html_name }}" id="{{ form.date.id_for_label }}" 
+                            class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                            value="{{ form.date.value|date:'Y-m-d' }}" required>
+                        {% if form.date.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Is Recurring -->
+                <div class="flex items-center">
+                    <input type="checkbox" name="{{ form.is_recurring.html_name }}" id="{{ form.is_recurring.id_for_label }}" 
+                        class="h-4 w-4 text-primary-400 focus:ring-primary-400 border-gray-300 rounded"
+                        {% if form.is_recurring.value %}checked{% endif %}>
+                    <label for="{{ form.is_recurring.id_for_label }}" class="ml-2 block text-sm text-gray-700">
+                        Recurring Holiday (Repeats Every Year)
+                    </label>
+                </div>
+                {% if form.is_recurring.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.is_recurring.errors.0 }}</p>
+                {% endif %}
+                <p class="mt-1 text-xs text-gray-500 ml-6">
+                    Check this box for holidays that occur on the same date every year, like Christmas or New Year's Day.
+                </p>
+            </div>
+            
+            <!-- Holiday Effects -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">What happens on holidays?</h4>
+                <ul class="text-sm text-gray-600 space-y-1 ml-5 list-disc">
+                    <li>The business will be marked as closed on this date</li>
+                    <li>No appointments can be booked on this date</li>
+                    <li>Existing appointments on this date will need to be rescheduled</li>
+                    <li>Staff schedules will be automatically adjusted</li>
+                </ul>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                <a href="{% url 'admin_panel:holidays' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">save</span>
+                    Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Holiday Calendar Preview -->
+<div class="modern-card overflow-hidden max-w-2xl mx-auto mt-6">
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-800 mb-4">Upcoming Holidays</h3>
+        <div class="space-y-3">
+            {% for holiday in upcoming_holidays %}
+            <div class="flex items-center p-3 bg-gray-50 rounded-lg">
+                <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                    <span class="material-icons-outlined" style="font-size: 20px;">event_busy</span>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-gray-800">{{ holiday.name }}</p>
+                    <p class="text-xs text-gray-500">{{ holiday.date|date:"F j, Y" }}{% if holiday.is_recurring %} (Recurring){% endif %}</p>
+                </div>
+                <div class="ml-auto">
+                    <a href="{% url 'admin_panel:holiday_edit' holiday.id %}" class="text-primary-400 hover:text-primary-500">
+                        <span class="material-icons-outlined" style="font-size: 20px;">edit</span>
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center py-6">
+                <span class="material-icons-outlined text-gray-300 text-5xl mb-3">event_available</span>
+                <p class="text-gray-500">No upcoming holidays scheduled</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

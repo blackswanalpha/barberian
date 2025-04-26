@@ -1,0 +1,118 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{{ title }} | Barberian Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{% url 'admin_panel:pending_appointments' %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back to Pending Requests
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Appointment Details</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 font-weight-bold">Client:</div>
+                        <div class="col-md-8">{{ appointment.client.get_full_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 font-weight-bold">Service:</div>
+                        <div class="col-md-8">{{ appointment.service.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 font-weight-bold">Date:</div>
+                        <div class="col-md-8">{{ appointment.start_time|date:"F d, Y" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 font-weight-bold">Requested Time:</div>
+                        <div class="col-md-8">{{ appointment.start_time|time:"g:i A" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 font-weight-bold">Duration:</div>
+                        <div class="col-md-8">{{ appointment.service.duration }} minutes</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 font-weight-bold">Status:</div>
+                        <div class="col-md-8">
+                            <span class="badge bg-warning text-dark">{{ appointment.get_status_display }}</span>
+                        </div>
+                    </div>
+                    {% if appointment.notes %}
+                        <div class="row mb-3">
+                            <div class="col-md-4 font-weight-bold">Notes:</div>
+                            <div class="col-md-8">{{ appointment.notes }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Assign Staff & Confirm</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="staff_id" class="form-label">Select Staff Member</label>
+                            <select class="form-select" id="staff_id" name="staff_id" required>
+                                <option value="">-- Select Staff Member --</option>
+                                {% for staff in available_staff %}
+                                    <option value="{{ staff.id }}">{{ staff.get_full_name }}</option>
+                                {% endfor %}
+                            </select>
+                            {% if not available_staff %}
+                                <div class="form-text text-danger">
+                                    No staff members are available at this time. Consider changing the appointment time.
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="new_time" class="form-label">Adjust Time (Optional)</label>
+                            <input type="time" class="form-control" id="new_time" name="new_time" value="{{ appointment.start_time|time:'H:i' }}">
+                            <div class="form-text">
+                                Leave as is to keep the requested time, or adjust if needed.
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Confirming this appointment will:
+                            <ul class="mb-0 mt-2">
+                                <li>Assign the selected staff member</li>
+                                <li>Update the appointment status to "Confirmed"</li>
+                                <li>Send email notifications to the client and staff</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary" {% if not available_staff %}disabled{% endif %}>
+                                <i class="fas fa-check"></i> Confirm Appointment
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

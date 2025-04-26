@@ -1,0 +1,562 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" x-data>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel | Barberian{% endblock %}</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: '#f9f7ed',
+                100: '#f3efd1',
+                200: '#e9dfa3',
+                300: '#dfc976',
+                400: '#d4af37', // Main primary color
+                500: '#c49a29',
+                600: '#a37a22',
+                700: '#7d5a1f',
+                800: '#5e4420',
+                900: '#47341e',
+                950: '#2a1e10',
+              },
+              secondary: {
+                50: '#f6f6f6',
+                100: '#e7e7e7',
+                200: '#d1d1d1',
+                300: '#b0b0b0',
+                400: '#888888',
+                500: '#6d6d6d',
+                600: '#5d5d5d',
+                700: '#4f4f4f',
+                800: '#454545',
+                900: '#3d3d3d',
+                950: '#1e1e1e', // Main secondary color
+              },
+              dark: '#0F0F0F',
+              light: '#F5F5F5',
+              accent: '#8B4513',
+              success: '#10B981',
+              warning: '#F59E0B',
+              danger: '#EF4444',
+              info: '#3B82F6',
+            },
+            fontFamily: {
+              sans: ['Inter', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            boxShadow: {
+              card: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+              'card-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+              nav: '0 4px 10px rgba(0, 0, 0, 0.05)',
+              sidebar: '4px 0 10px rgba(0, 0, 0, 0.05)',
+            },
+          }
+        }
+      }
+    </script>
+
+    <!-- Material UI CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/@material-tailwind/html@latest/styles/material-tailwind.css" />
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- ApexCharts -->
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+
+    <!-- Custom Admin CSS -->
+    <style>
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d4af37;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #c49a29;
+        }
+
+        /* Scrollbar for Firefox */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #d4af37 #f1f1f1;
+        }
+
+        /* Transitions */
+        .sidebar-transition {
+            transition: all 0.3s ease;
+        }
+
+        /* Sidebar Active Link */
+        .sidebar-link.active {
+            background-color: rgba(212, 175, 55, 0.1);
+            border-left: 4px solid #d4af37;
+            color: #d4af37;
+        }
+
+        .sidebar-link.active .sidebar-icon {
+            color: #d4af37;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .animate-fadeIn {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+
+        @keyframes slideInLeft {
+            from { transform: translateX(-20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-slideInLeft {
+            animation: slideInLeft 0.3s ease-in-out;
+        }
+
+        @keyframes slideInRight {
+            from { transform: translateX(20px); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .animate-slideInRight {
+            animation: slideInRight 0.3s ease-in-out;
+        }
+
+        /* Glass Morphism */
+        .glass {
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        /* Modern Card */
+        .modern-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        .modern-card:hover {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            transform: translateY(-5px);
+        }
+
+        /* Gradient Backgrounds */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, #d4af37 0%, #c49a29 100%);
+        }
+
+        .bg-gradient-secondary {
+            background: linear-gradient(135deg, #1e1e1e 0%, #3d3d3d 100%);
+        }
+
+        /* Responsive Sidebar */
+        @media (max-width: 1024px) {
+            .sidebar-open {
+                transform: translateX(0);
+            }
+
+            .sidebar-closed {
+                transform: translateX(-100%);
+            }
+
+            .content-sidebar-open {
+                margin-left: 0;
+            }
+
+            .content-sidebar-closed {
+                margin-left: 0;
+            }
+        }
+
+        /* Scrollable Content */
+        .scrollable-content {
+            height: calc(100vh - 64px); /* 64px is header height */
+            overflow-y: auto;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+    </style>
+
+    {% block admin_css %}{% endblock %}
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="bg-white shadow-lg w-64 h-full fixed left-0 top-0 z-30 transition-all duration-300 ease-in-out transform lg:translate-x-0 sidebar-closed lg:sidebar-open">
+            <!-- Logo -->
+            <div class="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+                <a href="{% url 'admin_panel:dashboard' %}" class="flex items-center">
+                    <img src="/static/images/barbs.jpg" alt="Barberian" class="h-8">
+                    <span class="ml-2 text-xl font-semibold text-gray-800">Admin</span>
+                </a>
+                <div class="flex items-center">
+                    <button id="minimize-sidebar" class="hidden lg:block text-gray-500 hover:text-primary-400 focus:outline-none mr-2">
+                        <span class="material-icons-round">menu_open</span>
+                    </button>
+                    <button id="close-sidebar" class="lg:hidden text-gray-500 hover:text-primary-400 focus:outline-none">
+                        <span class="material-icons-round">close</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Sidebar Menu -->
+            <div class="h-[calc(100%-4rem)] flex flex-col">
+                <nav class="flex-1 px-4 py-4 overflow-y-auto">
+                    <ul class="space-y-1">
+                        <li>
+                            <a href="{% url 'admin_panel:dashboard' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">dashboard</span>
+                                <span>Dashboard</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:appointments' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'appointment' in request.resolver_match.url_name and 'pending' not in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">event</span>
+                                <span>Appointments</span>
+                            </a>
+                        </li>
+                        <!-- <li>
+                            <a href="{% url 'admin_panel:pending_appointments_modern' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'pending' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">pending_actions</span>
+                                <span>Pending Requests</span>
+                                {% with pending_count=pending_count|default:0 %}
+                                    {% if pending_count > 0 %}
+                                        <span class="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">{{ pending_count }}</span>
+                                    {% endif %}
+                                {% endwith %}
+                            </a>
+                        </li> -->
+                        <li>
+                            <a href="{% url 'admin_panel:calendar' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">calendar_month</span>
+                                <span>Calendar</span>
+                            </a>
+                        </li>
+
+                        <li class="pt-4">
+                            <div class="px-4 py-2">
+                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Management</h3>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:users' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'user' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">people</span>
+                                <span>Users</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:staff' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'staff' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">badge</span>
+                                <span>Staff</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:services' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'service' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">content_cut</span>
+                                <span>Services</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:categories' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'categor' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">category</span>
+                                <span>Categories</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:media' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'media' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">photo_library</span>
+                                <span>Media</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:email_dashboard' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'email' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">email</span>
+                                <span>Email</span>
+                            </a>
+                        </li>
+
+                        <li class="pt-4">
+                            <div class="px-4 py-2">
+                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Analytics</h3>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:reports' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'reports' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">bar_chart</span>
+                                <span>Reports</span>
+                            </a>
+                        </li>
+
+                        <li class="pt-4">
+                            <div class="px-4 py-2">
+                                <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Settings</h3>
+                            </div>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:business_settings' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'business_settings' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">settings</span>
+                                <span>Business Settings</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:business_hours' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'business_hours' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">schedule</span>
+                                <span>Business Hours</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:holidays' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if 'holiday' in request.resolver_match.url_name %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">event_busy</span>
+                                <span>Holidays</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'admin_panel:logs' %}" class="sidebar-link flex items-center py-2.5 px-4 rounded-xl text-gray-700 hover:bg-gray-100 {% if request.resolver_match.url_name == 'logs' %}active{% endif %}">
+                                <span class="material-icons-outlined sidebar-icon mr-3">receipt_long</span>
+                                <span>Activity Logs</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+
+                <!-- User Info at Bottom -->
+                <div class="p-4 border-t border-gray-200">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-full bg-primary-400 flex items-center justify-center text-white">
+                            {{ user.get_full_name|slice:":1" }}
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-800">{{ user.get_full_name }}</p>
+                            <p class="text-xs text-gray-500">{{ user.email }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div id="main-content" class="flex-1 ml-0 lg:ml-64 transition-all duration-300 ease-in-out">
+            <!-- Top Navigation -->
+            <header class="bg-white shadow-md h-16 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-20">
+                <!-- Left Side - Toggle Button & Page Title -->
+                <div class="flex items-center">
+                    <button id="sidebar-toggle" class="text-gray-600 hover:text-primary-400 focus:outline-none mr-3">
+                        <span class="material-icons-round">menu</span>
+                    </button>
+                    <div>
+                        <h1 class="text-xl font-semibold text-gray-800 hidden sm:block">{% block page_title %}Admin Dashboard{% endblock %}</h1>
+                    </div>
+                </div>
+
+                <!-- Right Side - Actions & User Menu -->
+                <div class="flex items-center space-x-3">
+                    <!-- Quick Actions -->
+                    <div class="hidden md:flex items-center space-x-2">
+                        <a href="{% url 'admin_panel:appointment_create' %}" class="bg-primary-400 hover:bg-primary-500 text-white px-3 py-1.5 rounded-lg text-sm flex items-center transition-colors duration-200">
+                            <span class="material-icons-outlined text-sm mr-1">add</span>
+                            New Appointment
+                        </a>
+                        <!-- <a href="{% url 'admin_panel:pending_appointments' %}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-sm flex items-center transition-colors duration-200">
+                            <span class="material-icons-outlined text-sm mr-1">pending_actions</span>
+                            Pending Requests
+                            {% with pending_count=pending_count|default:0 %}
+                                {% if pending_count > 0 %}
+                                    <span class="ml-1 bg-red-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">{{ pending_count }}</span>
+                                {% endif %}
+                            {% endwith %}
+                        </a> -->
+                    </div>
+
+                    <!-- Notifications -->
+                    <div class="relative">
+                        <button class="p-2 rounded-full hover:bg-gray-100 text-gray-600 hover:text-primary-400 focus:outline-none">
+                            <span class="material-icons-outlined">notifications</span>
+                            <span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+                        </button>
+                    </div>
+
+                    <!-- User Menu -->
+                    <div class="relative" x-data="dropdown">
+                        <button @click="toggle()" class="flex items-center focus:outline-none">
+                            <div class="w-8 h-8 rounded-full bg-primary-400 flex items-center justify-center text-white">
+                                {{ user.get_full_name|slice:":1" }}
+                            </div>
+                        </button>
+
+                        <!-- Dropdown Menu -->
+                        <div x-show="open"
+                             @click.away="close()"
+                             class="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg py-1 z-50"
+                             x-transition:enter="transition ease-out duration-100"
+                             x-transition:enter-start="opacity-0 scale-95"
+                             x-transition:enter-end="opacity-100 scale-100"
+                             x-transition:leave="transition ease-in duration-75"
+                             x-transition:leave-start="opacity-100 scale-100"
+                             x-transition:leave-end="opacity-0 scale-95"
+                             style="display: none;">
+                            <a href="{% url 'client_portal:profile' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <span class="material-icons-outlined text-gray-500 mr-2 align-middle" style="font-size: 18px;">person</span>
+                                My Profile
+                            </a>
+                            <a href="{% url 'client_portal:home' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <span class="material-icons-outlined text-gray-500 mr-2 align-middle" style="font-size: 18px;">storefront</span>
+                                Client Portal
+                            </a>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <a href="{% url 'admin_panel:admin_logout' %}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <span class="material-icons-outlined text-gray-500 mr-2 align-middle" style="font-size: 18px;">logout</span>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content - Scrollable -->
+            <div class="scrollable-content">
+                <div class="p-4 lg:p-6 animate-fadeIn">
+                    {% if messages %}
+                        <div class="mb-6">
+                            {% for message in messages %}
+                                <div class="p-4 mb-4 rounded-xl {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center">
+                                    <span class="material-icons-outlined mr-3">
+                                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                                    </span>
+                                    <span>{{ message }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    {% block admin_content %}{% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-20 hidden lg:hidden" onclick="closeSidebar()"></div>
+
+    <!-- JavaScript Libraries -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://unpkg.com/@material-tailwind/html@latest/scripts/ripple.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('dropdown', () => ({
+                open: false,
+                toggle() {
+                    this.open = !this.open;
+                },
+                close() {
+                    this.open = false;
+                }
+            }));
+        });
+    </script>
+
+    <!-- Custom Admin JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Sidebar Toggle for Mobile
+            const sidebarToggle = document.getElementById('sidebar-toggle');
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const sidebarOverlay = document.getElementById('sidebar-overlay');
+            const closeSidebarBtn = document.getElementById('close-sidebar');
+
+            function openSidebar() {
+                sidebar.classList.remove('sidebar-closed');
+                sidebar.classList.add('sidebar-open');
+                sidebarOverlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden'; // Prevent scrolling
+            }
+
+            function closeSidebar() {
+                sidebar.classList.remove('sidebar-open');
+                sidebar.classList.add('sidebar-closed');
+                sidebarOverlay.classList.add('hidden');
+                document.body.style.overflow = ''; // Allow scrolling
+            }
+
+            // Make closeSidebar function available globally
+            window.closeSidebar = closeSidebar;
+
+            sidebarToggle.addEventListener('click', function() {
+                if (sidebar.classList.contains('sidebar-closed')) {
+                    openSidebar();
+                } else if (window.innerWidth < 1024) { // Only close on mobile
+                    closeSidebar();
+                }
+            });
+
+            if (closeSidebarBtn) {
+                closeSidebarBtn.addEventListener('click', closeSidebar);
+            }
+
+            // Handle window resize
+            window.addEventListener('resize', function() {
+                if (window.innerWidth >= 1024) {
+                    sidebar.classList.remove('sidebar-closed');
+                    sidebar.classList.add('sidebar-open');
+                    mainContent.classList.add('ml-64');
+                    sidebarOverlay.classList.add('hidden');
+                } else {
+                    sidebar.classList.remove('sidebar-open');
+                    sidebar.classList.add('sidebar-closed');
+                    mainContent.classList.remove('ml-64');
+                }
+            });
+
+            // Initialize based on screen size
+            if (window.innerWidth >= 1024) {
+                sidebar.classList.remove('sidebar-closed');
+                sidebar.classList.add('sidebar-open');
+                mainContent.classList.add('ml-64');
+            } else {
+                sidebar.classList.remove('sidebar-open');
+                sidebar.classList.add('sidebar-closed');
+                mainContent.classList.remove('ml-64');
+            }
+        });
+    </script>
+
+    {% block admin_js %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,395 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+
+{% block title %}Appointments | Barberian Admin{% endblock %}
+
+{% block page_title %}Appointments{% endblock %}
+
+{% block admin_content %}
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Appointments</h2>
+        <p class="mt-1 text-sm text-gray-500">Manage all your appointments in one place</p>
+    </div>
+    <div class="mt-4 md:mt-0 flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+        <a href="{% url 'admin_panel:appointment_create' %}" class="inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">add</span>
+            New Appointment
+        </a>
+        <a href="{% url 'admin_panel:calendar' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">calendar_month</span>
+            Calendar View
+        </a>
+    </div>
+</div>
+
+<!-- Filters and Search -->
+<div class="modern-card p-4 mb-6">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+        <!-- Search -->
+        <div class="relative w-full md:w-64">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">search</span>
+            </div>
+            <input type="text" id="search-appointments" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full pl-10 p-2.5" placeholder="Search appointments...">
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-2">
+            <select id="status-filter" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block p-2.5">
+                <option value="">All Statuses</option>
+                <option value="pending">Pending</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="completed">Completed</option>
+                <option value="cancelled">Cancelled</option>
+                <option value="no-show">No Show</option>
+            </select>
+
+            <select id="date-filter" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block p-2.5">
+                <option value="">All Dates</option>
+                <option value="today">Today</option>
+                <option value="tomorrow">Tomorrow</option>
+                <option value="this-week">This Week</option>
+                <option value="next-week">Next Week</option>
+                <option value="this-month">This Month</option>
+            </select>
+
+            <button id="clear-filters" class="text-sm text-gray-500 hover:text-primary-500 flex items-center">
+                <span class="material-icons-outlined mr-1" style="font-size: 16px;">clear</span>
+                Clear Filters
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Appointments Table -->
+<div class="modern-card overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200" id="appointments-table-body">
+                {% for appointment in appointments %}
+                <tr class="hover:bg-gray-50 transition-colors duration-150">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                                {{ appointment.client.get_full_name|slice:":1" }}
+                            </div>
+                            <div class="ml-4">
+                                <div class="text-sm font-medium text-gray-900">{{ appointment.client.get_full_name }}</div>
+                                <div class="text-sm text-gray-500">{{ appointment.client.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ appointment.service.name }}</div>
+                        <div class="text-sm text-gray-500">{{ appointment.service.duration }} min • KSh {{ appointment.service.price }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <div class="text-sm text-gray-900">{{ appointment.start_time|date:"M d, Y" }}</div>
+                        <div class="text-sm text-gray-500">{{ appointment.start_time|date:"g:i A" }}</div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        {% if appointment.staff %}
+                        <div class="text-sm text-gray-900">{{ appointment.staff.get_full_name }}</div>
+                        {% else %}
+                        <div class="text-sm text-gray-500">Not assigned</div>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
+                            {% if appointment.status == 'confirmed' %}bg-green-100 text-green-800
+                            {% elif appointment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif appointment.status == 'cancelled' %}bg-red-100 text-red-800
+                            {% elif appointment.status == 'completed' %}bg-blue-100 text-blue-800
+                            {% elif appointment.status == 'no-show' %}bg-gray-100 text-gray-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ appointment.status|title }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <div class="flex space-x-2">
+                            <a href="{% url 'admin_panel:appointment_detail' appointment.id %}" class="text-gray-500 hover:text-primary-500 transition-colors duration-200">
+                                <span class="material-icons-outlined" style="font-size: 20px;">visibility</span>
+                            </a>
+                            <a href="{% url 'admin_panel:appointment_update' appointment.id %}" class="text-gray-500 hover:text-primary-500 transition-colors duration-200">
+                                <span class="material-icons-outlined" style="font-size: 20px;">edit</span>
+                            </a>
+                            <button onclick="confirmDelete('{{ appointment.id }}')" class="text-gray-500 hover:text-red-500 transition-colors duration-200">
+                                <span class="material-icons-outlined" style="font-size: 20px;">delete</span>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="px-6 py-10 text-center text-gray-500">
+                        <div class="flex flex-col items-center">
+                            <span class="material-icons-outlined text-gray-300 text-5xl mb-3">event_busy</span>
+                            <p class="text-lg font-medium">No appointments found</p>
+                            <p class="text-sm mt-1">Create a new appointment to get started</p>
+                            <a href="{% url 'admin_panel:appointment_create' %}" class="mt-4 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                                <span class="material-icons-outlined mr-2" style="font-size: 16px;">add</span>
+                                New Appointment
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if appointments %}
+    <div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+        <div class="flex-1 flex justify-between sm:hidden">
+            <a href="#" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Previous
+            </a>
+            <a href="#" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                Next
+            </a>
+        </div>
+        <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm text-gray-700">
+                    Showing <span class="font-medium">1</span> to <span class="font-medium">10</span> of <span class="font-medium">{{ appointments.count }}</span> results
+                </p>
+            </div>
+            <div>
+                <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Previous</span>
+                        <span class="material-icons-outlined" style="font-size: 20px;">chevron_left</span>
+                    </a>
+                    <a href="#" aria-current="page" class="z-10 bg-primary-50 border-primary-400 text-primary-500 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        1
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        2
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        3
+                    </a>
+                    <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                        ...
+                    </span>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        8
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        9
+                    </a>
+                    <a href="#" class="bg-white border-gray-300 text-gray-500 hover:bg-gray-50 relative inline-flex items-center px-4 py-2 border text-sm font-medium">
+                        10
+                    </a>
+                    <a href="#" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <span class="sr-only">Next</span>
+                        <span class="material-icons-outlined" style="font-size: 20px;">chevron_right</span>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="delete-modal" class="fixed z-50 inset-0 overflow-y-auto hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                        <span class="material-icons-outlined text-red-600">warning</span>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                            Delete Appointment
+                        </h3>
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-500">
+                                Are you sure you want to delete this appointment? This action cannot be undone.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <form id="delete-form" method="post" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        Delete
+                    </button>
+                </form>
+                <button type="button" onclick="closeModal()" class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Cancel
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    // Search functionality
+    document.getElementById('search-appointments').addEventListener('keyup', function() {
+        const searchValue = this.value.toLowerCase();
+        const tableRows = document.querySelectorAll('#appointments-table-body tr');
+
+        tableRows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            if (text.includes(searchValue)) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    });
+
+    // Status filter
+    document.getElementById('status-filter').addEventListener('change', function() {
+        filterAppointments();
+    });
+
+    // Date filter
+    document.getElementById('date-filter').addEventListener('change', function() {
+        filterAppointments();
+    });
+
+    // Clear filters
+    document.getElementById('clear-filters').addEventListener('click', function() {
+        document.getElementById('search-appointments').value = '';
+        document.getElementById('status-filter').value = '';
+        document.getElementById('date-filter').value = '';
+
+        const tableRows = document.querySelectorAll('#appointments-table-body tr');
+        tableRows.forEach(row => {
+            row.style.display = '';
+        });
+    });
+
+    // Filter appointments based on status and date
+    function filterAppointments() {
+        const statusFilter = document.getElementById('status-filter').value.toLowerCase();
+        const dateFilter = document.getElementById('date-filter').value;
+        const tableRows = document.querySelectorAll('#appointments-table-body tr');
+
+        tableRows.forEach(row => {
+            const statusCell = row.querySelector('td:nth-child(5)');
+            const dateCell = row.querySelector('td:nth-child(3)');
+
+            let showRow = true;
+
+            // Apply status filter
+            if (statusFilter && statusCell) {
+                const statusText = statusCell.textContent.toLowerCase();
+                if (!statusText.includes(statusFilter)) {
+                    showRow = false;
+                }
+            }
+
+            // Apply date filter
+            if (dateFilter && dateCell && showRow) {
+                const dateText = dateCell.textContent;
+                const today = new Date();
+                const tomorrow = new Date(today);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+
+                // Parse the date from the cell
+                const dateParts = dateText.split(',')[0].split(' ');
+                const month = getMonthNumber(dateParts[0]);
+                const day = parseInt(dateParts[1]);
+                const year = parseInt(dateParts[2]);
+                const appointmentDate = new Date(year, month, day);
+
+                switch(dateFilter) {
+                    case 'today':
+                        if (appointmentDate.toDateString() !== today.toDateString()) {
+                            showRow = false;
+                        }
+                        break;
+                    case 'tomorrow':
+                        if (appointmentDate.toDateString() !== tomorrow.toDateString()) {
+                            showRow = false;
+                        }
+                        break;
+                    case 'this-week':
+                        const thisWeekStart = new Date(today);
+                        thisWeekStart.setDate(today.getDate() - today.getDay());
+                        const thisWeekEnd = new Date(thisWeekStart);
+                        thisWeekEnd.setDate(thisWeekStart.getDate() + 6);
+
+                        if (appointmentDate < thisWeekStart || appointmentDate > thisWeekEnd) {
+                            showRow = false;
+                        }
+                        break;
+                    case 'next-week':
+                        const nextWeekStart = new Date(today);
+                        nextWeekStart.setDate(today.getDate() - today.getDay() + 7);
+                        const nextWeekEnd = new Date(nextWeekStart);
+                        nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+
+                        if (appointmentDate < nextWeekStart || appointmentDate > nextWeekEnd) {
+                            showRow = false;
+                        }
+                        break;
+                    case 'this-month':
+                        if (appointmentDate.getMonth() !== today.getMonth() ||
+                            appointmentDate.getFullYear() !== today.getFullYear()) {
+                            showRow = false;
+                        }
+                        break;
+                }
+            }
+
+            row.style.display = showRow ? '' : 'none';
+        });
+    }
+
+    // Helper function to convert month name to number
+    function getMonthNumber(monthName) {
+        const months = {
+            'Jan': 0, 'Feb': 1, 'Mar': 2, 'Apr': 3, 'May': 4, 'Jun': 5,
+            'Jul': 6, 'Aug': 7, 'Sep': 8, 'Oct': 9, 'Nov': 10, 'Dec': 11
+        };
+        return months[monthName];
+    }
+
+    // Delete confirmation modal
+    function confirmDelete(appointmentId) {
+        const modal = document.getElementById('delete-modal');
+        const form = document.getElementById('delete-form');
+
+        form.action = `/admin_panel/appointments/${appointmentId}/update/`;
+        modal.classList.remove('hidden');
+    }
+
+    function closeModal() {
+        const modal = document.getElementById('delete-modal');
+        modal.classList.add('hidden');
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('delete-modal');
+        if (event.target === modal) {
+            closeModal();
+        }
+    }
+</script>
+{% endblock %}

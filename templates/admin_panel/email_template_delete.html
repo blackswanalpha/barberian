@@ -1,0 +1,65 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+
+{% block title %}Delete Template | Barberian Admin{% endblock %}
+
+{% block page_title %}Delete Template{% endblock %}
+
+{% block admin_content %}
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Delete Email Template</h2>
+        <p class="mt-1 text-sm text-gray-500">Permanently delete this email template</p>
+    </div>
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'admin_panel:email_dashboard' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+            Back to Email Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Delete Confirmation Card -->
+<div class="modern-card overflow-hidden max-w-2xl mx-auto">
+    <div class="p-6">
+        <div class="flex items-center justify-center mb-6">
+            <div class="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                <span class="material-icons-outlined" style="font-size: 32px;">warning</span>
+            </div>
+        </div>
+        
+        <h3 class="text-lg font-medium text-center text-gray-800 mb-2">Are you sure you want to delete this template?</h3>
+        <p class="text-center text-gray-500 mb-6">This action cannot be undone.</p>
+        
+        <div class="bg-gray-50 p-4 rounded-lg mb-6">
+            <h4 class="text-sm font-medium text-gray-800 mb-2">Template Details</h4>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-500">Name:</span>
+                    <span class="text-sm font-medium text-gray-800">{{ template.name }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-500">Subject:</span>
+                    <span class="text-sm font-medium text-gray-800">{{ template.subject }}</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-sm text-gray-500">Created:</span>
+                    <span class="text-sm font-medium text-gray-800">{{ template.created_at|date:"F j, Y" }}</span>
+                </div>
+            </div>
+        </div>
+        
+        <form method="post" class="flex justify-center space-x-4">
+            {% csrf_token %}
+            <a href="{% url 'admin_panel:email_dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                Cancel
+            </a>
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                <span class="material-icons-outlined mr-2" style="font-size: 18px;">delete</span>
+                Delete Template
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

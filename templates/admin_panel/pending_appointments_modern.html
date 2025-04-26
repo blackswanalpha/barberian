@@ -1,0 +1,684 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+{% load admin_filters %}
+
+{% block title %}Pending Appointments | Barberian Admin{% endblock %}
+
+{% block admin_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize charts
+        initPendingByDayChart();
+        initPendingByServiceChart();
+
+        // Search functionality
+        document.getElementById('search-pending').addEventListener('keyup', function() {
+            filterPendingAppointments();
+        });
+
+        // Service filter
+        document.getElementById('service-filter').addEventListener('change', function() {
+            filterPendingAppointments();
+        });
+
+        // Date filter
+        document.getElementById('date-filter').addEventListener('change', function() {
+            filterPendingAppointments();
+        });
+
+        // Clear filters
+        document.getElementById('clear-filters').addEventListener('click', function() {
+            document.getElementById('search-pending').value = '';
+            document.getElementById('service-filter').value = '';
+            document.getElementById('date-filter').value = '';
+            filterPendingAppointments();
+        });
+    });
+
+    // Filter pending appointments
+    function filterPendingAppointments() {
+        const searchValue = document.getElementById('search-pending').value.toLowerCase();
+        const serviceFilter = document.getElementById('service-filter').value;
+        const dateFilter = document.getElementById('date-filter').value;
+        const tableRows = document.querySelectorAll('#pending-table-body tr');
+
+        tableRows.forEach(row => {
+            if (row.cells && row.cells.length > 0) {
+                const text = row.textContent.toLowerCase();
+                const serviceId = row.dataset.service;
+                const appointmentDate = row.dataset.date;
+
+                let showRow = true;
+
+                // Apply search filter
+                if (searchValue && !text.includes(searchValue)) {
+                    showRow = false;
+                }
+
+                // Apply service filter
+                if (serviceFilter && serviceId !== serviceFilter) {
+                    showRow = false;
+                }
+
+                // Apply date filter
+                if (dateFilter) {
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+
+                    const tomorrow = new Date(today);
+                    tomorrow.setDate(tomorrow.getDate() + 1);
+
+                    const appointmentDateObj = new Date(appointmentDate);
+                    appointmentDateObj.setHours(0, 0, 0, 0);
+
+                    switch(dateFilter) {
+                        case 'today':
+                            if (appointmentDateObj.getTime() !== today.getTime()) {
+                                showRow = false;
+                            }
+                            break;
+                        case 'tomorrow':
+                            if (appointmentDateObj.getTime() !== tomorrow.getTime()) {
+                                showRow = false;
+                            }
+                            break;
+                        case 'this-week':
+                            const thisWeekStart = new Date(today);
+                            thisWeekStart.setDate(today.getDate() - today.getDay());
+                            const thisWeekEnd = new Date(thisWeekStart);
+                            thisWeekEnd.setDate(thisWeekStart.getDate() + 6);
+
+                            if (appointmentDateObj < thisWeekStart || appointmentDateObj > thisWeekEnd) {
+                                showRow = false;
+                            }
+                            break;
+                        case 'next-week':
+                            const nextWeekStart = new Date(today);
+                            nextWeekStart.setDate(today.getDate() - today.getDay() + 7);
+                            const nextWeekEnd = new Date(nextWeekStart);
+                            nextWeekEnd.setDate(nextWeekStart.getDate() + 6);
+
+                            if (appointmentDateObj < nextWeekStart || appointmentDateObj > nextWeekEnd) {
+                                showRow = false;
+                            }
+                            break;
+                    }
+                }
+
+                row.style.display = showRow ? '' : 'none';
+            }
+        });
+    }
+
+    // Initialize Pending by Day Chart
+    function initPendingByDayChart() {
+        const pendingByDay = {{ pending_by_day|safe }};
+        const labels = [];
+        const data = [];
+
+        // Format dates and extract data
+        for (const [dateStr, count] of Object.entries(pendingByDay)) {
+            const date = new Date(dateStr);
+            labels.push(date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }));
+            data.push(count);
+        }
+
+        const pendingByDayOptions = {
+            series: [{
+                name: 'Pending Appointments',
+                data: data
+            }],
+            chart: {
+                height: 256,
+                type: 'bar',
+                toolbar: {
+                    show: false
+                },
+                fontFamily: 'Inter, sans-serif',
+            },
+            plotOptions: {
+                bar: {
+                    borderRadius: 4,
+                    columnWidth: '60%',
+                }
+            },
+            dataLabels: {
+                enabled: false
+            },
+            colors: ['#d4af37'],
+            xaxis: {
+                categories: labels,
+                labels: {
+                    style: {
+                        colors: '#6b7280',
+                        fontSize: '12px',
+                        fontFamily: 'Inter, sans-serif',
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: '#6b7280',
+                        fontSize: '12px',
+                        fontFamily: 'Inter, sans-serif',
+                    }
+                }
+            },
+            grid: {
+                borderColor: '#f1f1f1',
+                strokeDashArray: 4,
+            }
+        };
+
+        const pendingByDayChart = new ApexCharts(document.querySelector("#pending-by-day-chart"), pendingByDayOptions);
+        pendingByDayChart.render();
+    }
+
+    // Initialize Pending by Service Chart
+    function initPendingByServiceChart() {
+        const pendingByService = {{ pending_by_service|safe }};
+        const labels = [];
+        const data = [];
+
+        // Extract data
+        for (const [service, count] of Object.entries(pendingByService)) {
+            labels.push(service);
+            data.push(count);
+        }
+
+        const pendingByServiceOptions = {
+            series: data,
+            chart: {
+                height: 256,
+                type: 'donut',
+                fontFamily: 'Inter, sans-serif',
+            },
+            labels: labels,
+            colors: ['#d4af37', '#4f46e5', '#10b981', '#f59e0b', '#ef4444'],
+            legend: {
+                position: 'bottom',
+                fontFamily: 'Inter, sans-serif',
+                fontSize: '12px',
+                markers: {
+                    width: 12,
+                    height: 12,
+                    radius: 12
+                },
+            },
+            dataLabels: {
+                enabled: false
+            },
+            plotOptions: {
+                pie: {
+                    donut: {
+                        size: '60%'
+                    }
+                }
+            }
+        };
+
+        const pendingByServiceChart = new ApexCharts(document.querySelector("#pending-by-service-chart"), pendingByServiceOptions);
+        pendingByServiceChart.render();
+    }
+
+    // Open review modal
+    function openReviewModal(appointmentId) {
+        // In a real implementation, you would fetch the appointment details via AJAX
+        // For now, we'll use dummy data for demonstration
+
+        // Set form action
+        document.getElementById('review-form').action = `/admin_panel/appointments/${appointmentId}/review/`;
+
+        // Show modal
+        document.getElementById('review-modal').classList.remove('hidden');
+
+        // Prevent scrolling on the body
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close review modal
+    function closeReviewModal() {
+        document.getElementById('review-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Set status and submit form
+    function setStatus(status) {
+        document.getElementById('status-input').value = status;
+        document.getElementById('review-form').submit();
+    }
+
+    // Open bulk assign modal
+    function assignStaffBulk() {
+        document.getElementById('bulk-assign-modal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Close bulk assign modal
+    function closeBulkAssignModal() {
+        document.getElementById('bulk-assign-modal').classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+
+    // Approve all today's appointments
+    function approveAllToday() {
+        if (confirm('Are you sure you want to approve all pending appointments for today?')) {
+            // In a real implementation, you would submit a form or make an AJAX request
+            alert('This feature would approve all of today\'s pending appointments in a real implementation.');
+        }
+    }
+
+    // Export pending appointments to CSV
+    function exportPendingCSV() {
+        // In a real implementation, you would generate and download a CSV file
+        alert('This feature would export all pending appointments to CSV in a real implementation.');
+    }
+</script>
+{% endblock %}
+
+{% block admin_content %}
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Pending Appointments</h2>
+        <p class="mt-1 text-sm text-gray-500">Review and manage appointment requests from clients</p>
+    </div>
+    <div class="mt-4 md:mt-0 flex space-x-2">
+        <a href="{% url 'admin_panel:appointments' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">event</span>
+            All Appointments
+        </a>
+        <a href="{% url 'admin_panel:calendar' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">calendar_month</span>
+            Calendar View
+        </a>
+    </div>
+</div>
+
+<!-- Dashboard Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- Total Pending Card -->
+    <div class="modern-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Pending</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ pending_appointments.count }}</h3>
+                <p class="text-xs text-gray-500 mt-1">Appointments awaiting review</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <span class="material-icons-outlined text-amber-500">pending_actions</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Pending Card -->
+    <div class="modern-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Today's Pending</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                    {{ pending_by_day|get_item:today|default:0 }}
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">Appointments for today</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <span class="material-icons-outlined text-blue-500">today</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Oldest Pending Card -->
+    <div class="modern-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Oldest Pending</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1">
+                    {% if pending_appointments %}
+                        {{ pending_appointments.last.created_at|date:"M d, Y" }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </h3>
+                <p class="text-xs text-gray-500 mt-1">Date of oldest request</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                <span class="material-icons-outlined text-red-500">schedule</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column (Pending Appointments List) -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Search and Filters -->
+        <div class="modern-card p-4">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between space-y-4 md:space-y-0">
+                <!-- Search -->
+                <div class="relative w-full md:w-64">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                        <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">search</span>
+                    </div>
+                    <input type="text" id="search-pending" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full pl-10 p-2.5" placeholder="Search pending requests...">
+                </div>
+
+                <!-- Filters -->
+                <div class="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-2">
+                    <select id="service-filter" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block p-2.5">
+                        <option value="">All Services</option>
+                        {% for service in services %}
+                        <option value="{{ service.id }}">{{ service.name }}</option>
+                        {% endfor %}
+                    </select>
+
+                    <select id="date-filter" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block p-2.5">
+                        <option value="">All Dates</option>
+                        <option value="today">Today</option>
+                        <option value="tomorrow">Tomorrow</option>
+                        <option value="this-week">This Week</option>
+                        <option value="next-week">Next Week</option>
+                    </select>
+
+                    <button id="clear-filters" class="text-sm text-gray-500 hover:text-primary-500 flex items-center">
+                        <span class="material-icons-outlined mr-1" style="font-size: 16px;">clear</span>
+                        Clear
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pending Appointments List -->
+        <div class="modern-card overflow-hidden">
+            <div class="p-4 border-b border-gray-100">
+                <h3 class="text-lg font-semibold text-gray-800">Pending Appointment Requests</h3>
+                <p class="text-sm text-gray-500 mt-1">Review and assign staff to these appointment requests</p>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Client</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Service</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date & Time</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Requested</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="pending-table-body" class="bg-white divide-y divide-gray-200">
+                        {% for appointment in pending_appointments %}
+                        <tr class="hover:bg-gray-50 transition-colors duration-150" data-service="{{ appointment.service.id }}" data-date="{{ appointment.start_time|date:'Y-m-d' }}">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                                        {{ appointment.client.get_full_name|slice:":1" }}
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ appointment.client.get_full_name }}</p>
+                                        <p class="text-xs text-gray-500">{{ appointment.client.email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ appointment.service.name }}</p>
+                                    <p class="text-xs text-gray-500">{{ appointment.service.duration }} min • KSh {{ appointment.service.price }}</p>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-900">{{ appointment.start_time|date:"M d, Y" }}</p>
+                                    <p class="text-xs text-gray-500">{{ appointment.start_time|date:"g:i A" }}</p>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <p class="text-sm text-gray-500">{{ appointment.created_at|date:"M d, Y" }}</p>
+                                <p class="text-xs text-gray-500">{{ appointment.created_at|date:"g:i A" }}</p>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex space-x-2">
+                                    <button onclick="openReviewModal('{{ appointment.id }}')" class="text-primary-400 hover:text-primary-500 transition-colors duration-200">
+                                        <span class="material-icons-outlined" style="font-size: 20px;">assignment</span>
+                                    </button>
+                                    <a href="{% url 'admin_panel:appointment_detail' appointment.id %}" class="text-gray-500 hover:text-gray-700 transition-colors duration-200">
+                                        <span class="material-icons-outlined" style="font-size: 20px;">visibility</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-10 text-center">
+                                <div class="flex flex-col items-center">
+                                    <span class="material-icons-outlined text-gray-300 text-5xl mb-3">event_busy</span>
+                                    <p class="text-lg font-medium">No pending appointments</p>
+                                    <p class="text-sm mt-1">All appointment requests have been processed</p>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column (Charts and Stats) -->
+    <div class="space-y-6">
+        <!-- Pending by Day Chart -->
+        <div class="modern-card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Pending by Day</h3>
+                <span class="text-sm text-gray-500">Next 7 days</span>
+            </div>
+            <div id="pending-by-day-chart" class="h-64"></div>
+        </div>
+
+        <!-- Pending by Service Chart -->
+        <div class="modern-card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Pending by Service</h3>
+                <span class="text-sm text-gray-500">Distribution</span>
+            </div>
+            <div id="pending-by-service-chart" class="h-64"></div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="modern-card p-5">
+            <div class="mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Quick Actions</h3>
+                <p class="text-sm text-gray-500 mt-1">Common tasks for pending appointments</p>
+            </div>
+
+            <div class="space-y-3">
+                <button onclick="approveAllToday()" class="w-full flex items-center justify-between p-3 bg-green-50 rounded-lg hover:bg-green-100 transition-colors duration-200">
+                    <div class="flex items-center">
+                        <span class="material-icons-outlined text-green-500 mr-3">check_circle</span>
+                        <span class="text-sm font-medium text-gray-800">Approve All Today's</span>
+                    </div>
+                    <span class="text-xs font-bold bg-green-100 text-green-800 px-2 py-1 rounded-full">{{ pending_by_day|get_item:today|default:0 }}</span>
+                </button>
+
+                <button onclick="assignStaffBulk()" class="w-full flex items-center justify-between p-3 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors duration-200">
+                    <div class="flex items-center">
+                        <span class="material-icons-outlined text-blue-500 mr-3">people</span>
+                        <span class="text-sm font-medium text-gray-800">Bulk Assign Staff</span>
+                    </div>
+                    <span class="material-icons-outlined text-blue-500">arrow_forward</span>
+                </button>
+
+                <button onclick="exportPendingCSV()" class="w-full flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                    <div class="flex items-center">
+                        <span class="material-icons-outlined text-gray-500 mr-3">download</span>
+                        <span class="text-sm font-medium text-gray-800">Export Pending List</span>
+                    </div>
+                    <span class="material-icons-outlined text-gray-500">arrow_forward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Review Modal -->
+<div id="review-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="p-6 border-b border-gray-100">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-800">Review Appointment Request</h3>
+                <button onclick="closeReviewModal()" class="text-gray-400 hover:text-gray-500">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <form id="review-form" method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="review">
+
+                <div class="space-y-6">
+                    <!-- Client and Service Info -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Client Information</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <div id="client-info" class="flex items-center">
+                                    <div class="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                                        <span id="client-initial">C</span>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p id="client-name" class="text-sm font-medium text-gray-900">Client Name</p>
+                                        <p id="client-email" class="text-xs text-gray-500">client@example.com</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-500 mb-2">Service Details</h4>
+                            <div class="bg-gray-50 p-4 rounded-lg">
+                                <p id="service-name" class="text-sm font-medium text-gray-900">Service Name</p>
+                                <div class="flex items-center justify-between mt-1">
+                                    <p id="service-duration" class="text-xs text-gray-500">60 min</p>
+                                    <p id="service-price" class="text-xs font-medium text-gray-900">KSh 2,000</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date and Time -->
+                    <div>
+                        <h4 class="text-sm font-medium text-gray-500 mb-2">Requested Date & Time</h4>
+                        <div class="bg-gray-50 p-4 rounded-lg flex items-center">
+                            <span class="material-icons-outlined text-gray-400 mr-3">event</span>
+                            <div>
+                                <p id="appointment-date" class="text-sm font-medium text-gray-900">Date</p>
+                                <p id="appointment-time" class="text-xs text-gray-500">Time</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Assign Staff -->
+                    <div>
+                        <label for="staff-select" class="block text-sm font-medium text-gray-700 mb-2">Assign Staff Member</label>
+                        <select id="staff-select" name="staff_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5" required>
+                            <option value="">Select a staff member</option>
+                            {% for staff in staff_members %}
+                            <option value="{{ staff.id }}">{{ staff.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                        <p class="mt-1 text-xs text-gray-500">Select a staff member to handle this appointment</p>
+                    </div>
+
+                    <!-- Notes -->
+                    <div>
+                        <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">Admin Notes</label>
+                        <textarea id="notes" name="notes" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5" placeholder="Add any notes about this appointment..."></textarea>
+                    </div>
+
+                    <!-- Status Buttons -->
+                    <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3">
+                        <button type="button" onclick="setStatus('confirmed')" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">check_circle</span>
+                            Approve
+                        </button>
+
+                        <button type="button" onclick="setStatus('cancelled')" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">cancel</span>
+                            Decline
+                        </button>
+
+                        <button type="button" onclick="setStatus('rescheduled')" class="flex-1 inline-flex justify-center items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">schedule</span>
+                            Reschedule
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" id="status-input" name="status" value="">
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Bulk Assign Modal -->
+<div id="bulk-assign-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-xl shadow-xl max-w-lg w-full mx-4">
+        <div class="p-6 border-b border-gray-100">
+            <div class="flex items-center justify-between">
+                <h3 class="text-xl font-semibold text-gray-800">Bulk Assign Staff</h3>
+                <button onclick="closeBulkAssignModal()" class="text-gray-400 hover:text-gray-500">
+                    <span class="material-icons-outlined">close</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="p-6">
+            <form id="bulk-assign-form" method="post" action="{% url 'admin_panel:bulk_assign_staff' %}">
+                {% csrf_token %}
+
+                <div class="space-y-6">
+                    <div>
+                        <label for="bulk-service-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by Service</label>
+                        <select id="bulk-service-filter" name="service_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5">
+                            <option value="">All Services</option>
+                            {% for service in services %}
+                            <option value="{{ service.id }}">{{ service.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="bulk-date-filter" class="block text-sm font-medium text-gray-700 mb-2">Filter by Date</label>
+                        <select id="bulk-date-filter" name="date_filter" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5">
+                            <option value="">All Dates</option>
+                            <option value="today">Today</option>
+                            <option value="tomorrow">Tomorrow</option>
+                            <option value="this-week">This Week</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label for="bulk-staff-select" class="block text-sm font-medium text-gray-700 mb-2">Assign to Staff Member</label>
+                        <select id="bulk-staff-select" name="staff_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5" required>
+                            <option value="">Select a staff member</option>
+                            {% for staff in staff_members %}
+                            <option value="{{ staff.id }}">{{ staff.get_full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="pt-4">
+                        <button type="submit" class="w-full inline-flex justify-center items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors duration-200">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">people</span>
+                            Assign Staff to Selected Appointments
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

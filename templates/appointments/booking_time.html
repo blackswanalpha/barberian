@@ -1,36 +1,207 @@
 {% extends 'appointments/booking_base.html' %}
 
+{% block extra_css %}
+<style>
+    .time-slots-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 10px;
+    }
+
+    .form-check {
+        margin-bottom: 0;
+    }
+
+    .form-check-input:checked + .form-check-label {
+        font-weight: bold;
+        color: #4e73df;
+    }
+
+    .card-header h6 {
+        margin-bottom: 0;
+    }
+
+    .time-slots-container .card {
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .time-slots-container .card-body {
+        padding: 1rem;
+    }
+
+    .alert-info {
+        border-left: 4px solid #4e73df;
+    }
+</style>
+{% endblock %}
+
 {% block booking_content %}
 <h2 class="card-title mb-4">Select a Time</h2>
 
 <form method="post">
     {% csrf_token %}
-    
+
     {% if form.errors %}
         <div class="alert alert-danger">
             Please correct the errors below.
         </div>
     {% endif %}
-    
+
     {% if not form.time.choices %}
         <div class="alert alert-warning">
             No available time slots for the selected date. Please select a different date.
         </div>
     {% else %}
         <div class="mb-3">
-            {{ form.time.label_tag }}
-            {{ form.time }}
+            <h5>{{ form.time.label }}</h5>
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> Select your preferred time. We'll assign the best available staff member for your appointment.
+            </div>
+
+            <div class="time-slots-container">
+                <div class="card mb-3">
+                    <div class="card-header bg-primary text-white">
+                        <h6 class="mb-0">Morning (9:00 AM - 12:00 PM)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="time-slots-grid">
+                            {% for value, text in form.time.field.choices %}
+                                {% if value|slice:":2"|add:"0" < "12" %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="time" id="time_{{ value }}" value="{{ value }}" {% if form.time.value == value %}checked{% endif %}>
+                                        <label class="form-check-label" for="time_{{ value }}">
+                                            {{ text }}
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">Afternoon (12:00 PM - 5:00 PM)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="time-slots-grid">
+                            {% for value, text in form.time.field.choices %}
+                                {% if value|slice:":2"|add:"0" >= "12" and value|slice:":2"|add:"0" < "17" %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="time" id="time_{{ value }}" value="{{ value }}" {% if form.time.value == value %}checked{% endif %}>
+                                        <label class="form-check-label" for="time_{{ value }}">
+                                            {{ text }}
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-3">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0">Evening (5:00 PM - 8:00 PM)</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="time-slots-grid">
+                            {% for value, text in form.time.field.choices %}
+                                {% if value|slice:":2"|add:"0" >= "17" %}
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="time" id="time_{{ value }}" value="{{ value }}" {% if form.time.value == value %}checked{% endif %}>
+                                        <label class="form-check-label" for="time_{{ value }}">
+                                            {{ text }}
+                                        </label>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             {% if form.time.errors %}
                 <div class="invalid-feedback d-block">
                     {{ form.time.errors }}
                 </div>
             {% endif %}
         </div>
+
+        <div class="mb-3 mt-4">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <h5 class="card-title mb-0">Appointment Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p class="card-text"><strong>Service:</strong> {{ service.name }}</p>
+                            <p class="card-text"><strong>Date:</strong> {{ date|date:"F d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p class="card-text"><strong>Duration:</strong> {{ service.duration }} minutes</p>
+                            <p class="card-text"><strong>Price:</strong> ${{ service.price }}</p>
+                        </div>
+                    </div>
+                    <div class="alert alert-success mt-3 mb-0">
+                        <p class="mb-0"><strong>Selected Time:</strong> <span id="selected-time">Please select a time</span></p>
+                        <p class="mb-0 mt-2"><small><i class="fas fa-info-circle"></i> Our team will assign the best available staff member for your appointment.</small></p>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endif %}
-    
+
     <div class="d-flex justify-content-between mt-4">
         <a href="{% url 'appointments:booking_date' %}" class="btn btn-outline-secondary">Back</a>
         <button type="submit" class="btn btn-primary" {% if not form.time.choices %}disabled{% endif %}>Continue</button>
     </div>
 </form>
+
+<script>
+    // Add client-side validation for the time selection
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const timeInputs = document.querySelectorAll('input[name="time"]');
+
+        form.addEventListener('submit', function(event) {
+            let timeSelected = false;
+
+            timeInputs.forEach(function(input) {
+                if (input.checked) {
+                    timeSelected = true;
+                }
+            });
+
+            if (!timeSelected) {
+                event.preventDefault();
+                alert('Please select a time for your appointment.');
+
+                // Scroll to the time selection section
+                document.querySelector('.time-slots-container').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+
+        // Add animation when selecting a time
+        timeInputs.forEach(function(input) {
+            input.addEventListener('change', function() {
+                if (this.checked) {
+                    // Highlight the selected time
+                    const label = document.querySelector(`label[for="${this.id}"]`);
+
+                    // Update the appointment summary
+                    const timeText = label.textContent.trim();
+                    const summaryTimeElement = document.getElementById('selected-time');
+                    if (summaryTimeElement) {
+                        summaryTimeElement.textContent = timeText;
+                    }
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

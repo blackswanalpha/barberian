@@ -8,9 +8,10 @@ from .models import StaffSettings, Schedule
 @admin.register(StaffSettings)
 class StaffSettingsAdmin(admin.ModelAdmin):
     list_display = ('staff', 'notification_preference', 'email_notifications', 'sms_notifications', 'auto_confirm_appointments')
-    list_filter = ('notification_preference', 'email_notifications', 'sms_notifications', 'auto_confirm_appointments')
+    list_filter = ('notification_preference', 'email_notifications', 'sms_notifications', 'auto_confirm_appointments', 'services')
     search_fields = ('staff__email', 'staff__first_name', 'staff__last_name')
     ordering = ('staff__last_name', 'staff__first_name')
+    filter_horizontal = ('services',)
 
 @admin.register(Schedule)
 class ScheduleAdmin(admin.ModelAdmin):

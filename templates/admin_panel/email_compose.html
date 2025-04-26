@@ -1,0 +1,389 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+
+{% block title %}Compose Email | Barberian Admin{% endblock %}
+
+{% block page_title %}Compose Email{% endblock %}
+
+{% block admin_content %}
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">Compose Email</h2>
+        <p class="mt-1 text-sm text-gray-500">Send emails to your clients</p>
+    </div>
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'admin_panel:email_dashboard' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+            Back to Email Dashboard
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+            <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                <div class="flex items-center">
+                    <span class="material-icons-outlined mr-2" style="font-size: 20px;">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+                    </span>
+                    <p>{{ message }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Email Form -->
+    <div class="lg:col-span-2">
+        <div class="modern-card overflow-hidden">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Email Message</h3>
+                
+                <form method="post" enctype="multipart/form-data" class="space-y-6" id="email-form">
+                    {% csrf_token %}
+                    
+                    <!-- From -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">From</label>
+                        <div class="mt-1">
+                            <input type="text" class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md bg-gray-50" value="{{ business_name }} <{{ default_sender }}>" disabled>
+                        </div>
+                    </div>
+                    
+                    <!-- Subject -->
+                    <div>
+                        <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <div class="mt-1">
+                            <input type="text" name="{{ form.subject.html_name }}" id="{{ form.subject.id_for_label }}" 
+                                class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                                placeholder="Enter email subject" required>
+                            {% if form.subject.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Message -->
+                    <div>
+                        <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                        <div class="mt-1">
+                            <textarea name="{{ form.message.html_name }}" id="{{ form.message.id_for_label }}" rows="12" 
+                                class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                                placeholder="Enter your message here..." required></textarea>
+                            {% if form.message.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.message.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">
+                            You can use the following placeholders: {recipient_name}, {business_name}
+                        </p>
+                    </div>
+                    
+                    <!-- Attachments -->
+                    <div>
+                        <label for="{{ form.attachments.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Attachments</label>
+                        <div class="mt-1">
+                            <input type="file" name="{{ form.attachments.html_name }}" id="{{ form.attachments.id_for_label }}" 
+                                class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                                multiple>
+                            {% if form.attachments.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.attachments.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">
+                            You can attach multiple files (PDF, DOC, DOCX, JPG, PNG, GIF)
+                        </p>
+                    </div>
+                    
+                    <!-- Hidden Recipients Field -->
+                    <div id="recipients-container" class="hidden">
+                        <select name="{{ form.recipients.html_name }}" id="{{ form.recipients.id_for_label }}" multiple>
+                            {% for client_id, client_name in form.recipients.field.choices %}
+                            <option value="{{ client_id }}">{{ client_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <a href="{% url 'admin_panel:email_dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            Cancel
+                        </a>
+                        <button type="submit" id="send-email-btn" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">send</span>
+                            Send Email
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div>
+        <!-- Recipients -->
+        <div class="modern-card overflow-hidden">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Recipients</h3>
+                
+                <!-- Filter Controls -->
+                <div class="mb-4">
+                    <div class="flex space-x-2 mb-2">
+                        <button type="button" class="filter-btn inline-flex items-center px-3 py-1.5 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400" data-filter="all">
+                            All Clients
+                        </button>
+                        <button type="button" class="filter-btn inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400" data-filter="recent">
+                            Recent
+                        </button>
+                        <button type="button" class="filter-btn inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400" data-filter="active">
+                            Active
+                        </button>
+                    </div>
+                    <div class="relative">
+                        <input type="text" id="client-search" class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md" placeholder="Search clients...">
+                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <span class="material-icons-outlined text-gray-400" style="font-size: 18px;">search</span>
+                        </span>
+                    </div>
+                </div>
+                
+                <!-- Client List -->
+                <div class="border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="max-h-96 overflow-y-auto" id="client-list">
+                        <div class="p-4 text-center text-sm text-gray-500">
+                            <span class="material-icons-outlined text-gray-300 text-3xl mb-2">people</span>
+                            <p>Loading clients...</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Selection Controls -->
+                    <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 flex justify-between items-center">
+                        <div class="text-sm text-gray-500">
+                            <span id="selected-count">0</span> selected
+                        </div>
+                        <div class="flex space-x-2">
+                            <button type="button" id="select-all-btn" class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                                Select All
+                            </button>
+                            <button type="button" id="clear-selection-btn" class="inline-flex items-center px-3 py-1 border border-gray-300 rounded-md shadow-sm text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                                Clear
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Templates -->
+        <div class="modern-card overflow-hidden mt-6">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Email Templates</h3>
+                
+                <div class="space-y-3">
+                    {% for template in templates %}
+                    <button type="button" class="template-btn w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200" data-id="{{ template.id }}">
+                        <h4 class="text-sm font-medium text-gray-800">{{ template.name }}</h4>
+                        <p class="text-xs text-gray-500 mt-1 truncate">{{ template.subject }}</p>
+                    </button>
+                    {% empty %}
+                    <div class="text-center py-4">
+                        <span class="material-icons-outlined text-gray-300 text-3xl mb-2">description</span>
+                        <p class="text-sm text-gray-500">No templates available</p>
+                        <a href="{% url 'admin_panel:email_template_create' %}" class="inline-flex items-center px-3 py-1.5 mt-2 border border-transparent rounded-md shadow-sm text-xs font-medium text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            Create Template
+                        </a>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Elements
+        const clientList = document.getElementById('client-list');
+        const clientSearch = document.getElementById('client-search');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        const selectAllBtn = document.getElementById('select-all-btn');
+        const clearSelectionBtn = document.getElementById('clear-selection-btn');
+        const selectedCountEl = document.getElementById('selected-count');
+        const templateButtons = document.querySelectorAll('.template-btn');
+        const recipientsSelect = document.getElementById('{{ form.recipients.id_for_label }}');
+        const emailForm = document.getElementById('email-form');
+        const sendEmailBtn = document.getElementById('send-email-btn');
+        
+        // State
+        let clients = [];
+        let selectedClients = new Set();
+        let currentFilter = 'all';
+        
+        // Load clients
+        loadClients(currentFilter);
+        
+        // Event listeners
+        clientSearch.addEventListener('input', filterClients);
+        
+        filterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const filter = this.dataset.filter;
+                currentFilter = filter;
+                
+                // Update UI
+                filterButtons.forEach(btn => {
+                    if (btn.dataset.filter === filter) {
+                        btn.classList.remove('border-gray-300', 'text-gray-700', 'bg-white');
+                        btn.classList.add('border-transparent', 'text-white', 'bg-primary-400');
+                    } else {
+                        btn.classList.remove('border-transparent', 'text-white', 'bg-primary-400');
+                        btn.classList.add('border-gray-300', 'text-gray-700', 'bg-white');
+                    }
+                });
+                
+                // Load clients with the new filter
+                loadClients(filter);
+            });
+        });
+        
+        selectAllBtn.addEventListener('click', function() {
+            const checkboxes = clientList.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+                selectedClients.add(checkbox.value);
+            });
+            updateSelectedCount();
+        });
+        
+        clearSelectionBtn.addEventListener('click', function() {
+            const checkboxes = clientList.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectedClients.clear();
+            updateSelectedCount();
+        });
+        
+        templateButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const templateId = this.dataset.id;
+                loadTemplate(templateId);
+            });
+        });
+        
+        emailForm.addEventListener('submit', function(e) {
+            if (selectedClients.size === 0) {
+                e.preventDefault();
+                alert('Please select at least one recipient.');
+                return false;
+            }
+            
+            // Update the hidden recipients select
+            for (const option of recipientsSelect.options) {
+                option.selected = selectedClients.has(option.value);
+            }
+            
+            // Disable the send button to prevent double submission
+            sendEmailBtn.disabled = true;
+            sendEmailBtn.innerHTML = '<span class="material-icons-outlined mr-2" style="font-size: 18px;">hourglass_empty</span> Sending...';
+        });
+        
+        // Functions
+        function loadClients(filter) {
+            clientList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500"><span class="material-icons-outlined text-gray-300 text-3xl mb-2">hourglass_empty</span><p>Loading clients...</p></div>';
+            
+            fetch(`{% url 'admin_panel:email_client_list' %}?filter=${filter}`)
+                .then(response => response.json())
+                .then(data => {
+                    clients = data.clients;
+                    renderClients(clients);
+                })
+                .catch(error => {
+                    console.error('Error loading clients:', error);
+                    clientList.innerHTML = '<div class="p-4 text-center text-sm text-red-500"><span class="material-icons-outlined text-red-300 text-3xl mb-2">error</span><p>Error loading clients</p></div>';
+                });
+        }
+        
+        function renderClients(clientsToRender) {
+            if (clientsToRender.length === 0) {
+                clientList.innerHTML = '<div class="p-4 text-center text-sm text-gray-500"><span class="material-icons-outlined text-gray-300 text-3xl mb-2">people</span><p>No clients found</p></div>';
+                return;
+            }
+            
+            let html = '';
+            
+            clientsToRender.forEach(client => {
+                const isSelected = selectedClients.has(client.id.toString());
+                
+                html += `
+                <div class="border-b border-gray-200 last:border-b-0">
+                    <label class="flex items-center p-3 hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox" class="client-checkbox h-4 w-4 text-primary-400 focus:ring-primary-400 border-gray-300 rounded" 
+                            value="${client.id}" ${isSelected ? 'checked' : ''}>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-800">${client.name}</p>
+                            <p class="text-xs text-gray-500">${client.email}</p>
+                        </div>
+                    </label>
+                </div>
+                `;
+            });
+            
+            clientList.innerHTML = html;
+            
+            // Add event listeners to checkboxes
+            const checkboxes = clientList.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        selectedClients.add(this.value);
+                    } else {
+                        selectedClients.delete(this.value);
+                    }
+                    updateSelectedCount();
+                });
+            });
+            
+            updateSelectedCount();
+        }
+        
+        function filterClients() {
+            const searchTerm = clientSearch.value.toLowerCase();
+            
+            if (searchTerm === '') {
+                renderClients(clients);
+                return;
+            }
+            
+            const filteredClients = clients.filter(client => 
+                client.name.toLowerCase().includes(searchTerm) || 
+                client.email.toLowerCase().includes(searchTerm)
+            );
+            
+            renderClients(filteredClients);
+        }
+        
+        function updateSelectedCount() {
+            selectedCountEl.textContent = selectedClients.size;
+        }
+        
+        function loadTemplate(templateId) {
+            fetch(`{% url 'admin_panel:email_template_get' 0 %}`.replace('0', templateId))
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('{{ form.subject.id_for_label }}').value = data.subject;
+                    document.getElementById('{{ form.message.id_for_label }}').value = data.message;
+                })
+                .catch(error => {
+                    console.error('Error loading template:', error);
+                    alert('Error loading template. Please try again.');
+                });
+        }
+    });
+</script>
+{% endblock %}

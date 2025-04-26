@@ -12,12 +12,15 @@
             min-height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow-x: hidden;
         }
 
         .sidebar {
             min-height: calc(100vh - 56px);
             background-color: #343a40;
             color: #fff;
+            overflow-y: auto;
+            max-height: calc(100vh - 56px);
         }
 
         .sidebar .nav-link {
@@ -39,10 +42,33 @@
 
         main {
             flex: 1;
+            overflow-y: auto;
+            max-height: calc(100vh - 56px);
+            padding-bottom: 2rem;
         }
 
         .content {
             padding: 1.5rem;
+            height: 100%;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
         }
     </style>
 </head>

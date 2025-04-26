@@ -1,0 +1,224 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+
+{% block title %}{{ title }} | Barberian Admin{% endblock %}
+
+{% block page_title %}{{ title }}{% endblock %}
+
+{% block admin_content %}
+<!-- Page Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">{{ title }}</h2>
+        <p class="mt-1 text-sm text-gray-500">{% if template %}Edit existing{% else %}Create a new{% endif %} email template</p>
+    </div>
+    <div class="mt-4 md:mt-0">
+        <a href="{% url 'admin_panel:email_dashboard' %}" class="inline-flex items-center justify-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+            <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+            Back to Email Dashboard
+        </a>
+    </div>
+</div>
+
+{% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+            <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                <div class="flex items-center">
+                    <span class="material-icons-outlined mr-2" style="font-size: 20px;">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% else %}info{% endif %}
+                    </span>
+                    <p>{{ message }}</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endif %}
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Template Form -->
+    <div class="lg:col-span-2">
+        <div class="modern-card overflow-hidden">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Template Details</h3>
+                
+                <form method="post" class="space-y-6">
+                    {% csrf_token %}
+                    
+                    <!-- Template Name -->
+                    <div>
+                        <label for="{{ form.name.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Template Name</label>
+                        <div class="mt-1">
+                            <input type="text" name="{{ form.name.html_name }}" id="{{ form.name.id_for_label }}" 
+                                class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                                placeholder="e.g., Welcome Email, Appointment Reminder" value="{{ form.name.value|default:'' }}" required>
+                            {% if form.name.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Subject -->
+                    <div>
+                        <label for="{{ form.subject.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <div class="mt-1">
+                            <input type="text" name="{{ form.subject.html_name }}" id="{{ form.subject.id_for_label }}" 
+                                class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                                placeholder="Enter email subject" value="{{ form.subject.value|default:'' }}" required>
+                            {% if form.subject.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.subject.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <!-- Message -->
+                    <div>
+                        <label for="{{ form.message.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-1">Message</label>
+                        <div class="mt-1">
+                            <textarea name="{{ form.message.html_name }}" id="{{ form.message.id_for_label }}" rows="12" 
+                                class="shadow-sm focus:ring-primary-400 focus:border-primary-400 block w-full sm:text-sm border-gray-300 rounded-md"
+                                placeholder="Enter your message here..." required>{{ form.message.value|default:'' }}</textarea>
+                            {% if form.message.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.message.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">
+                            You can use the following placeholders: {recipient_name}, {business_name}
+                        </p>
+                    </div>
+                    
+                    <!-- Form Actions -->
+                    <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                        <a href="{% url 'admin_panel:email_dashboard' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            Cancel
+                        </a>
+                        <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400">
+                            <span class="material-icons-outlined mr-2" style="font-size: 18px;">save</span>
+                            {% if template %}Save Changes{% else %}Create Template{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sidebar -->
+    <div>
+        <!-- Help & Tips -->
+        <div class="modern-card overflow-hidden">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Tips for Effective Emails</h3>
+                
+                <div class="space-y-4">
+                    <div class="flex items-start">
+                        <span class="material-icons-outlined text-primary-400 mr-3 mt-0.5" style="font-size: 18px;">lightbulb</span>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-800">Keep it concise</h4>
+                            <p class="text-xs text-gray-500 mt-1">Short, focused emails have higher engagement rates.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <span class="material-icons-outlined text-primary-400 mr-3 mt-0.5" style="font-size: 18px;">lightbulb</span>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-800">Personalize your message</h4>
+                            <p class="text-xs text-gray-500 mt-1">Use the {recipient_name} placeholder to address clients by name.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <span class="material-icons-outlined text-primary-400 mr-3 mt-0.5" style="font-size: 18px;">lightbulb</span>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-800">Clear call to action</h4>
+                            <p class="text-xs text-gray-500 mt-1">Include a clear next step for the recipient.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-start">
+                        <span class="material-icons-outlined text-primary-400 mr-3 mt-0.5" style="font-size: 18px;">lightbulb</span>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-800">Mobile-friendly</h4>
+                            <p class="text-xs text-gray-500 mt-1">Keep formatting simple for better mobile viewing.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Placeholder Reference -->
+        <div class="modern-card overflow-hidden mt-6">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Placeholder Reference</h3>
+                
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <table class="min-w-full">
+                        <thead>
+                            <tr>
+                                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">Placeholder</th>
+                                <th class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider pb-2">Description</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            <tr>
+                                <td class="py-2 text-sm font-mono text-primary-600">{recipient_name}</td>
+                                <td class="py-2 text-sm text-gray-500">Client's full name</td>
+                            </tr>
+                            <tr>
+                                <td class="py-2 text-sm font-mono text-primary-600">{business_name}</td>
+                                <td class="py-2 text-sm text-gray-500">Your business name</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Template Examples -->
+        <div class="modern-card overflow-hidden mt-6">
+            <div class="p-6">
+                <h3 class="text-lg font-medium text-gray-800 mb-4">Template Examples</h3>
+                
+                <div class="space-y-3">
+                    <button type="button" class="example-btn w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200" data-subject="Welcome to Barberian!" data-message="Dear {recipient_name},\n\nWelcome to Barberian! We're thrilled to have you as our client.\n\nAt {business_name}, we're committed to providing you with exceptional service and a relaxing experience. Feel free to explore our range of services and book your next appointment online.\n\nIf you have any questions, please don't hesitate to contact us.\n\nBest regards,\nThe {business_name} Team">
+                        <h4 class="text-sm font-medium text-gray-800">Welcome Email</h4>
+                        <p class="text-xs text-gray-500 mt-1">For new clients</p>
+                    </button>
+                    
+                    <button type="button" class="example-btn w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200" data-subject="Your Appointment Reminder" data-message="Hello {recipient_name},\n\nThis is a friendly reminder about your upcoming appointment at {business_name}.\n\nIf you need to reschedule, please contact us at least 24 hours in advance.\n\nWe look forward to seeing you!\n\nBest regards,\nThe {business_name} Team">
+                        <h4 class="text-sm font-medium text-gray-800">Appointment Reminder</h4>
+                        <p class="text-xs text-gray-500 mt-1">For upcoming appointments</p>
+                    </button>
+                    
+                    <button type="button" class="example-btn w-full text-left p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-200" data-subject="Special Offer Just for You!" data-message="Dear {recipient_name},\n\nWe miss you at {business_name}! It's been a while since your last visit, and we'd love to see you again.\n\nAs a valued client, we're offering you a special discount on your next service. Book your appointment today!\n\nBest regards,\nThe {business_name} Team">
+                        <h4 class="text-sm font-medium text-gray-800">Re-engagement Email</h4>
+                        <p class="text-xs text-gray-500 mt-1">For inactive clients</p>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Example template buttons
+        const exampleButtons = document.querySelectorAll('.example-btn');
+        const subjectInput = document.getElementById('{{ form.subject.id_for_label }}');
+        const messageInput = document.getElementById('{{ form.message.id_for_label }}');
+        
+        exampleButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const subject = this.dataset.subject;
+                const message = this.dataset.message;
+                
+                if (confirm('This will replace your current subject and message. Continue?')) {
+                    subjectInput.value = subject;
+                    messageInput.value = message;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -1,30 +1,92 @@
 {% extends 'appointments/booking_base.html' %}
+{% load appointment_extras %}
 
 {% block booking_content %}
-<h2 class="card-title mb-4">Select a Service</h2>
-
-<form method="post">
-    {% csrf_token %}
-    
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            Please correct the errors below.
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-serif font-bold gradient-text">Select a Service</h2>
+        <div class="text-sm text-gray-500 flex items-center">
+            <i class="material-icons text-primary mr-1">info</i>
+            <span>Step 1 of 3</span>
         </div>
-    {% endif %}
-    
-    <div class="mb-3">
-        {{ form.service.label_tag }}
-        {{ form.service }}
-        {% if form.service.errors %}
-            <div class="invalid-feedback d-block">
-                {{ form.service.errors }}
+    </div>
+
+    <p class="text-gray-600">Choose the service you'd like to book. Our professional barbers are ready to provide you with an exceptional grooming experience.</p>
+
+    <form method="post" class="space-y-8">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="material-icons text-red-500">error_outline</i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">
+                            Please correct the errors below.
+                        </p>
+                    </div>
+                </div>
             </div>
         {% endif %}
-    </div>
-    
-    <div class="d-flex justify-content-between mt-4">
-        <a href="{% url 'client_portal:home' %}" class="btn btn-outline-secondary">Cancel</a>
-        <button type="submit" class="btn btn-primary">Continue</button>
-    </div>
-</form>
+
+        <div class="space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {% for choice in form.service.field.choices %}
+                    {% if choice.0 %}
+                        <label for="id_service_{{ forloop.counter0 }}" class="service-option relative block cursor-pointer">
+                            <input type="radio" name="{{ form.service.name }}" id="id_service_{{ forloop.counter0 }}" value="{{ choice.0 }}"
+                                   class="absolute opacity-0 w-0 h-0 peer"
+                                   {% if form.service.value|stringformat:"s" == choice.0|stringformat:"s" %}checked{% endif %}>
+                            <div class="bg-white border-2 border-gray-200 rounded-xl shadow-sm p-5 transition-all duration-300
+                                        peer-checked:border-primary peer-checked:bg-primary/5 peer-checked:shadow-md
+                                        hover:shadow-md hover:border-gray-300">
+                                <div class="flex flex-col h-full">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+                                            <i class="material-icons text-primary">content_cut</i>
+                                        </div>
+                                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center
+                                                    peer-checked:border-primary peer-checked:bg-primary">
+                                            <i class="material-icons text-white scale-0 transition-transform duration-300
+                                                      peer-checked:scale-100">check</i>
+                                        </div>
+                                    </div>
+                                    <h3 class="text-lg font-semibold mb-2">{{ choice.1 }}</h3>
+                                    <div class="mt-auto pt-4 flex items-center justify-between">
+                                        <span class="text-primary font-bold">KSh {{ choice.0|get_service_price }}</span>
+                                        <span class="text-gray-500 text-sm">{{ choice.0|get_service_duration }} min</span>
+                                    </div>
+                                </div>
+                                <div class="absolute top-2 right-2 opacity-0 peer-checked:opacity-100 transition-opacity duration-300">
+                                    <div class="w-6 h-6 rounded-full bg-primary flex items-center justify-center">
+                                        <i class="material-icons text-white text-sm">check</i>
+                                    </div>
+                                </div>
+                            </div>
+                        </label>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            {% if form.service.errors %}
+                <p class="text-red-500 text-sm mt-2">
+                    {{ form.service.errors.0 }}
+                </p>
+            {% endif %}
+        </div>
+
+        <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+            <a href="{% url 'client_portal:home' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300">
+                <i class="material-icons mr-2 text-gray-500">arrow_back</i>
+                Cancel
+            </a>
+            <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105">
+                Continue
+                <i class="material-icons ml-2">arrow_forward</i>
+            </button>
+        </div>
+    </form>
+</div>
 {% endblock %}

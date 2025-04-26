@@ -1,33 +1,423 @@
 {% extends 'appointments/booking_base.html' %}
+{% load appointment_extras %}
+
+{% block extra_css %}
+<style>
+    /* Date picker styling */
+    .date-picker-container {
+        position: relative;
+    }
+
+    .date-input {
+        @apply w-full py-3 px-4 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all duration-300;
+    }
+
+    .date-input:focus {
+        @apply shadow-md;
+    }
+
+    .date-icon {
+        @apply absolute right-3 top-1/2 transform -translate-y-1/2 text-primary pointer-events-none;
+    }
+
+    /* Calendar styling */
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        @apply opacity-0 w-full h-full absolute top-0 left-0 cursor-pointer;
+    }
+
+    /* Date display animation */
+    @keyframes date-selected {
+        0% { transform: translateY(10px); opacity: 0; }
+        100% { transform: translateY(0); opacity: 1; }
+    }
+
+    .date-selected-animation {
+        animation: date-selected 0.5s ease-out forwards;
+    }
+
+    /* Confirm button animations */
+    @keyframes confirm-button-pulse {
+        0% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.7); }
+        70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+    }
+
+    .confirm-button-pulse {
+        animation: confirm-button-pulse 2s infinite;
+    }
+</style>
+{% endblock %}
 
 {% block booking_content %}
-<h2 class="card-title mb-4">Select a Date</h2>
-
-<form method="post">
-    {% csrf_token %}
-    
-    {% if form.errors %}
-        <div class="alert alert-danger">
-            Please correct the errors below.
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-serif font-bold gradient-text">Select a Date</h2>
+        <div class="text-sm text-gray-500 flex items-center">
+            <i class="material-icons text-primary mr-1">info</i>
+            <span>Step 2 of 3</span>
         </div>
-    {% endif %}
-    
-    <div class="mb-3">
-        {{ form.date.label_tag }}
-        {{ form.date }}
-        {% if form.date.errors %}
-            <div class="invalid-feedback d-block">
-                {{ form.date.errors }}
+    </div>
+
+    <p class="text-gray-600">Choose a date for your appointment. Our staff will allocate an appropriate time slot based on availability.</p>
+
+    <form method="post" class="space-y-8">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-md">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="material-icons text-red-500">error_outline</i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">
+                            Please correct the errors below.
+                        </p>
+                    </div>
+                </div>
             </div>
         {% endif %}
-        <small class="form-text text-muted">
-            Please select a date within the next 30 days.
-        </small>
-    </div>
-    
-    <div class="d-flex justify-content-between mt-4">
-        <a href="{% url 'appointments:booking_staff' %}" class="btn btn-outline-secondary">Back</a>
-        <button type="submit" class="btn btn-primary">Continue</button>
-    </div>
-</form>
+
+        <!-- Date Selection -->
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div class="space-y-6">
+                <div class="flex items-center">
+                    <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                        <i class="material-icons text-primary">event</i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-semibold">Appointment Date</h3>
+                        <p class="text-sm text-gray-500">Select your preferred date</p>
+                    </div>
+                </div>
+
+                <div class="date-picker-container">
+                    <label for="{{ form.date.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">
+                        Select Date
+                    </label>
+                    <div class="relative">
+                        {{ form.date }}
+                        <i class="material-icons date-icon">calendar_today</i>
+                    </div>
+                    {% if form.date.errors %}
+                        <p class="mt-2 text-sm text-red-600">
+                            {{ form.date.errors.0 }}
+                        </p>
+                    {% endif %}
+                    <p class="mt-2 text-xs text-gray-500 flex items-center">
+                        <i class="material-icons text-gray-400 text-sm mr-1">info</i>
+                        Please select a date within the next 30 days
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selected Date Display -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <i class="material-icons text-primary mr-2">summarize</i>
+                Appointment Summary
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                    <i class="material-icons text-primary mr-3">content_cut</i>
+                    <div>
+                        <p class="text-sm text-gray-500">Service</p>
+                        <p class="font-medium">{{ service.name }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                    <i class="material-icons text-primary mr-3">schedule</i>
+                    <div>
+                        <p class="text-sm text-gray-500">Duration</p>
+                        <p class="font-medium">{{ service.duration }} minutes</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                    <i class="material-icons text-primary mr-3">payments</i>
+                    <div>
+                        <p class="text-sm text-gray-500">Price</p>
+                        <p class="font-medium">KSh {{ service.price }}</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center p-3 bg-white rounded-lg shadow-sm">
+                    <i class="material-icons text-primary mr-3">event</i>
+                    <div>
+                        <p class="text-sm text-gray-500">Date</p>
+                        <p class="font-medium" id="selectedDateDisplay">
+                            {% if form.date.value %}
+                                {{ form.date.value|date:"l, F d, Y" }}
+                            {% else %}
+                                Please select a date
+                            {% endif %}
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Direct Save Button -->
+            <div class="mt-6 text-center">
+                <!-- <button type="button" id="confirmSaveBtn"
+                        class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-full shadow-sm text-base font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:hover:shadow-none"
+                        disabled>
+                    <i class="material-icons mr-2">check_circle</i>
+                    Confirm & Save Booking
+                </button> -->
+                <p class="mt-2 text-sm text-gray-500" id="confirmBtnHelp">
+                    <i class="material-icons text-sm align-middle mr-1">info</i>
+                    Select a date to enable this button
+                </p>
+            </div>
+        </div>
+
+        <!-- Next Step Preview -->
+        <div class="bg-blue-50 rounded-xl p-6 border border-blue-100">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                        <i class="material-icons text-blue-500">lightbulb</i>
+                    </div>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-semibold text-blue-800">What happens next?</h3>
+                    <p class="text-blue-700 mt-1">
+                        After selecting a date, you can either:
+                    </p>
+                    <ul class="mt-2 space-y-2 text-sm text-blue-700">
+                        <li class="flex items-start">
+                            <i class="material-icons text-blue-500 mr-2 text-sm">check_circle</i>
+                            <span>Click "Confirm & Save Booking" to immediately save your appointment</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="material-icons text-blue-500 mr-2 text-sm">check_circle</i>
+                            <span>Click "Continue" to proceed to the confirmation page for final review</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Buttons -->
+        <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+            <a href="{% url 'appointments:booking_service' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300">
+                <i class="material-icons mr-2 text-gray-500">arrow_back</i>
+                Back to Services
+            </a>
+            <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-dark bg-gradient-gold hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300 transform hover:scale-105">
+                Continue to Confirmation
+                <i class="material-icons ml-2">arrow_forward</i>
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dateInput = document.getElementById('{{ form.date.id_for_label }}');
+        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
+        const confirmSaveBtn = document.getElementById('confirmSaveBtn');
+        const confirmBtnHelp = document.getElementById('confirmBtnHelp');
+        const form = document.querySelector('form');
+
+        // Add Tailwind classes to the date input
+        dateInput.classList.add('date-input');
+
+        // Function to format date in a nice readable format
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            return date.toLocaleDateString('en-US', options);
+        }
+
+        // Function to update button state
+        function updateButtonState() {
+            if (dateInput.value) {
+                confirmSaveBtn.disabled = false;
+                confirmSaveBtn.classList.add('confirm-button-pulse');
+                confirmBtnHelp.innerHTML = '<i class="material-icons text-sm align-middle mr-1 text-green-500">check_circle</i> Ready to save your booking';
+                confirmBtnHelp.classList.remove('text-gray-500');
+                confirmBtnHelp.classList.add('text-green-600');
+            } else {
+                confirmSaveBtn.disabled = true;
+                confirmSaveBtn.classList.remove('confirm-button-pulse');
+                confirmBtnHelp.innerHTML = '<i class="material-icons text-sm align-middle mr-1">info</i> Select a date to enable this button';
+                confirmBtnHelp.classList.add('text-gray-500');
+                confirmBtnHelp.classList.remove('text-green-600');
+            }
+        }
+
+        // Update the selected date display when the date changes
+        dateInput.addEventListener('change', function() {
+            if (this.value) {
+                selectedDateDisplay.textContent = formatDate(this.value);
+                selectedDateDisplay.classList.add('date-selected-animation');
+                setTimeout(() => {
+                    selectedDateDisplay.classList.remove('date-selected-animation');
+                }, 500);
+            } else {
+                selectedDateDisplay.textContent = 'Please select a date';
+            }
+
+            // Update button state
+            updateButtonState();
+        });
+
+        // Initialize button state
+        updateButtonState();
+
+        // Handle direct save functionality
+        confirmSaveBtn.addEventListener('click', function() {
+            if (this.disabled) return;
+
+            // Show loading state
+            const originalContent = this.innerHTML;
+            this.disabled = true;
+            this.innerHTML = '<svg class="animate-spin -ml-1 mr-2 h-5 w-5 text-dark" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...';
+
+            // Create FormData from the form
+            const formData = new FormData(form);
+
+            // Add a flag to indicate this is a direct save
+            formData.append('direct_save', 'true');
+
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Send AJAX request to save the appointment
+            fetch('{% url "appointments:booking_confirm" %}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRFToken': csrfToken
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Something went wrong');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    // Show success message
+                    showSuccessModal(data.message, data.redirect_url);
+                } else {
+                    // Show error message
+                    showErrorMessage(data.message || 'An error occurred while saving the appointment.');
+                    this.disabled = false;
+                    this.innerHTML = originalContent;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showErrorMessage('An error occurred while saving the appointment. Please try again.');
+                this.disabled = false;
+                this.innerHTML = originalContent;
+            });
+        });
+
+        // Function to show success modal
+        function showSuccessModal(message, redirectUrl) {
+            // Create modal container
+            const modalContainer = document.createElement('div');
+            modalContainer.className = 'fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50';
+            modalContainer.id = 'successModal';
+
+            // Create modal content
+            modalContainer.innerHTML = `
+                <div class="bg-white rounded-xl shadow-xl max-w-md w-full overflow-hidden transform transition-all animate-scale-in">
+                    <div class="bg-green-500 p-4 text-white">
+                        <div class="flex items-center">
+                            <i class="material-icons mr-2 text-2xl">check_circle</i>
+                            <h3 class="text-xl font-bold">Booking Confirmed!</h3>
+                        </div>
+                    </div>
+                    <div class="p-6 text-center">
+                        <div class="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mx-auto mb-4">
+                            <i class="material-icons text-green-500 text-4xl">event_available</i>
+                        </div>
+                        <h4 class="text-xl font-bold mb-2">Thank You for Your Booking!</h4>
+                        <div class="bg-green-50 border border-green-100 rounded-lg p-3 mb-4 text-left">
+                            <p class="text-green-800 text-sm">
+                                <i class="material-icons text-green-500 align-middle mr-1">info</i>
+                                Your appointment has been successfully saved to the database!
+                            </p>
+                        </div>
+                        <p class="text-gray-600 mb-4">${message}</p>
+                        <p class="text-gray-600 mb-6">An administrator will review your request, assign a staff member, and allocate a time slot based on availability.</p>
+                        <a href="${redirectUrl}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transition-all duration-300">
+                            <i class="material-icons mr-2">list</i>
+                            View My Appointments
+                        </a>
+                    </div>
+                </div>
+            `;
+
+            // Add modal to the document
+            document.body.appendChild(modalContainer);
+
+            // Prevent body scrolling
+            document.body.style.overflow = 'hidden';
+
+            // Set timeout to redirect after 5 seconds
+            setTimeout(function() {
+                window.location.href = redirectUrl;
+            }, 5000);
+
+            // Add click event to close modal and redirect
+            modalContainer.addEventListener('click', function(e) {
+                if (e.target === modalContainer) {
+                    window.location.href = redirectUrl;
+                }
+            });
+        }
+
+        // Function to show error message
+        function showErrorMessage(message) {
+            // Create error alert if it doesn't exist
+            let errorAlert = document.getElementById('errorAlert');
+            if (!errorAlert) {
+                errorAlert = document.createElement('div');
+                errorAlert.id = 'errorAlert';
+                errorAlert.className = 'bg-red-50 border-l-4 border-red-500 p-4 rounded-md mb-6 animate-fade-in';
+
+                // Insert at the top of the form
+                form.insertBefore(errorAlert, form.firstChild);
+            }
+
+            // Update error message
+            errorAlert.innerHTML = `
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <i class="material-icons text-red-500">error_outline</i>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-red-700">${message}</p>
+                    </div>
+                </div>
+            `;
+
+            // Scroll to error
+            errorAlert.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Remove after 5 seconds
+            setTimeout(() => {
+                errorAlert.classList.add('animate-fade-out');
+                setTimeout(() => {
+                    if (errorAlert.parentNode) {
+                        errorAlert.parentNode.removeChild(errorAlert);
+                    }
+                }, 500);
+            }, 5000);
+        }
+    });
+</script>
 {% endblock %}

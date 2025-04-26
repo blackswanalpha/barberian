@@ -1,26 +1,29 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 from django.contrib import messages
 from django.utils import timezone
+from django.http import JsonResponse
+from django.urls import reverse
 from datetime import datetime, timedelta
 
 from .models import Appointment
 from .forms import (
     ServiceSelectionForm,
-    StaffSelectionForm,
     DateSelectionForm,
     TimeSelectionForm,
     ConfirmationForm
 )
 from apps.services.models import Service
 from apps.core.models import User
+from apps.staff.models import Schedule
 from apps.notifications.models import Notification
 from apps.notifications.email_utils import (
     send_appointment_confirmation,
     send_staff_new_appointment,
     send_appointment_cancellation,
-    send_staff_appointment_cancelled
+    send_staff_appointment_cancelled,
+    send_admin_appointment_request,
+    send_appointment_update
 )
 from .calendar_utils import get_month_calendar, get_day_schedule, get_time_slots
 
@@ -42,20 +45,20 @@ def booking_service(request):
         # Store the selected service in the session
         request.session['booking_service_id'] = form.cleaned_data['service'].id
 
-        # Redirect to the next step
-        return redirect('appointments:booking_staff')
+        # Redirect to the next step (date selection)
+        return redirect('appointments:booking_date')
 
     return render(request, 'appointments/booking_service.html', {
         'form': form,
         'title': 'Select a Service',
         'step': 1,
-        'total_steps': 4
+        'total_steps': 2  # Now we have only 2 steps
     })
 
 @login_required
-def booking_staff(request):
+def booking_date(request):
     """
-    Step 2: Staff selection view.
+    Step 2: Date selection view.
     """
     # Check if the user is a client
     if request.user.role != 'client':
@@ -72,198 +75,220 @@ def booking_staff(request):
     service = get_object_or_404(Service, id=service_id)
 
     # Initialize the form
-    form = StaffSelectionForm(request.POST or None, service_id=service_id)
-
-    if request.method == 'POST' and form.is_valid():
-        # Store the selected staff in the session
-        request.session['booking_staff_id'] = form.cleaned_data['staff'].id
-
-        # Redirect to the next step
-        return redirect('appointments:booking_date')
-
-    return render(request, 'appointments/booking_staff.html', {
-        'form': form,
-        'service': service,
-        'title': 'Select a Staff Member',
-        'step': 2,
-        'total_steps': 4
-    })
-
-@login_required
-def booking_date(request):
-    """
-    Step 3: Date selection view.
-    """
-    # Check if the user is a client
-    if request.user.role != 'client':
-        messages.error(request, "Only clients can book appointments.")
-        return redirect('client_portal:home')
-
-    # Check if the service and staff were selected
-    if 'booking_service_id' not in request.session or 'booking_staff_id' not in request.session:
-        messages.error(request, "Please select a service and staff member first.")
-        return redirect('appointments:booking_service')
-
-    # Get the selected service and staff
-    service_id = request.session['booking_service_id']
-    staff_id = request.session['booking_staff_id']
-    service = get_object_or_404(Service, id=service_id)
-    staff = get_object_or_404(User, id=staff_id)
-
-    # Initialize the form
-    form = DateSelectionForm(request.POST or None, staff_id=staff_id)
+    form = DateSelectionForm(request.POST or None, service_id=service_id)
 
     if request.method == 'POST' and form.is_valid():
         # Store the selected date in the session
         request.session['booking_date'] = form.cleaned_data['date'].isoformat()
 
-        # Redirect to the next step
-        return redirect('appointments:booking_time')
+        # Redirect directly to the confirmation step
+        return redirect('appointments:booking_confirm')
 
     return render(request, 'appointments/booking_date.html', {
         'form': form,
         'service': service,
-        'staff': staff,
         'title': 'Select a Date',
-        'step': 3,
-        'total_steps': 4
+        'step': 2,
+        'total_steps': 2  # Now we only have 2 steps
     })
 
 @login_required
 def booking_time(request):
     """
-    Step 4: Time selection view.
+    Step 3: Time selection view.
     """
     # Check if the user is a client
     if request.user.role != 'client':
         messages.error(request, "Only clients can book appointments.")
         return redirect('client_portal:home')
 
-    # Check if the service, staff, and date were selected
-    if 'booking_service_id' not in request.session or 'booking_staff_id' not in request.session or 'booking_date' not in request.session:
+    # Check if the service and date were selected
+    if 'booking_service_id' not in request.session or 'booking_date' not in request.session:
         messages.error(request, "Please complete all previous steps first.")
         return redirect('appointments:booking_service')
 
-    # Get the selected service, staff, and date
+    # Get the selected service and date
     service_id = request.session['booking_service_id']
-    staff_id = request.session['booking_staff_id']
     date_str = request.session['booking_date']
 
     service = get_object_or_404(Service, id=service_id)
-    staff = get_object_or_404(User, id=staff_id)
-    date = datetime.fromisoformat(date_str).date()
+
+    try:
+        date = datetime.fromisoformat(date_str).date()
+    except (ValueError, TypeError):
+        messages.error(request, "Invalid date format. Please select a date again.")
+        return redirect('appointments:booking_date')
 
     # Initialize the form
-    form = TimeSelectionForm(request.POST or None, staff_id=staff_id, service_id=service_id, date=date)
+    form = TimeSelectionForm(request.POST or None, service_id=service_id, date=date)
 
     if request.method == 'POST' and form.is_valid():
         # Store the selected time in the session
-        request.session['booking_time'] = form.cleaned_data['time']
+        time_str = form.cleaned_data['time']
+        request.session['booking_time'] = time_str
+
+        # Log the selected time for debugging
+        print(f"Selected time: {time_str}")
 
         # Redirect to the confirmation step
         return redirect('appointments:booking_confirm')
 
+    # We always have time slots available now, so this check is no longer needed
+
     return render(request, 'appointments/booking_time.html', {
         'form': form,
         'service': service,
-        'staff': staff,
         'date': date,
         'title': 'Select a Time',
-        'step': 4,
-        'total_steps': 4
+        'step': 3,
+        'total_steps': 3
     })
 
 @login_required
 def booking_confirm(request):
     """
-    Step 5: Confirmation view.
+    Step 3: Confirmation view.
     """
     # Check if the user is a client
     if request.user.role != 'client':
         messages.error(request, "Only clients can book appointments.")
         return redirect('client_portal:home')
 
-    # Check if all required data is in the session
-    required_keys = ['booking_service_id', 'booking_staff_id', 'booking_date', 'booking_time']
+    # Check if service and date are in the session
+    required_keys = ['booking_service_id', 'booking_date']
     if not all(key in request.session for key in required_keys):
         messages.error(request, "Please complete all previous steps first.")
         return redirect('appointments:booking_service')
 
-    # Get the selected service, staff, date, and time
+    # Get the selected service and date
     service_id = request.session['booking_service_id']
-    staff_id = request.session['booking_staff_id']
     date_str = request.session['booking_date']
-    time_str = request.session['booking_time']
 
     service = get_object_or_404(Service, id=service_id)
-    staff = get_object_or_404(User, id=staff_id)
-    date = datetime.fromisoformat(date_str).date()
 
-    # Parse the time string (format: HH:MM)
-    hour, minute = map(int, time_str.split(':'))
-    time_obj = datetime.strptime(f"{hour}:{minute}", "%H:%M").time()
+    try:
+        date = datetime.fromisoformat(date_str).date()
+    except (ValueError, TypeError):
+        messages.error(request, "Invalid date format. Please select a date again.")
+        return redirect('appointments:booking_date')
 
-    # Combine date and time and make timezone-aware
+    # We don't need a specific time anymore as admin will allocate it
+    # Use 9:00 AM as a placeholder for the confirmation page
+    time_obj = datetime.strptime("09:00", "%H:%M").time()
+
+    # Create a placeholder datetime for display purposes only
+    # The actual appointment time will be set by the admin
     start_datetime = timezone.make_aware(datetime.combine(date, time_obj))
     end_datetime = start_datetime + timedelta(minutes=service.duration)
+
+    # Check if the date is in the past
+    if date < timezone.now().date():
+        messages.error(request, "You cannot book an appointment in the past. Please select a future date.")
+        return redirect('appointments:booking_date')
 
     # Initialize the form
     form = ConfirmationForm(request.POST or None)
 
-    if request.method == 'POST' and form.is_valid():
-        # Create the appointment
-        appointment = Appointment(
-            client=request.user,
-            staff=staff,
-            service=service,
-            start_time=start_datetime,
-            end_time=end_datetime,
-            status='pending',
-            notes=form.cleaned_data.get('notes', '')
-        )
-        appointment.save()
+    # Check if this is a direct save from the booking_date page
+    direct_save = request.POST.get('direct_save') == 'true'
 
-        # Create notifications
-        Notification.objects.create(
-            user=request.user,
-            type='appointment',
-            title='Appointment Booked',
-            message=f"Your appointment for {service.name} with {staff.get_full_name()} on {date.strftime('%B %d, %Y')} at {time_obj.strftime('%I:%M %p')} has been booked.",
-            related_appointment=appointment
-        )
+    # For direct save, we don't need form validation
+    if request.method == 'POST' and (form.is_valid() or direct_save):
+        try:
+            # Find admin users to notify
+            admin_users = User.objects.filter(role='admin', is_active=True)
 
-        Notification.objects.create(
-            user=staff,
-            type='appointment',
-            title='New Appointment',
-            message=f"A new appointment for {service.name} with {request.user.get_full_name()} on {date.strftime('%B %d, %Y')} at {time_obj.strftime('%I:%M %p')} has been booked.",
-            related_appointment=appointment
-        )
+            # Create the appointment without assigning a staff member or specific time yet
+            # We'll use midnight as a placeholder time that will be updated by admin
+            placeholder_time = datetime.strptime("00:00", "%H:%M").time()
+            placeholder_start = timezone.make_aware(datetime.combine(date, placeholder_time))
+            placeholder_end = placeholder_start + timedelta(minutes=service.duration)
 
-        # Send email notifications
-        send_appointment_confirmation(appointment)
-        send_staff_new_appointment(appointment)
+            # Get notes from form if available, otherwise use empty string
+            notes = ''
+            if form.is_valid():
+                notes = form.cleaned_data.get('notes', '')
 
-        # Clear the booking data from the session
-        for key in required_keys:
-            if key in request.session:
-                del request.session[key]
+            appointment = Appointment(
+                client=request.user,
+                service=service,
+                start_time=placeholder_start,
+                end_time=placeholder_end,
+                status='pending_review',  # New status for admin review
+                notes=notes
+            )
+            appointment.save()
 
-        # Show a success message
-        messages.success(request, "Your appointment has been booked successfully.")
+            # Create notification for the client
+            Notification.objects.create(
+                user=request.user,
+                type='appointment',
+                title='Appointment Request Submitted',
+                message=f"Your appointment request for {service.name} on {date.strftime('%B %d, %Y')} has been submitted. An administrator will review your request, assign a staff member, and allocate a time slot. You will be notified once your appointment is confirmed.",
+                related_appointment=appointment
+            )
 
-        # Redirect to the appointment detail page
-        return redirect('appointments:appointment_detail', appointment_id=appointment.id)
+            # Create notifications for all admin users
+            for admin in admin_users:
+                Notification.objects.create(
+                    user=admin,
+                    type='appointment',
+                    title='New Appointment Request',
+                    message=f"A new appointment request from {request.user.get_full_name()} for {service.name} on {date.strftime('%B %d, %Y')} needs review. Please assign a staff member and allocate a time slot.",
+                    related_appointment=appointment
+                )
+
+            # Send email notifications
+            send_appointment_confirmation(appointment)
+
+            # Send email to admins
+            for admin in admin_users:
+                send_admin_appointment_request(admin, appointment)
+
+            # Clear the booking data from the session
+            session_keys = ['booking_service_id', 'booking_date', 'booking_time']
+            for key in session_keys:
+                if key in request.session:
+                    del request.session[key]
+
+            # Show a success message
+            messages.success(request, "Your appointment has been successfully booked and saved! You can view it in your appointments page. An administrator will review your request, assign a staff member, and allocate a time slot. You will be notified once your appointment is confirmed.")
+
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # Return JSON response for AJAX requests
+                return JsonResponse({
+                    'success': True,
+                    'message': "Your appointment has been successfully booked!",
+                    'appointment_id': appointment.id,
+                    'redirect_url': reverse('appointments:appointment_list')
+                })
+            else:
+                # Redirect to the appointments list page for regular requests
+                return redirect('appointments:appointment_list')
+        except Exception as e:
+            error_message = f"Error creating appointment: {str(e)}"
+            messages.error(request, error_message)
+
+            # Check if this is an AJAX request
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                # Return JSON response for AJAX requests
+                return JsonResponse({
+                    'success': False,
+                    'message': error_message
+                }, status=400)
+            else:
+                # Redirect to the booking service page for regular requests
+                return redirect('appointments:booking_service')
 
     return render(request, 'appointments/booking_confirm.html', {
         'form': form,
         'service': service,
-        'staff': staff,
         'date': date,
         'time': time_obj,
-        'title': 'Confirm Appointment',
-        'step': 5,
-        'total_steps': 5
+        'title': 'Confirm Appointment Request',
+        'step': 2,
+        'total_steps': 2
     })
 
 # Calendar Views

@@ -2,195 +2,294 @@
 
 {% block title %}{{ title }} | Barberian{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Custom animations */
+    @keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes slideInLeft {
+        from { transform: translateX(-20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes slideInRight {
+        from { transform: translateX(20px); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+
+    .animate-fade-in {
+        animation: fadeIn 0.5s ease-out;
+    }
+
+    .animate-slide-up {
+        animation: slideUp 0.5s ease-out;
+    }
+
+    .animate-slide-left {
+        animation: slideInLeft 0.5s ease-out;
+    }
+
+    .animate-slide-right {
+        animation: slideInRight 0.5s ease-out;
+    }
+
+    /* Star rating animation */
+    @keyframes starPulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.2); }
+        100% { transform: scale(1); }
+    }
+
+    .star-animate {
+        display: inline-block;
+    }
+
+    .star-animate:nth-child(1) { animation: starPulse 1s ease-in-out 0.1s; }
+    .star-animate:nth-child(2) { animation: starPulse 1s ease-in-out 0.2s; }
+    .star-animate:nth-child(3) { animation: starPulse 1s ease-in-out 0.3s; }
+    .star-animate:nth-child(4) { animation: starPulse 1s ease-in-out 0.4s; }
+    .star-animate:nth-child(5) { animation: starPulse 1s ease-in-out 0.5s; }
+
+    /* Form focus effects */
+    .form-input-focus {
+        transition: all 0.3s ease;
+        border: 1px solid #e2e8f0;
+    }
+
+    .form-input-focus:focus {
+        border-color: #D4AF37;
+        box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.2);
+        outline: none;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-12 mb-4">
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item"><a href="{% url 'reviews:review_list' %}">Reviews</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Review Details</li>
-            </ol>
-        </nav>
-        <h1>Review Details</h1>
-    </div>
+<div class="mb-8 animate-fade-in">
+    <nav class="flex mb-4" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{% url 'reviews:review_list' %}" class="inline-flex items-center text-gray-700 hover:text-primary transition-colors duration-300">
+                    <i class="bi bi-star-fill mr-2"></i>
+                    Reviews
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="bi bi-chevron-right text-gray-400 mx-2 text-sm"></i>
+                    <span class="text-gray-500">Review Details</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+    <h1 class="text-3xl md:text-4xl font-serif font-bold text-gray-800">Review Details</h1>
 </div>
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Review</h5>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2">
+        <!-- Main Review Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6 animate-slide-up">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h2 class="text-xl font-bold text-gray-800">Review</h2>
             </div>
-            <div class="card-body">
+            <div class="p-6">
                 {% if messages %}
                     {% for message in messages %}
-                        <div class="alert alert-{{ message.tags }}">
+                        <div class="p-4 mb-4 rounded-md {% if message.tags == 'success' %}bg-green-50 text-green-700{% elif message.tags == 'error' %}bg-red-50 text-red-700{% elif message.tags == 'warning' %}bg-yellow-50 text-yellow-700{% else %}bg-blue-50 text-blue-700{% endif %}">
                             {{ message }}
                         </div>
                     {% endfor %}
                 {% endif %}
-                
-                <div class="d-flex justify-content-between align-items-start mb-3">
+
+                <div class="flex flex-col md:flex-row justify-between md:items-start mb-6">
                     <div>
-                        <h4>{{ review.service.name }}</h4>
-                        <h6 class="text-muted">
+                        <h3 class="text-2xl font-bold text-gray-800 mb-1">{{ review.service.name }}</h3>
+                        <p class="text-gray-600">
                             By {{ review.client.get_full_name }} for {{ review.staff.get_full_name }}
-                        </h6>
+                        </p>
                     </div>
-                    <div class="rating-stars fs-4">
+                    <div class="flex mt-2 md:mt-0">
                         {% for i in "12345" %}
                             {% if forloop.counter <= review.rating %}
-                                <i class="bi bi-star-fill text-warning"></i>
+                                <i class="bi bi-star-fill text-yellow-500 text-2xl mx-0.5 star-animate"></i>
                             {% else %}
-                                <i class="bi bi-star text-warning"></i>
+                                <i class="bi bi-star text-yellow-500 text-2xl mx-0.5"></i>
                             {% endif %}
                         {% endfor %}
                     </div>
                 </div>
-                
-                <div class="mb-4">
-                    <h5>Comment</h5>
-                    <p>{{ review.comment }}</p>
+
+                <div class="mb-6">
+                    <h4 class="text-lg font-bold text-gray-800 mb-2">Comment</h4>
+                    <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <p class="text-gray-700">{{ review.comment }}</p>
+                    </div>
                 </div>
-                
+
                 {% if not review.is_approved %}
-                    <div class="alert alert-warning">
-                        <i class="bi bi-exclamation-triangle me-2"></i> This review is pending approval.
+                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <i class="bi bi-exclamation-triangle-fill text-yellow-400"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-yellow-700">This review is pending approval.</p>
+                            </div>
+                        </div>
                     </div>
                 {% endif %}
-                
-                <div class="d-flex justify-content-between align-items-center">
-                    <small class="text-muted">Posted on {{ review.created_at|date:"F d, Y" }}</small>
-                    
+
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center">
+                    <p class="text-gray-500 text-sm mb-4 md:mb-0">Posted on {{ review.created_at|date:"F d, Y" }}</p>
+
                     {% if user == review.client %}
-                        <div>
-                            <a href="{% url 'reviews:review_edit' review.id %}" class="btn btn-outline-primary">
-                                <i class="bi bi-pencil me-1"></i> Edit
+                        <div class="flex space-x-3">
+                            <a href="{% url 'reviews:review_edit' review.id %}" class="inline-flex items-center px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-dark rounded-md text-sm font-medium transition-colors duration-300">
+                                <i class="bi bi-pencil mr-2"></i> Edit
                             </a>
-                            <a href="{% url 'reviews:review_delete' review.id %}" class="btn btn-outline-danger">
-                                <i class="bi bi-trash me-1"></i> Delete
+                            <a href="{% url 'reviews:review_delete' review.id %}" class="inline-flex items-center px-4 py-2 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded-md text-sm font-medium transition-colors duration-300">
+                                <i class="bi bi-trash mr-2"></i> Delete
                             </a>
                         </div>
                     {% endif %}
                 </div>
             </div>
         </div>
-        
+
+        <!-- Response Card -->
         {% if review.response %}
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">Response from {{ review.response.staff.get_full_name }}</h5>
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6 animate-slide-up" style="animation-delay: 0.1s">
+                <div class="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                    <h2 class="text-xl font-bold text-gray-800">Response from {{ review.response.staff.get_full_name }}</h2>
                 </div>
-                <div class="card-body">
-                    <p>{{ review.response.response }}</p>
-                    <small class="text-muted">Responded on {{ review.response.created_at|date:"F d, Y" }}</small>
+                <div class="p-6">
+                    <div class="bg-white p-4 rounded-lg border border-gray-200 mb-4">
+                        <p class="text-gray-700">{{ review.response.response }}</p>
+                    </div>
+                    <p class="text-gray-500 text-sm">Responded on {{ review.response.created_at|date:"F d, Y" }}</p>
                 </div>
             </div>
         {% endif %}
-        
+
+        <!-- Response Form -->
         {% if user == review.staff or user.role == 'admin' %}
             {% if not review.response %}
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Respond to Review</h5>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden animate-slide-up" style="animation-delay: 0.2s">
+                    <div class="border-b border-gray-200 px-6 py-4 bg-primary bg-opacity-10">
+                        <h2 class="text-xl font-bold text-gray-800">Respond to Review</h2>
                     </div>
-                    <div class="card-body">
+                    <div class="p-6">
                         <form method="post">
                             {% csrf_token %}
-                            
-                            <div class="mb-3">
-                                <label for="{{ response_form.response.id_for_label }}" class="form-label">Your Response</label>
-                                {{ response_form.response }}
+
+                            <div class="mb-4">
+                                <label for="{{ response_form.response.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Your Response</label>
+                                <textarea name="{{ response_form.response.name }}" id="{{ response_form.response.id_for_label }}" rows="4" class="w-full px-3 py-2 rounded-md form-input-focus" placeholder="Write your response here...">{% if response_form.response.value %}{{ response_form.response.value }}{% endif %}</textarea>
                                 {% if response_form.response.errors %}
-                                    <div class="invalid-feedback d-block">
+                                    <p class="mt-2 text-sm text-red-600">
                                         {{ response_form.response.errors }}
-                                    </div>
+                                    </p>
                                 {% endif %}
-                                <div class="form-text">
+                                <p class="mt-2 text-sm text-gray-500">
                                     Your response will be visible to all clients.
-                                </div>
+                                </p>
                             </div>
-                            
-                            <button type="submit" class="btn btn-primary">Submit Response</button>
+
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-primary text-dark font-medium rounded-md hover:bg-opacity-80 transition-colors duration-300">
+                                <i class="bi bi-reply-fill mr-2"></i> Submit Response
+                            </button>
                         </form>
                     </div>
                 </div>
             {% else %}
-                <div class="card">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">Edit Response</h5>
+                <div class="bg-white rounded-lg shadow-md overflow-hidden animate-slide-up" style="animation-delay: 0.2s">
+                    <div class="border-b border-gray-200 px-6 py-4 bg-primary bg-opacity-10">
+                        <h2 class="text-xl font-bold text-gray-800">Edit Response</h2>
                     </div>
-                    <div class="card-body">
+                    <div class="p-6">
                         <form method="post">
                             {% csrf_token %}
-                            
-                            <div class="mb-3">
-                                <label for="{{ response_form.response.id_for_label }}" class="form-label">Your Response</label>
-                                {{ response_form.response }}
+
+                            <div class="mb-4">
+                                <label for="{{ response_form.response.id_for_label }}" class="block text-sm font-medium text-gray-700 mb-2">Your Response</label>
+                                <textarea name="{{ response_form.response.name }}" id="{{ response_form.response.id_for_label }}" rows="4" class="w-full px-3 py-2 rounded-md form-input-focus" placeholder="Write your response here...">{% if response_form.response.value %}{{ response_form.response.value }}{% endif %}</textarea>
                                 {% if response_form.response.errors %}
-                                    <div class="invalid-feedback d-block">
+                                    <p class="mt-2 text-sm text-red-600">
                                         {{ response_form.response.errors }}
-                                    </div>
+                                    </p>
                                 {% endif %}
                             </div>
-                            
-                            <button type="submit" class="btn btn-primary">Update Response</button>
+
+                            <button type="submit" class="inline-flex items-center px-4 py-2 bg-primary text-dark font-medium rounded-md hover:bg-opacity-80 transition-colors duration-300">
+                                <i class="bi bi-pencil-fill mr-2"></i> Update Response
+                            </button>
                         </form>
                     </div>
                 </div>
             {% endif %}
         {% endif %}
     </div>
-    
-    <div class="col-md-4">
-        <div class="card mb-4">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Service Information</h5>
+
+    <div class="lg:col-span-1">
+        <!-- Service Information Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden mb-6 animate-slide-right">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h2 class="text-xl font-bold text-gray-800">Service Information</h2>
             </div>
-            <div class="card-body">
-                <h5>{{ review.service.name }}</h5>
-                <p>{{ review.service.description }}</p>
-                <div class="d-flex justify-content-between">
-                    <span>Price:</span>
-                    <span>${{ review.service.price }}</span>
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-2">{{ review.service.name }}</h3>
+                <p class="text-gray-700 mb-4">{{ review.service.description }}</p>
+
+                <div class="space-y-2 mb-4">
+                    <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                        <span class="text-gray-600">Price:</span>
+                        <span class="font-medium text-primary">KSh {{ review.service.price }}</span>
+                    </div>
+                    <div class="flex justify-between items-center py-2">
+                        <span class="text-gray-600">Duration:</span>
+                        <span class="font-medium">{{ review.service.duration }} minutes</span>
+                    </div>
                 </div>
-                <div class="d-flex justify-content-between">
-                    <span>Duration:</span>
-                    <span>{{ review.service.duration }} minutes</span>
-                </div>
-                
-                <div class="mt-3">
-                    <a href="{% url 'reviews:service_reviews' review.service.id %}" class="btn btn-outline-primary btn-sm">
-                        View All Reviews for this Service
-                    </a>
-                </div>
+
+                <a href="{% url 'reviews:service_reviews' review.service.id %}" class="inline-flex items-center w-full justify-center px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-dark rounded-md text-sm font-medium transition-colors duration-300">
+                    <i class="bi bi-star mr-2"></i> View All Reviews for this Service
+                </a>
             </div>
         </div>
-        
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">Staff Information</h5>
+
+        <!-- Staff Information Card -->
+        <div class="bg-white rounded-lg shadow-md overflow-hidden animate-slide-right" style="animation-delay: 0.1s">
+            <div class="border-b border-gray-200 px-6 py-4">
+                <h2 class="text-xl font-bold text-gray-800">Staff Information</h2>
             </div>
-            <div class="card-body">
-                <h5>{{ review.staff.get_full_name }}</h5>
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-gray-800 mb-2">{{ review.staff.get_full_name }}</h3>
+
                 {% if review.staff.specialization %}
-                    <p>{{ review.staff.specialization }}</p>
+                    <div class="mb-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {{ review.staff.specialization }}
+                        </span>
+                    </div>
                 {% endif %}
+
                 {% if review.staff.bio %}
-                    <p>{{ review.staff.bio }}</p>
+                    <p class="text-gray-700 mb-4">{{ review.staff.bio }}</p>
                 {% endif %}
-                
-                <div class="mt-3">
-                    <a href="{% url 'reviews:staff_reviews' review.staff.id %}" class="btn btn-outline-primary btn-sm">
-                        View All Reviews for this Staff
-                    </a>
-                </div>
+
+                <a href="{% url 'reviews:staff_reviews' review.staff.id %}" class="inline-flex items-center w-full justify-center px-4 py-2 border border-primary text-primary hover:bg-primary hover:text-dark rounded-md text-sm font-medium transition-colors duration-300">
+                    <i class="bi bi-star mr-2"></i> View All Reviews for this Staff
+                </a>
             </div>
         </div>
     </div>
 </div>
-{% endblock %}
-
-{% block page_css %}
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
 {% endblock %}

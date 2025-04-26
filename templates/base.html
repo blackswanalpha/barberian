@@ -1063,9 +1063,7 @@
                                     <li>
                                         <a class="{% if request.resolver_match.url_name == 'services' %}active{% endif %}" href="{% url 'client_portal:services' %}">Services</a>
                                     </li>
-                                    <li>
-                                        <a href="#">Barbers</a>
-                                    </li>
+
                                     <li>
                                         <a class="{% if 'reviews' in request.path %}active{% endif %}" href="{% url 'reviews:review_list' %}">Reviews</a>
                                     </li>
@@ -1233,7 +1231,7 @@
                         <ul class="list-unstyled footer-links">
                             <li><a href="{% url 'client_portal:home' %}"><i class="bi bi-chevron-right"></i> Home</a></li>
                             <li><a href="{% url 'client_portal:services' %}"><i class="bi bi-chevron-right"></i> Services</a></li>
-                            <li><a href="#"><i class="bi bi-chevron-right"></i> Our Barbers</a></li>
+
                             <li><a href="{% url 'reviews:review_list' %}"><i class="bi bi-chevron-right"></i> Testimonials</a></li>
                             <li><a href="{% url 'client_portal:about' %}"><i class="bi bi-chevron-right"></i> About Us</a></li>
                             <li><a href="{% url 'client_portal:contact' %}"><i class="bi bi-chevron-right"></i> Contact</a></li>

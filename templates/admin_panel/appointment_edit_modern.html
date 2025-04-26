@@ -1,0 +1,185 @@
+{% extends 'admin_panel/admin_base.html' %}
+{% load static %}
+
+{% block title %}Edit Appointment | Barberian Admin{% endblock %}
+
+{% block page_title %}Edit Appointment{% endblock %}
+
+{% block admin_content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Page Header -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-800">Edit Appointment</h2>
+            <p class="mt-1 text-sm text-gray-500">Update appointment details</p>
+        </div>
+        <div class="mt-4 md:mt-0 flex space-x-2">
+            <a href="{% url 'admin_panel:appointments' %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                <span class="material-icons-outlined mr-2" style="font-size: 16px;">arrow_back</span>
+                Back to Appointments
+            </a>
+            <a href="{% url 'admin_panel:appointment_detail' appointment.id %}" class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                <span class="material-icons-outlined mr-2" style="font-size: 16px;">visibility</span>
+                View Details
+            </a>
+        </div>
+    </div>
+
+    <!-- Appointment Form -->
+    <div class="modern-card p-6" x-data="appointmentForm()">
+        <form method="post" action="{% url 'admin_panel:appointment_update' appointment.id %}" id="appointment-form">
+            {% csrf_token %}
+            
+            <!-- Client Information (Read-only) -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Client Information</h3>
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0 h-12 w-12 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                            {{ appointment.client.get_full_name|slice:":1" }}
+                        </div>
+                        <div class="ml-4">
+                            <div class="text-sm font-medium text-gray-900">{{ appointment.client.get_full_name }}</div>
+                            <div class="text-sm text-gray-500">{{ appointment.client.email }}</div>
+                            {% if appointment.client.phone_number %}
+                            <div class="text-sm text-gray-500">{{ appointment.client.phone_number }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Service Selection -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Service Details</h3>
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="service" class="block text-sm font-medium text-gray-700 mb-1">Select Service</label>
+                        <select id="service" name="service_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md" required x-model="selectedService" @change="updateDuration">
+                            <option value="">-- Select Service --</option>
+                            {% for service in services %}
+                            <option value="{{ service.id }}" data-duration="{{ service.duration }}" {% if service.id == appointment.service.id %}selected{% endif %}>
+                                {{ service.name }} ({{ service.duration }} min • KSh {{ service.price }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Date and Time Selection -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Date and Time</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="date" class="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                        <input type="date" id="date" name="date" class="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required value="{{ appointment.start_time|date:'Y-m-d' }}">
+                    </div>
+                    <div>
+                        <label for="time" class="block text-sm font-medium text-gray-700 mb-1">Time</label>
+                        <input type="time" id="time" name="time" class="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" required value="{{ appointment.start_time|date:'H:i' }}">
+                    </div>
+                </div>
+                
+                <!-- Duration Display -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-md">
+                    <div class="flex items-center">
+                        <span class="material-icons-outlined text-gray-500 mr-2">schedule</span>
+                        <span class="text-sm text-gray-700">
+                            Duration: <span class="font-medium" x-text="duration">{{ appointment.service.duration }}</span> minutes
+                        </span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Staff Assignment -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Staff Assignment</h3>
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="staff" class="block text-sm font-medium text-gray-700 mb-1">Assign Staff Member</label>
+                        <select id="staff" name="staff_id" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md" required>
+                            <option value="">-- Select Staff Member --</option>
+                            {% for staff in staff_members %}
+                            <option value="{{ staff.id }}" {% if staff.id == appointment.staff.id %}selected{% endif %}>
+                                {{ staff.get_full_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notes -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Additional Information</h3>
+                <div>
+                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea id="notes" name="notes" rows="3" class="mt-1 focus:ring-primary-500 focus:border-primary-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">{{ appointment.notes }}</textarea>
+                </div>
+            </div>
+            
+            <!-- Status -->
+            <div class="mb-6">
+                <h3 class="text-lg font-medium text-gray-900 mb-4">Appointment Status</h3>
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select id="status" name="status" class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary-500 focus:border-primary-500 sm:text-sm rounded-md" required>
+                            <option value="confirmed" {% if appointment.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+                            <option value="pending" {% if appointment.status == 'pending' %}selected{% endif %}>Pending</option>
+                            <option value="completed" {% if appointment.status == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="cancelled" {% if appointment.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                            <option value="no_show" {% if appointment.status == 'no_show' %}selected{% endif %}>No Show</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Notify Client -->
+            <div class="mb-6">
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        <input id="notify_client" name="notify_client" type="checkbox" class="focus:ring-primary-500 h-4 w-4 text-primary-600 border-gray-300 rounded">
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="notify_client" class="font-medium text-gray-700">Notify Client</label>
+                        <p class="text-gray-500">Send an email notification to the client about this update</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Actions -->
+            <div class="flex justify-end space-x-3 mt-8">
+                <a href="{% url 'admin_panel:appointments' %}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500">
+                    Update Appointment
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    function appointmentForm() {
+        return {
+            selectedService: '{{ appointment.service.id }}',
+            duration: {{ appointment.service.duration }},
+            updateDuration() {
+                if (this.selectedService) {
+                    const serviceOption = document.querySelector(`#service option[value="${this.selectedService}"]`);
+                    if (serviceOption) {
+                        this.duration = serviceOption.dataset.duration;
+                    }
+                } else {
+                    this.duration = 0;
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

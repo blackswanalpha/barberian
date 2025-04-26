@@ -50,14 +50,14 @@
                         <p>
                             <strong>Issue Date:</strong> {{ invoice.issue_date|date:"F d, Y" }}<br>
                             <strong>Due Date:</strong> {{ invoice.due_date|date:"F d, Y" }}<br>
-                            <strong>Status:</strong> 
+                            <strong>Status:</strong>
                             <span class="badge bg-{% if invoice.status == 'paid' %}success{% elif invoice.status == 'sent' %}primary{% elif invoice.status == 'draft' %}secondary{% else %}danger{% endif %}">
                                 {{ invoice.get_status_display }}
                             </span>
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <h5>Bill To:</h5>
@@ -83,7 +83,7 @@
                         </p>
                     </div>
                 </div>
-                
+
                 <div class="table-responsive">
                     <table class="table table-bordered">
                         <thead>
@@ -99,26 +99,26 @@
                                 <td>{{ invoice.appointment.service.name }}</td>
                                 <td>{{ invoice.appointment.start_time|date:"F d, Y" }} at {{ invoice.appointment.start_time|time:"g:i A" }}</td>
                                 <td>{{ invoice.appointment.staff.get_full_name }}</td>
-                                <td>${{ invoice.amount }}</td>
+                                <td>KSh {{ invoice.amount }}</td>
                             </tr>
                         </tbody>
                         <tfoot>
                             <tr>
                                 <td colspan="3" class="text-end"><strong>Subtotal:</strong></td>
-                                <td>${{ invoice.amount }}</td>
+                                <td>KSh {{ invoice.amount }}</td>
                             </tr>
                             <tr>
                                 <td colspan="3" class="text-end"><strong>Tax:</strong></td>
-                                <td>${{ invoice.tax_amount }}</td>
+                                <td>KSh {{ invoice.tax_amount }}</td>
                             </tr>
                             <tr>
                                 <td colspan="3" class="text-end"><strong>Total:</strong></td>
-                                <td><strong>${{ invoice.total_amount }}</strong></td>
+                                <td><strong>KSh {{ invoice.total_amount }}</strong></td>
                             </tr>
                         </tfoot>
                     </table>
                 </div>
-                
+
                 {% if invoice.notes %}
                     <div class="row mt-4">
                         <div class="col-md-12">
@@ -127,7 +127,7 @@
                         </div>
                     </div>
                 {% endif %}
-                
+
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <p class="text-muted text-center">
@@ -169,7 +169,7 @@
         document.getElementById('printInvoice').addEventListener('click', function() {
             window.print();
         });
-        
+
         // Download PDF
         document.getElementById('downloadPDF').addEventListener('click', function() {
             const element = document.getElementById('invoice-card');
@@ -180,7 +180,7 @@
                 html2canvas: { scale: 2 },
                 jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
             };
-            
+
             // New Promise-based usage:
             html2pdf().set(opt).from(element).save();
         });

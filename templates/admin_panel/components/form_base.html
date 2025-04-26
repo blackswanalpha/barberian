@@ -1,0 +1,249 @@
+{% load static %}
+
+<!-- Form Card Container -->
+<div class="bg-white rounded-xl shadow-md overflow-hidden max-w-3xl mx-auto transform transition-all duration-300 hover:shadow-xl">
+    <!-- Card Header with Gradient -->
+    <div class="relative">
+        <div class="absolute inset-0 bg-gradient-to-r from-primary-400 to-primary-500 opacity-90"></div>
+        <div class="relative px-6 py-5">
+            <h3 class="text-xl font-bold text-white">{{ title }}</h3>
+            <p class="text-white text-opacity-80 mt-1 text-sm">
+                {% if form_subtitle %}
+                    {{ form_subtitle }}
+                {% else %}
+                    {% if form.instance.id %}Update existing{% else %}Create a new{% endif %} {{ form_object_name|default:"item" }}
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="p-6 pb-0">
+            {% for message in messages %}
+                <div class="p-4 mb-4 rounded-lg {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% elif message.tags == 'info' %}bg-blue-100 text-blue-800{% endif %} flex items-center animate-fadeIn">
+                    <span class="material-icons-outlined mr-3">
+                        {% if message.tags == 'success' %}check_circle{% elif message.tags == 'error' %}error{% elif message.tags == 'warning' %}warning{% elif message.tags == 'info' %}info{% endif %}
+                    </span>
+                    <span>{{ message }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Form Content -->
+    <div class="p-6">
+        <form method="post" {% if form_enctype %}enctype="{{ form_enctype }}"{% endif %} class="space-y-6">
+            {% csrf_token %}
+            
+            <!-- Form Fields -->
+            {% block form_fields %}{% endblock %}
+
+            <!-- Form Actions -->
+            <div class="pt-5 border-t border-gray-200 flex justify-between">
+                <a href="{{ cancel_url }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 transition-colors duration-200">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">arrow_back</span>
+                    Cancel
+                </a>
+                <button type="submit" class="inline-flex items-center px-5 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary-400 hover:bg-primary-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-all duration-200 transform hover:scale-105">
+                    <span class="material-icons-outlined mr-2" style="font-size: 18px;">save</span>
+                    {{ submit_text|default:"Save" }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Form Styling -->
+<style>
+    /* Base Input Styling */
+    .form-input {
+        @apply w-full rounded-md border-gray-300 shadow-sm transition-all duration-200;
+        @apply focus:ring-2 focus:ring-primary-400 focus:border-primary-400;
+    }
+    
+    /* Input with Icon */
+    .input-with-icon {
+        @apply pl-10;
+    }
+    
+    /* Floating Label Input Container */
+    .floating-label-input {
+        @apply relative;
+    }
+    
+    .floating-label-input input,
+    .floating-label-input select {
+        @apply pt-6 pb-2 block w-full px-3 mt-0 bg-transparent border-0 border-b-2 appearance-none focus:outline-none focus:ring-0 border-gray-300;
+    }
+    
+    .floating-label-input label {
+        @apply absolute top-3 left-3 -z-1 origin-0 text-gray-500 duration-300;
+    }
+    
+    .floating-label-input input:focus ~ label,
+    .floating-label-input input:not(:placeholder-shown) ~ label,
+    .floating-label-input select:focus ~ label,
+    .floating-label-input select:not([value=""]) ~ label {
+        @apply transform scale-75 -translate-y-4 text-primary-500;
+    }
+    
+    /* Material Design Inspired Input */
+    .material-input-group {
+        @apply relative mb-6;
+    }
+    
+    .material-input {
+        @apply block py-2.5 px-0 w-full text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none focus:outline-none focus:ring-0 focus:border-primary-500;
+    }
+    
+    .material-label {
+        @apply absolute text-gray-500 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:left-0 peer-focus:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6;
+    }
+    
+    /* Checkbox Styling */
+    .form-checkbox {
+        @apply h-5 w-5 text-primary-500 border-gray-300 rounded focus:ring-primary-400 transition duration-150 ease-in-out;
+    }
+    
+    /* File Input Styling */
+    .file-input-container {
+        @apply relative;
+    }
+    
+    .file-input {
+        @apply sr-only;
+    }
+    
+    .file-input-label {
+        @apply py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-400 cursor-pointer inline-flex items-center;
+    }
+    
+    /* Form Section */
+    .form-section {
+        @apply mb-8 pb-6 border-b border-gray-200;
+    }
+    
+    .form-section-title {
+        @apply text-lg font-medium text-gray-900 mb-4;
+    }
+    
+    /* Form Field Animation */
+    .form-field {
+        @apply transform transition-all duration-300;
+    }
+    
+    .form-field:focus-within {
+        @apply -translate-y-1;
+    }
+    
+    /* Help Text */
+    .help-text {
+        @apply mt-1 text-xs text-gray-500;
+    }
+    
+    /* Error Message */
+    .error-message {
+        @apply mt-1 text-xs text-red-500 flex items-center;
+    }
+    
+    .error-message .material-icons-outlined {
+        @apply text-xs mr-1;
+    }
+    
+    /* Required Field Indicator */
+    .required-field label:after {
+        content: " *";
+        @apply text-red-500;
+    }
+    
+    /* Toggle Switch */
+    .toggle-switch {
+        @apply relative inline-flex items-center cursor-pointer;
+    }
+    
+    .toggle-switch input {
+        @apply sr-only;
+    }
+    
+    .toggle-slider {
+        @apply w-11 h-6 bg-gray-200 rounded-full transition-colors duration-200 ease-in-out;
+    }
+    
+    .toggle-slider:after {
+        content: "";
+        @apply absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform duration-200 ease-in-out;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider {
+        @apply bg-primary-500;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider:after {
+        @apply transform translate-x-5;
+    }
+    
+    .toggle-switch input:focus + .toggle-slider {
+        @apply ring-2 ring-offset-2 ring-primary-400;
+    }
+</style>
+
+<!-- Form Animation -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add animation to form fields
+        const formFields = document.querySelectorAll('.form-field');
+        formFields.forEach((field, index) => {
+            field.style.opacity = '0';
+            field.style.transform = 'translateY(20px)';
+            
+            setTimeout(() => {
+                field.style.opacity = '1';
+                field.style.transform = 'translateY(0)';
+            }, 100 + (index * 50));
+        });
+        
+        // Initialize floating labels
+        const floatingInputs = document.querySelectorAll('.floating-label-input input, .floating-label-input select');
+        floatingInputs.forEach(input => {
+            if (input.value !== '') {
+                input.classList.add('has-value');
+            }
+            
+            input.addEventListener('focus', () => {
+                input.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', () => {
+                input.parentElement.classList.remove('focused');
+                if (input.value === '') {
+                    input.classList.remove('has-value');
+                } else {
+                    input.classList.add('has-value');
+                }
+            });
+        });
+        
+        // File input preview
+        const fileInputs = document.querySelectorAll('.file-input');
+        fileInputs.forEach(input => {
+            input.addEventListener('change', function(e) {
+                const fileName = e.target.files[0]?.name;
+                const fileNameDisplay = this.parentElement.querySelector('.file-name');
+                if (fileNameDisplay) {
+                    fileNameDisplay.textContent = fileName || 'No file chosen';
+                }
+                
+                // Image preview if applicable
+                const previewContainer = this.parentElement.querySelector('.image-preview');
+                if (previewContainer && e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewContainer.innerHTML = `<img src="${e.target.result}" class="h-full w-full object-cover" alt="Preview">`;
+                    }
+                    reader.readAsDataURL(e.target.files[0]);
+                }
+            });
+        });
+    });
+</script>

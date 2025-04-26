@@ -1,0 +1,414 @@
+{% extends 'admin_panel/admin_base_modern.html' %}
+{% load static %}
+{% load admin_filters %}
+
+{% block title %}Dashboard | Barberian Admin{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block admin_content %}
+<!-- Dashboard Overview Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
+    <!-- Total Appointments Card -->
+    <div class="modern-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Appointments</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ total_appointments }}</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    {% if appointment_growth > 0 %}
+                    <span class="text-green-500 flex items-center">
+                        <span class="material-icons-outlined text-xs mr-1">arrow_upward</span>
+                        {{ appointment_growth }}% from last month
+                    </span>
+                    {% elif appointment_growth < 0 %}
+                    <span class="text-red-500 flex items-center">
+                        <span class="material-icons-outlined text-xs mr-1">arrow_downward</span>
+                        {{ appointment_growth|abs_value }}% from last month
+                    </span>
+                    {% else %}
+                    <span class="text-gray-500">No change from last month</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-primary-100 flex items-center justify-center">
+                <span class="material-icons-outlined text-primary-400">event</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revenue Card -->
+    <div class="modern-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Revenue</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1">KSh {{ total_revenue }}</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    {% if revenue_growth > 0 %}
+                    <span class="text-green-500 flex items-center">
+                        <span class="material-icons-outlined text-xs mr-1">arrow_upward</span>
+                        {{ revenue_growth }}% from last month
+                    </span>
+                    {% elif revenue_growth < 0 %}
+                    <span class="text-red-500 flex items-center">
+                        <span class="material-icons-outlined text-xs mr-1">arrow_downward</span>
+                        {{ revenue_growth|abs_value }}% from last month
+                    </span>
+                    {% else %}
+                    <span class="text-gray-500">No change from last month</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                <span class="material-icons-outlined text-green-500">payments</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Clients Card -->
+    <div class="modern-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Total Clients</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ total_clients }}</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    {% if client_growth > 0 %}
+                    <span class="text-green-500 flex items-center">
+                        <span class="material-icons-outlined text-xs mr-1">arrow_upward</span>
+                        {{ client_growth }}% from last month
+                    </span>
+                    {% elif client_growth < 0 %}
+                    <span class="text-red-500 flex items-center">
+                        <span class="material-icons-outlined text-xs mr-1">arrow_downward</span>
+                        {{ client_growth|abs_value }}% from last month
+                    </span>
+                    {% else %}
+                    <span class="text-gray-500">No change from last month</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                <span class="material-icons-outlined text-blue-500">people</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Requests Card -->
+    <div class="modern-card p-5">
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-sm text-gray-500 font-medium">Pending Requests</p>
+                <h3 class="text-2xl font-bold text-gray-800 mt-1">{{ pending_count }}</h3>
+                <p class="text-xs text-gray-500 mt-1">
+                    {% if pending_count > 0 %}
+                    <a href="{% url 'admin_panel:pending_appointments_modern' %}" class="text-primary-400 flex items-center">
+                        <span>View all requests</span>
+                        <span class="material-icons-outlined text-xs ml-1">arrow_forward</span>
+                    </a>
+                    {% else %}
+                    <span class="text-gray-500">No pending requests</span>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                <span class="material-icons-outlined text-amber-500">pending_actions</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content Area -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Left Column -->
+    <div class="lg:col-span-2 space-y-6">
+        <!-- Appointments Chart -->
+        <div class="modern-card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Appointments Overview</h3>
+                <div class="flex space-x-2">
+                    <button class="text-xs px-3 py-1 rounded-full bg-primary-100 text-primary-500 font-medium">Week</button>
+                    <button class="text-xs px-3 py-1 rounded-full text-gray-500 font-medium hover:bg-gray-100">Month</button>
+                    <button class="text-xs px-3 py-1 rounded-full text-gray-500 font-medium hover:bg-gray-100">Year</button>
+                </div>
+            </div>
+            <div id="appointments-chart" class="h-80"></div>
+        </div>
+
+        <!-- Recent Appointments -->
+        <div class="modern-card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Recent Appointments</h3>
+                <a href="{% url 'admin_panel:appointments' %}" class="text-primary-400 text-sm flex items-center">
+                    View All
+                    <span class="material-icons-outlined ml-1" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="min-w-full">
+                    <thead>
+                        <tr class="text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-4 py-3">Client</th>
+                            <th class="px-4 py-3">Service</th>
+                            <th class="px-4 py-3">Date & Time</th>
+                            <th class="px-4 py-3">Status</th>
+                            <th class="px-4 py-3">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-200">
+                        {% for appointment in recent_appointments %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-3">
+                                <div class="flex items-center">
+                                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                                        {{ appointment.client.get_full_name|slice:":1" }}
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-medium text-gray-800">{{ appointment.client.get_full_name }}</p>
+                                        <p class="text-xs text-gray-500">{{ appointment.client.email }}</p>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-4 py-3">
+                                <p class="text-sm text-gray-800">{{ appointment.service.name }}</p>
+                                <p class="text-xs text-gray-500">{{ appointment.service.duration }} min</p>
+                            </td>
+                            <td class="px-4 py-3">
+                                <p class="text-sm text-gray-800">{{ appointment.start_time|date:"M d, Y" }}</p>
+                                <p class="text-xs text-gray-500">{{ appointment.start_time|date:"g:i A" }}</p>
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-1 text-xs rounded-full
+                                    {% if appointment.status == 'confirmed' %}bg-green-100 text-green-800
+                                    {% elif appointment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                                    {% elif appointment.status == 'cancelled' %}bg-red-100 text-red-800
+                                    {% elif appointment.status == 'completed' %}bg-blue-100 text-blue-800
+                                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                                    {{ appointment.status|title }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex space-x-2">
+                                    <a href="{% url 'admin_panel:appointment_detail' appointment.id %}" class="text-gray-500 hover:text-primary-500">
+                                        <span class="material-icons-outlined" style="font-size: 18px;">visibility</span>
+                                    </a>
+                                    <a href="{% url 'admin_panel:appointment_update' appointment.id %}" class="text-gray-500 hover:text-primary-500">
+                                        <span class="material-icons-outlined" style="font-size: 18px;">edit</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="px-4 py-3 text-center text-gray-500">No appointments found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="space-y-6">
+        <!-- Today's Schedule -->
+        <div class="modern-card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Today's Schedule</h3>
+                <span class="text-sm text-gray-500">{{ today|date:"l, F j" }}</span>
+            </div>
+
+            <div class="space-y-4">
+                {% for appointment in todays_appointments %}
+                <div class="flex items-start p-3 rounded-lg {% if appointment.status == 'confirmed' %}bg-green-50 border-l-4 border-green-400{% elif appointment.status == 'pending' %}bg-yellow-50 border-l-4 border-yellow-400{% elif appointment.status == 'cancelled' %}bg-red-50 border-l-4 border-red-400{% else %}bg-gray-50 border-l-4 border-gray-400{% endif %}">
+                    <div class="flex-shrink-0 w-10 text-center">
+                        <p class="text-sm font-bold text-gray-800">{{ appointment.start_time|date:"g:i" }}</p>
+                        <p class="text-xs text-gray-500">{{ appointment.start_time|date:"A" }}</p>
+                    </div>
+                    <div class="ml-4 flex-1">
+                        <p class="text-sm font-medium text-gray-800">{{ appointment.service.name }}</p>
+                        <p class="text-xs text-gray-500">{{ appointment.client.get_full_name }}</p>
+                    </div>
+                    <div class="flex-shrink-0">
+                        <span class="px-2 py-1 text-xs rounded-full
+                            {% if appointment.status == 'confirmed' %}bg-green-100 text-green-800
+                            {% elif appointment.status == 'pending' %}bg-yellow-100 text-yellow-800
+                            {% elif appointment.status == 'cancelled' %}bg-red-100 text-red-800
+                            {% elif appointment.status == 'completed' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ appointment.status|title }}
+                        </span>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-6">
+                    <span class="material-icons-outlined text-gray-300 text-5xl">event_busy</span>
+                    <p class="mt-2 text-gray-500">No appointments scheduled for today</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if todays_appointments %}
+            <div class="mt-4 text-center">
+                <a href="{% url 'admin_panel:calendar' %}" class="text-primary-400 text-sm flex items-center justify-center">
+                    View Full Schedule
+                    <span class="material-icons-outlined ml-1" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Popular Services -->
+        <div class="modern-card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Popular Services</h3>
+                <a href="{% url 'admin_panel:services' %}" class="text-primary-400 text-sm flex items-center">
+                    View All
+                    <span class="material-icons-outlined ml-1" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+
+            <div class="space-y-3">
+                {% for service in popular_services %}
+                <div class="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50">
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center text-primary-400">
+                            <span class="material-icons-outlined">content_cut</span>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-800">{{ service.name }}</p>
+                            <p class="text-xs text-gray-500">{{ service.duration }} min • KSh {{ service.price }}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-bold text-gray-800">{{ service.booking_count }}</p>
+                        <p class="text-xs text-gray-500">bookings</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-6">
+                    <span class="material-icons-outlined text-gray-300 text-5xl">spa</span>
+                    <p class="mt-2 text-gray-500">No services data available</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="modern-card p-5">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">Recent Activity</h3>
+                <a href="{% url 'admin_panel:logs' %}" class="text-primary-400 text-sm flex items-center">
+                    View All
+                    <span class="material-icons-outlined ml-1" style="font-size: 16px;">arrow_forward</span>
+                </a>
+            </div>
+
+            <div class="space-y-4">
+                {% for log in recent_logs %}
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">
+                            {{ log.user.get_full_name|slice:":1" }}
+                        </div>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm text-gray-800">
+                            <span class="font-medium">{{ log.user.get_full_name }}</span>
+                            {{ log.get_action_display|lower }}
+                            {{ log.entity_type|replace_underscore }}
+                        </p>
+                        <p class="text-xs text-gray-500">{{ log.created_at|date:"M d, Y H:i" }}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-6">
+                    <span class="material-icons-outlined text-gray-300 text-5xl">history</span>
+                    <p class="mt-2 text-gray-500">No recent activity</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block admin_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Appointments Chart
+        var appointmentsOptions = {
+            series: [{
+                name: 'Appointments',
+                data: {{ appointments_data|safe }}
+            }],
+            chart: {
+                height: 320,
+                type: 'area',
+                toolbar: {
+                    show: false
+                },
+                fontFamily: 'Inter, sans-serif',
+            },
+            dataLabels: {
+                enabled: false
+            },
+            stroke: {
+                curve: 'smooth',
+                width: 3
+            },
+            colors: ['#d4af37'],
+            fill: {
+                type: 'gradient',
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.7,
+                    opacityTo: 0.2,
+                    stops: [0, 90, 100]
+                }
+            },
+            xaxis: {
+                categories: {{ appointments_labels|safe }},
+                labels: {
+                    style: {
+                        colors: '#6b7280',
+                        fontSize: '12px',
+                        fontFamily: 'Inter, sans-serif',
+                    }
+                }
+            },
+            yaxis: {
+                labels: {
+                    style: {
+                        colors: '#6b7280',
+                        fontSize: '12px',
+                        fontFamily: 'Inter, sans-serif',
+                    }
+                }
+            },
+            tooltip: {
+                x: {
+                    format: 'dd/MM/yy'
+                },
+            },
+            grid: {
+                borderColor: '#f1f1f1',
+                strokeDashArray: 4,
+                xaxis: {
+                    lines: {
+                        show: true
+                    }
+                },
+                yaxis: {
+                    lines: {
+                        show: true
+                    }
+                }
+            }
+        };
+
+        var appointmentsChart = new ApexCharts(document.querySelector("#appointments-chart"), appointmentsOptions);
+        appointmentsChart.render();
+    });
+</script>
+{% endblock %}

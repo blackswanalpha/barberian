@@ -1,63 +1,300 @@
-{% extends 'base.html' %}
+{% extends 'client_portal/base.html' %}
 
 {% block title %}{{ title }} | Barberian{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Hero Section Styles */
+    .services-hero {
+        background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/phot3D%3D&auto=format&fit=crop&w=1470&q=80');
+        background-size: cover;
+        background-position: center;
+        color: white;
+        min-height: 70vh;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+        width: 100vw;
+        margin-left: calc(50% - 50vw);
+        margin-right: calc(50% - 50vw);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .services-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.3) 0%, rgba(0, 0, 0, 0.7) 100%);
+    }
+
+    .hero-content {
+        position: relative;
+        z-index: 1;
+        max-width: 1200px;
+        width: 100%;
+        padding: 0 20px;
+    }
+
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        font-family: 'Playfair Display', serif;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .hero-subtitle {
+        font-size: 1.25rem;
+        margin-bottom: 2.5rem;
+        max-width: 700px;
+        line-height: 1.6;
+    }
+
+    .hero-btn {
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        background-color: #D4AF37;
+        border: 2px solid #D4AF37;
+        color: #1E1E1E;
+        border-radius: 50px;
+        display: inline-block;
+    }
+
+    .hero-btn:hover {
+        background-color: transparent;
+        color: #D4AF37;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Material Design Shadows */
+    .shadow-material-1 {
+        box-shadow: 0 2px 5px 0 rgba(0,0,0,0.16), 0 2px 10px 0 rgba(0,0,0,0.12);
+    }
+
+    .shadow-material-2 {
+        box-shadow: 0 8px 17px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    }
+
+    /* Gold Gradient */
+    .bg-gradient-gold {
+        background: linear-gradient(135deg, #D4AF37 0%, #F2D57E 50%, #D4AF37 100%);
+    }
+
+    /* Service Card Styles */
+    .service-card {
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+    }
+
+    .service-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .service-card img {
+        transition: all 0.5s ease;
+    }
+
+    .service-card:hover img {
+        transform: scale(1.1);
+    }
+
+    .service-price {
+        font-weight: 700;
+        font-size: 1rem;
+        color: #1E1E1E;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+        display: inline-block;
+    }
+
+    /* Line Clamp for Text Truncation */
+    .line-clamp-2 {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    /* Scroll Margin for Anchor Links */
+    .scroll-mt-24 {
+        scroll-margin-top: 6rem;
+    }
+
+    /* Animation Delays */
+    [data-aos-delay="100"] {
+        transition-delay: 0.1s;
+    }
+
+    [data-aos-delay="200"] {
+        transition-delay: 0.2s;
+    }
+
+    [data-aos-delay="300"] {
+        transition-delay: 0.3s;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1rem;
+        }
+    }
+
+    @media (max-width: 640px) {
+        .hero-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row">
-    <div class="col-md-12">
-        <h1 class="mb-4">Our Services</h1>
-        <p class="lead">Discover our range of premium barbering services designed to keep you looking your best.</p>
+<!-- Hero Section -->
+<div class="services-hero">
+    <div class="hero-content text-center">
+        <h1 class="hero-title">Premium Barbering Services</h1>
+        <p class="hero-subtitle mx-auto">Experience the art of traditional barbering combined with modern techniques. Our skilled barbers provide exceptional services tailored to your unique style and preferences.</p>
+        <div class="flex flex-col md:flex-row justify-center gap-4">
+            <a href="#all" class="hero-btn">Explore Our Services</a>
+            <a href="{% url 'appointments:booking_service' %}" class="hero-btn" style="background-color: transparent; color: #D4AF37;">Book Now</a>
+        </div>
     </div>
 </div>
 
-{% if categories %}
-    <div class="row mb-4">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-body">
-                    <h2 class="card-title">Categories</h2>
-                    <div class="d-flex flex-wrap gap-2">
-                        <a href="#all" class="btn btn-outline-primary">All Services</a>
+<!-- Services Section -->
+<div class="container mx-auto px-4 py-16">
+    {% if categories %}
+        <!-- Category Navigation -->
+        <div class="mb-12" data-aos="fade-up">
+            <div class="bg-white rounded-xl shadow-material-1 overflow-hidden">
+                <div class="p-6">
+                    <h2 class="text-2xl font-semibold text-gray-900 mb-4">Browse by Category</h2>
+                    <div class="flex flex-wrap gap-3">
+                        <a href="#all" class="px-4 py-2 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300 font-medium">
+                            All Services
+                        </a>
                         {% for category in categories %}
-                            <a href="#category-{{ category.id }}" class="btn btn-outline-primary">{{ category.name }}</a>
+                            <a href="#category-{{ category.id }}" class="px-4 py-2 rounded-full border-2 border-gray-300 text-gray-700 hover:border-primary hover:text-primary transition-all duration-300 font-medium">
+                                {{ category.name }}
+                            </a>
                         {% endfor %}
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 
-    {% for category in categories %}
-        <div class="row mb-4" id="category-{{ category.id }}">
-            <div class="col-md-12">
-                <h2 class="mb-3">{{ category.name }}</h2>
-                <p>{{ category.description }}</p>
-                
-                <div class="row">
+        <!-- All Services Section -->
+        <div id="all" class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-2 relative inline-block" data-aos="fade-right">
+                All Services
+                <span class="absolute bottom-0 left-0 w-1/2 h-1 bg-gradient-gold"></span>
+            </h2>
+            <p class="text-gray-600 mb-8 max-w-3xl" data-aos="fade-up" data-aos-delay="100">
+                Browse our complete collection of premium barbering services designed to elevate your style and confidence.
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {% for service in services %}
+                    <div class="service-card bg-white rounded-xl shadow-material-1 overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-material-2" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                        <div class="relative overflow-hidden h-64">
+                            {% if service.media.exists %}
+                                {% with primary_media=service.media.filter.first %}
+                                    {% if primary_media %}
+                                        <img src="{{ primary_media.file.url }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" alt="{{ service.name }}">
+                                    {% endif %}
+                                {% endwith %}
+                            {% else %}
+                                <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                    <i class="material-icons text-gray-400 text-5xl">image</i>
+                                </div>
+                            {% endif %}
+                            <div class="absolute top-4 right-4">
+                                <span class="service-price bg-gradient-gold text-dark font-bold py-1 px-3 rounded-full shadow-lg">
+                                    KSh {{ service.price }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex items-center mb-3">
+                                <i class="material-icons text-primary mr-2">schedule</i>
+                                <span class="text-gray-600 text-sm">{{ service.duration }} minutes</span>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-900 mb-2">{{ service.name }}</h3>
+                            <p class="text-gray-600 mb-4 line-clamp-2">{{ service.description|truncatewords:20 }}</p>
+                            <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                                <a href="{% url 'client_portal:service_detail' service.id %}" class="btn-outline-primary flex-1 text-center py-2 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300">
+                                    View Details
+                                </a>
+                                <a href="{% url 'appointments:booking_service' %}" class="btn-primary flex-1 text-center py-2 rounded-full bg-gradient-gold text-dark font-medium hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                    Book Now
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Category Sections -->
+        {% for category in categories %}
+            <div id="category-{{ category.id }}" class="mb-16 scroll-mt-24">
+                <h2 class="text-3xl font-bold text-gray-900 mb-2 relative inline-block" data-aos="fade-right">
+                    {{ category.name }}
+                    <span class="absolute bottom-0 left-0 w-1/2 h-1 bg-gradient-gold"></span>
+                </h2>
+                <p class="text-gray-600 mb-8 max-w-3xl" data-aos="fade-up" data-aos-delay="100">
+                    {{ category.description }}
+                </p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                     {% for service in services %}
                         {% if service.category == category %}
-                            <div class="col-md-4 mb-4">
-                                <div class="card h-100">
+                            <div class="service-card bg-white rounded-xl shadow-material-1 overflow-hidden transform transition-all duration-300 hover:-translate-y-2 hover:shadow-material-2" data-aos="fade-up" data-aos-delay="{{ forloop.counter|add:'100' }}">
+                                <div class="relative overflow-hidden h-64">
                                     {% if service.media.exists %}
                                         {% with primary_media=service.media.filter.first %}
                                             {% if primary_media %}
-                                                <img src="{{ primary_media.file.url }}" class="card-img-top" alt="{{ service.name }}">
+                                                <img src="{{ primary_media.file.url }}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-110" alt="{{ service.name }}">
                                             {% endif %}
                                         {% endwith %}
+                                    {% else %}
+                                        <div class="w-full h-full bg-gray-200 flex items-center justify-center">
+                                            <i class="material-icons text-gray-400 text-5xl">image</i>
+                                        </div>
                                     {% endif %}
-                                    <div class="card-body">
-                                        <h3 class="card-title h5">{{ service.name }}</h3>
-                                        <p class="card-text">{{ service.description|truncatewords:20 }}</p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="badge bg-primary">${{ service.price }}</span>
-                                            <span class="text-muted">{{ service.duration }} min</span>
-                                        </div>
+                                    <div class="absolute top-4 right-4">
+                                        <span class="service-price bg-gradient-gold text-dark font-bold py-1 px-3 rounded-full shadow-lg">
+                                            KSh {{ service.price }}
+                                        </span>
                                     </div>
-                                    <div class="card-footer">
-                                        <div class="d-grid gap-2">
-                                            <a href="{% url 'client_portal:service_detail' service.id %}" class="btn btn-outline-primary">View Details</a>
-                                            <a href="#" class="btn btn-primary">Book Now</a>
-                                        </div>
+                                </div>
+                                <div class="p-6">
+                                    <div class="flex items-center mb-3">
+                                        <i class="material-icons text-primary mr-2">schedule</i>
+                                        <span class="text-gray-600 text-sm">{{ service.duration }} minutes</span>
+                                    </div>
+                                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ service.name }}</h3>
+                                    <p class="text-gray-600 mb-4 line-clamp-2">{{ service.description|truncatewords:20 }}</p>
+                                    <div class="flex flex-col sm:flex-row gap-3 mt-4">
+                                        <a href="{% url 'client_portal:service_detail' service.id %}" class="btn-outline-primary flex-1 text-center py-2 rounded-full border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all duration-300">
+                                            View Details
+                                        </a>
+                                        <a href="{% url 'appointments:booking_service' %}" class="btn-primary flex-1 text-center py-2 rounded-full bg-gradient-gold text-dark font-medium hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                                            Book Now
+                                        </a>
                                     </div>
                                 </div>
                             </div>
@@ -65,25 +302,38 @@
                     {% endfor %}
                 </div>
             </div>
-        </div>
-    {% endfor %}
-{% else %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="alert alert-info">
-                No services available at the moment. Please check back later.
+        {% endfor %}
+    {% else %}
+        <!-- No Services Available -->
+        <div class="flex flex-col items-center justify-center py-16 text-center" data-aos="fade-up">
+            <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mb-6">
+                <i class="material-icons text-gray-400 text-5xl">content_cut</i>
             </div>
+            <h3 class="text-2xl font-medium text-gray-900 mb-3">No Services Available</h3>
+            <p class="text-gray-500 mb-8 max-w-md">We're currently updating our service offerings. Please check back later or contact us for more information.</p>
+            <a href="{% url 'client_portal:contact' %}" class="px-6 py-3 bg-gradient-gold text-dark font-medium rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                Contact Us
+            </a>
         </div>
-    </div>
-{% endif %}
+    {% endif %}
 
-<div class="row mt-4">
-    <div class="col-md-12 text-center">
-        <div class="card">
-            <div class="card-body">
-                <h2 class="card-title">Need a Custom Service?</h2>
-                <p class="card-text">Can't find what you're looking for? Contact us to discuss your specific needs.</p>
-                <a href="{% url 'client_portal:contact' %}" class="btn btn-primary">Contact Us</a>
+    <!-- Custom Service CTA -->
+    <div class="mt-16" data-aos="fade-up">
+        <div class="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl shadow-material-2 overflow-hidden">
+            <div class="p-8 md:p-12 flex flex-col md:flex-row items-center">
+                <div class="md:w-2/3 mb-6 md:mb-0 md:pr-8">
+                    <h2 class="text-3xl font-bold text-white mb-4">Need a Custom Service?</h2>
+                    <p class="text-gray-300 mb-6">Can't find exactly what you're looking for? Our expert barbers can tailor services to meet your specific needs and preferences.</p>
+                    <a href="{% url 'client_portal:contact' %}" class="inline-flex items-center px-6 py-3 bg-gradient-gold text-dark font-medium rounded-full hover:shadow-lg transition-all duration-300 transform hover:scale-105">
+                        <i class="material-icons mr-2">chat</i>
+                        Discuss Your Needs
+                    </a>
+                </div>
+                <div class="md:w-1/3 flex justify-center">
+                    <div class="w-32 h-32 md:w-48 md:h-48 bg-gray-800 rounded-full flex items-center justify-center border-4 border-primary">
+                        <i class="material-icons text-primary text-6xl">design_services</i>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

@@ -9,6 +9,7 @@ class Appointment(models.Model):
     """
     STATUS_CHOICES = [
         ('pending', _('Pending')),
+        ('pending_review', _('Pending Review')),
         ('confirmed', _('Confirmed')),
         ('cancelled', _('Cancelled')),
         ('completed', _('Completed')),
@@ -25,7 +26,9 @@ class Appointment(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='staff_appointments',
-        verbose_name=_('Staff')
+        verbose_name=_('Staff'),
+        null=True,  # Allow null for pending_review appointments
+        blank=True  # Allow blank for pending_review appointments
     )
     service = models.ForeignKey(
         'services.Service',

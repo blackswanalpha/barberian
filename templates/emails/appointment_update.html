@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointment Update</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4e73df;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            background-color: #f8f9fc;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #666;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4e73df;
+            color: white;
+            padding: 10px 20px;
+            text-decoration: none;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        .changes {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Appointment Update</h1>
+        </div>
+        <div class="content">
+            <p>Hello {{ client.first_name }},</p>
+            
+            <p>Your appointment request has been reviewed and confirmed with the following details:</p>
+            
+            <div class="changes">
+                <h3>Changes Made:</h3>
+                <ul>
+                    {% for key, value in changes.items %}
+                        <li><strong>{{ key|title }}:</strong> {{ value }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <h3>Updated Appointment Details:</h3>
+            <table>
+                <tr>
+                    <th>Service:</th>
+                    <td>{{ service.name }}</td>
+                </tr>
+                <tr>
+                    <th>Date:</th>
+                    <td>{{ appointment.start_time|date:"F d, Y" }}</td>
+                </tr>
+                <tr>
+                    <th>Time:</th>
+                    <td>{{ appointment.start_time|time:"g:i A" }}</td>
+                </tr>
+                <tr>
+                    <th>Duration:</th>
+                    <td>{{ service.duration }} minutes</td>
+                </tr>
+                <tr>
+                    <th>Staff:</th>
+                    <td>{{ staff.get_full_name }}</td>
+                </tr>
+                {% if appointment.notes %}
+                <tr>
+                    <th>Notes:</th>
+                    <td>{{ appointment.notes }}</td>
+                </tr>
+                {% endif %}
+            </table>
+            
+            <p>If you need to make any changes to your appointment, please contact us as soon as possible.</p>
+            
+            <a href="http://{{ request.get_host }}{% url 'appointments:appointment_detail' appointment.id %}" class="button">View Appointment</a>
+            
+            <p>Thank you for choosing Barberian!</p>
+            
+            <p>Best regards,<br>
+            Barberian Team</p>
+        </div>
+        <div class="footer">
+            <p>This is an automated message. Please do not reply to this email.</p>
+            <p>&copy; {% now "Y" %} Barberian. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>

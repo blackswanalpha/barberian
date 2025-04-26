@@ -1,0 +1,78 @@
+{% extends 'admin_panel/base.html' %}
+
+{% block title %}{{ title }} | Barberian Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Pending Appointment Requests</h6>
+        </div>
+        <div class="card-body">
+            {% if appointments %}
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Service</th>
+                                <th>Date</th>
+                                <th>Time</th>
+                                <th>Duration</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for appointment in appointments %}
+                                <tr>
+                                    <td>{{ appointment.client.get_full_name }}</td>
+                                    <td>{{ appointment.service.name }}</td>
+                                    <td>{{ appointment.start_time|date:"F d, Y" }}</td>
+                                    <td>{{ appointment.start_time|time:"g:i A" }}</td>
+                                    <td>{{ appointment.service.duration }} minutes</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark">{{ appointment.get_status_display }}</span>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'admin_panel:review_appointment' appointment.id %}" class="btn btn-primary btn-sm">
+                                            <i class="fas fa-edit"></i> Review
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="alert alert-info">
+                    No pending appointment requests found.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    $(document).ready(function() {
+        $('#dataTable').DataTable({
+            "order": [[2, "asc"], [3, "asc"]]  // Sort by date, then time
+        });
+    });
+</script>
+{% endblock %}
